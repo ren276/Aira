@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aira - Energy Bank</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#380c00",
+                    "secondary-container": "#ffbf00",
+                    "primary-fixed": "#5af8fb",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-surface-variant": "#bac9c9",
+                    "background": "#131318",
+                    "tertiary-fixed-dim": "#ffb59c",
+                    "inverse-surface": "#e4e1e9",
+                    "on-error": "#690005",
+                    "outline-variant": "#3b4949",
+                    "primary": "#47eaed",
+                    "error-container": "#93000a",
+                    "tertiary-container": "#ffa282",
+                    "on-primary-container": "#005354",
+                    "primary-container": "#00ced1",
+                    "surface-bright": "#39383e",
+                    "on-tertiary-container": "#872a00",
+                    "surface-container-lowest": "#0e0e13",
+                    "on-tertiary": "#5c1a00",
+                    "surface-dim": "#131318",
+                    "surface": "#131318",
+                    "surface-container-highest": "#35343a",
+                    "surface-tint": "#2ddbde",
+                    "on-surface": "#e4e1e9",
+                    "secondary-fixed-dim": "#fbbc00",
+                    "on-primary": "#003738",
+                    "surface-container": "#1f1f25",
+                    "on-secondary-fixed": "#261a00",
+                    "primary-fixed-dim": "#2ddbde",
+                    "on-background": "#e4e1e9",
+                    "inverse-on-surface": "#303036",
+                    "tertiary": "#ffc9b7",
+                    "surface-container-high": "#2a292f",
+                    "on-primary-fixed-variant": "#004f51",
+                    "on-primary-fixed": "#002020",
+                    "secondary": "#ffe2ab",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#6d5000",
+                    "surface-variant": "#35343a",
+                    "on-secondary": "#402d00",
+                    "outline": "#859493",
+                    "inverse-primary": "#00696b",
+                    "on-tertiary-fixed-variant": "#822800",
+                    "surface-container-low": "#1b1b20",
+                    "secondary-fixed": "#ffdfa0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #e4e1e9;
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .energy-gradient {
+            background: linear-gradient(180deg, #47eaed 0%, rgba(71, 234, 237, 0.1) 100%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            background: rgba(27, 27, 32, 0.6);
+            border: 0.5px solid rgba(59, 73, 73, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-neutral-950/60 backdrop-blur-2xl text-white font-['Manrope'] font-semibold tracking-tight fixed top-0 w-full z-50 border-b border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-6 h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+<img alt="User" class="w-full h-full object-cover" data-alt="high-end editorial portrait of a fit woman with soft lighting and minimalist aesthetic for a health profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4S7T78WwbvquKfcLieXGkrGPLM-nnAJNoPbJoVtRlKoqeVwwUEdFLyIqrPSDE56YhO2g8Lw6BgmCl29yugeSPhdSqikWmzfsjo55p1niNNz4yADwvXbQdUtObrq52-MYCE7AnFFWx87z2iSWzW3E6SfSaaH4MJrEIx_x3V_nNwQu81AoVu-Lra2C6s3DyO2FVwJqCRN1kqdsaKca7qrWiO1QhmTwqOTZoX2Pk6mAJpK2cyfr0yFEU1qsvwdLZlBGOGXGnFto4bIiU"/>
+</div>
+<span class="text-2xl font-extrabold tracking-tighter text-[#47eaed]">Aira</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#47eaed] text-2xl">verified</span>
+</div>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-lg mx-auto">
+<!-- Energy Bank Hero Section -->
+<section class="mt-8 flex flex-col items-start">
+<div class="w-full flex justify-between items-end mb-12">
+<div>
+<span class="font-['Manrope'] text-[0.75rem] font-700 uppercase tracking-widest text-neutral-500 block mb-2">Current Capacity</span>
+<h1 class="text-6xl font-extrabold tracking-tighter text-primary">84<span class="text-2xl opacity-50 ml-1">%</span></h1>
+</div>
+<div class="text-right">
+<span class="font-['Manrope'] text-[0.75rem] font-700 uppercase tracking-widest text-neutral-500 block mb-2">Net Today</span>
+<p class="text-4xl font-extrabold tracking-tight text-white">+1,240<span class="text-sm font-normal text-primary ml-1 block">Units</span></p>
+</div>
+</div>
+<!-- Immersive Vertical Battery Visualization -->
+<div class="w-full h-96 relative flex items-center justify-center mb-16">
+<!-- Battery Outer Shell -->
+<div class="w-40 h-full rounded-[48px] border-[1px] border-white/10 relative overflow-hidden bg-surface-container-lowest/30">
+<!-- Glow Background -->
+<div class="absolute inset-0 bg-primary/5 blur-3xl rounded-full"></div>
+<!-- Energy Fill -->
+<div class="absolute bottom-0 left-0 right-0 energy-gradient transition-all duration-1000 ease-in-out" style="height: 84%;">
+<!-- Animated Waves / Liquid Effect Emulation -->
+<div class="absolute top-0 left-0 right-0 h-8 bg-primary/40 blur-lg -translate-y-1/2"></div>
+</div>
+<!-- Content Over Battery -->
+<div class="absolute inset-0 flex flex-col items-center justify-center space-y-8 z-10">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-black font-bold text-3xl">bolt</span>
+</div>
+</div>
+</div>
+<!-- Floating Data Points -->
+<div class="absolute -left-4 top-1/4 glass-panel p-4 rounded-lg shadow-2xl">
+<span class="block text-[10px] uppercase font-bold text-primary mb-1">Recovery</span>
+<span class="text-lg font-bold text-white">Deep Sleep</span>
+<span class="block text-xs text-neutral-400">+450u</span>
+</div>
+<div class="absolute -right-8 bottom-1/4 glass-panel p-4 rounded-lg shadow-2xl">
+<span class="block text-[10px] uppercase font-bold text-tertiary mb-1">Drain</span>
+<span class="text-lg font-bold text-white">HIIT Session</span>
+<span class="block text-xs text-neutral-400">-820u</span>
+</div>
+</div>
+</section>
+<!-- Timeline Section -->
+<section class="mb-12">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-semibold tracking-tight text-white">Flow Analysis</h2>
+<div class="flex gap-2">
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-[10px] uppercase font-bold text-neutral-500">Charge</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-[10px] uppercase font-bold text-neutral-500">Drain</span>
+</div>
+</div>
+</div>
+<!-- Asymmetric Timeline Chart Emulation -->
+<div class="w-full h-40 flex items-end gap-[2px]">
+<div class="flex-1 bg-surface-container-high rounded-t-sm h-12 hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-surface-container-high rounded-t-sm h-16 hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm h-32"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm h-36"></div>
+<div class="flex-1 bg-primary rounded-t-sm h-40 shadow-[0_0_15px_rgba(71,234,237,0.3)]"></div>
+<div class="flex-1 bg-tertiary/40 rounded-t-sm h-24"></div>
+<div class="flex-1 bg-tertiary/60 rounded-t-sm h-16"></div>
+<div class="flex-1 bg-surface-container-high rounded-t-sm h-12"></div>
+<div class="flex-1 bg-surface-container-high rounded-t-sm h-14"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm h-28"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm h-34"></div>
+<div class="flex-1 bg-surface-container-high rounded-t-sm h-20"></div>
+</div>
+<div class="flex justify-between mt-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest px-1">
+<span>00:00</span>
+<span>06:00</span>
+<span>12:00</span>
+<span>18:00</span>
+<span>NOW</span>
+</div>
+</section>
+<!-- Restorative Events List -->
+<section class="mb-8">
+<h2 class="text-xl font-semibold tracking-tight text-white mb-6">Restorative Events</h2>
+<div class="space-y-4">
+<!-- Card 1 -->
+<div class="bg-surface-container-low rounded-lg p-5 flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div>
+<p class="font-semibold text-white">Deep REM Cycle</p>
+<p class="text-sm text-neutral-500">02:15 - 03:45 AM</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-primary font-bold text-lg">+420</span>
+<span class="block text-[10px] font-bold text-neutral-500 uppercase tracking-tighter">Units</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low rounded-lg p-5 flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">self_improvement</span>
+</div>
+<div>
+<p class="font-semibold text-white">Breathwork Session</p>
+<p class="text-sm text-neutral-500">10:20 AM (15 min)</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-primary font-bold text-lg">+115</span>
+<span class="block text-[10px] font-bold text-neutral-500 uppercase tracking-tighter">Units</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low rounded-lg p-5 flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-semibold text-white">High Protein Fuel</p>
+<p class="text-sm text-neutral-500">01:30 PM</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-primary font-bold text-lg">+280</span>
+<span class="block text-[10px] font-bold text-neutral-500 uppercase tracking-tighter">Units</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Predictive Insights Chip -->
+<div class="bg-surface-container-high rounded-full px-6 py-4 flex items-center gap-3 border border-primary/10 mb-8">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<p class="text-xs font-bold text-neutral-300">Predictive: Optimal window for exercise starts in 45m.</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-neutral-900/60 backdrop-blur-2xl fixed bottom-0 w-full z-50 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<div class="no-line bg-gradient-to-t from-neutral-900 to-transparent flex justify-around items-center px-4 pb-8 pt-4">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">home_max</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Home</span>
+</a>
+<!-- Body (Active) -->
+<a class="flex flex-col items-center justify-center text-[#47eaed] bg-[#47eaed]/10 rounded-full py-2 px-4 shadow-[0_0_15px_rgba(71,234,237,0.3)]" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">accessibility_new</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Body</span>
+</a>
+<!-- Train -->
+<a class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Train</span>
+</a>
+<!-- Nutrition -->
+<a class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">restaurant</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Nutrition</span>
+</a>
+<!-- Coach -->
+<a class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">psychology</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Coach</span>
+</a>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,302 @@
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="dark selection:bg-primary/30 min-h-screen pb-32">```html
+<meta charset="utf-8"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-secondary-fixed-variant": "#5c4300",
+                "error": "#ffb4ab",
+                "on-tertiary-fixed": "#380c00",
+                "secondary-container": "#ffbf00",
+                "primary-fixed": "#5af8fb",
+                "tertiary-fixed": "#ffdbcf",
+                "on-surface-variant": "#bac9c9",
+                "background": "#131318",
+                "tertiary-fixed-dim": "#ffb59c",
+                "inverse-surface": "#e4e1e9",
+                "on-error": "#690005",
+                "outline-variant": "#3b4949",
+                "primary": "#47eaed",
+                "error-container": "#93000a",
+                "tertiary-container": "#ffa282",
+                "on-primary-container": "#005354",
+                "primary-container": "#00ced1",
+                "surface-bright": "#39383e",
+                "on-tertiary-container": "#872a00",
+                "surface-container-lowest": "#0e0e13",
+                "on-tertiary": "#5c1a00",
+                "surface-dim": "#131318",
+                "surface": "#131318",
+                "surface-container-highest": "#35343a",
+                "surface-tint": "#2ddbde",
+                "on-surface": "#e4e1e9",
+                "secondary-fixed-dim": "#fbbc00",
+                "on-primary": "#003738",
+                "surface-container": "#1f1f25",
+                "on-secondary-fixed": "#261a00",
+                "primary-fixed-dim": "#2ddbde",
+                "on-background": "#e4e1e9",
+                "inverse-on-surface": "#303036",
+                "tertiary": "#ffc9b7",
+                "surface-container-high": "#2a292f",
+                "on-primary-fixed-variant": "#004f51",
+                "on-primary-fixed": "#002020",
+                "secondary": "#ffe2ab",
+                "on-error-container": "#ffdad6",
+                "on-secondary-container": "#6d5000",
+                "surface-variant": "#35343a",
+                "on-secondary": "#402d00",
+                "outline": "#859493",
+                "inverse-primary": "#00696b",
+                "on-tertiary-fixed-variant": "#822800",
+                "surface-container-low": "#1b1b20",
+                "secondary-fixed": "#ffdfa0"
+        },
+        "borderRadius": {
+                "DEFAULT": "1rem",
+                "lg": "2rem",
+                "xl": "3rem",
+                "full": "9999px"
+        },
+        "fontFamily": {
+                "headline": ["Manrope"],
+                "body": ["Manrope"],
+                "label": ["Manrope"]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+  }
+  body {
+    background-color: #000000; /* Pure Black for OLED */
+    color: #e4e1e9;
+    font-family: 'Manrope', sans-serif;
+  }
+  .radial-gradient-strain {
+    background: conic-gradient(from 180deg at 50% 50%, #47eaed 0deg, #47eaed 260deg, #ffc9b7 260deg, #ffc9b7 320deg, #1f1f25 320deg);
+  }
+  .ghost-border {
+    border: 0.5px solid rgba(133, 148, 147, 0.15);
+  }
+</style>
+<!-- TopAppBar -->
+<header class="bg-neutral-950/60 backdrop-blur-2xl border-b border-white/5 fixed top-0 w-full z-50 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-6 h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a high-performance athlete with sweat on brow, clinical lighting, moody dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWd8zI_G2CC9X5pr4KiIIswZJKQmxpS0pt01Mh2Rmd-ilmTysRqOMULjiP_hThHLfKiVPMsrH-BRR5_bp5V_GzGOY5frBgYiTUXa9tYzZHrmJQ0OgDBUe1XcefowQyXff30zG6jnXza5gYc5yytFKz3HVe3Zk1PsO6hUUYCZVLZEHqBxhx73UoLLrYIShZLyLmSR35go3wtPkOJC7HBB0ckUJGApo-E4qwM7ZwrBCP_-C7C9Yqyr7DYgwzHfoXWIKKE-XDi7EsWgaJ"/>
+</div>
+<span class="text-2xl font-extrabold tracking-tighter text-[#47eaed] font-['Manrope']">Aira</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-surface-container-high px-3 py-1 rounded-full flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Live Sync</span>
+</div>
+<span class="material-symbols-outlined text-[#47eaed] text-2xl" data-icon="verified">verified</span>
+</div>
+</div>
+</header>
+<main class="pt-28 px-6 max-w-lg mx-auto">
+<!-- Hero Strain Dial -->
+<section class="flex flex-col items-center mb-12">
+<div class="relative w-72 h-72 flex items-center justify-center">
+<!-- Radial Track -->
+<div class="absolute inset-0 rounded-full border-[12px] border-surface-container-low opacity-20"></div>
+<!-- Actual Gauge Simulation -->
+<div class="absolute inset-0 rounded-full border-[12px] border-transparent radial-gradient-strain opacity-90 rotate-[20deg]"></div>
+<div class="text-center z-10">
+<span class="block text-[0.75rem] font-bold uppercase tracking-[0.2em] text-outline mb-1">Current Strain</span>
+<h1 class="text-[5rem] font-extrabold leading-none tracking-tighter text-on-surface">16.4</h1>
+<div class="flex items-center justify-center gap-2 mt-2">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<span class="text-[1rem] font-semibold text-tertiary">Optimal Zone</span>
+</div>
+</div>
+<!-- Target Zone Marker -->
+<div class="absolute top-4 right-12 flex flex-col items-end">
+<span class="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Target 14–18</span>
+<div class="h-[2px] w-8 bg-tertiary"></div>
+</div>
+</div>
+<!-- Data Confidence Badge -->
+<div class="mt-8 bg-surface-container-low/50 backdrop-blur-md ghost-border px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xs">analytics</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface-variant">High Data Confidence (98%)</span>
+</div>
+</section>
+<!-- Causal Insight Card (Amber) -->
+<section class="mb-10">
+<div class="bg-secondary-container/10 p-6 rounded-lg ghost-border relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-[64px]" data-icon="psychology">psychology</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<h3 class="text-secondary font-bold text-sm tracking-wide">CAUSAL INSIGHT</h3>
+</div>
+<p class="text-on-surface font-medium leading-relaxed">
+          Your cardiovascular response is <span class="text-secondary">7% higher</span> than usual for this intensity. Last night's 42ms HRV dip suggests residual metabolic fatigue.
+        </p>
+</div>
+</section>
+<!-- Cardio Load Trend (Bento Style) -->
+<section class="grid grid-cols-2 gap-4 mb-10">
+<div class="col-span-2 bg-surface-container-low p-6 rounded-lg ghost-border">
+<div class="flex justify-between items-end mb-6">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Cardio Load Status</span>
+<h2 class="text-2xl font-bold text-primary">Productive</h2>
+</div>
+<div class="text-right">
+<span class="block text-xl font-bold text-on-surface">542</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Acute:Chronic</span>
+</div>
+</div>
+<!-- Simulated Area Chart -->
+<div class="h-24 w-full flex items-end gap-1">
+<div class="flex-1 bg-surface-container-highest h-[40%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[45%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[60%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[55%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-[75%] rounded-t-sm border-t-2 border-primary"></div>
+<div class="flex-1 bg-primary/40 h-[85%] rounded-t-sm border-t-2 border-primary"></div>
+<div class="flex-1 bg-primary h-[100%] rounded-t-sm shadow-[0_0_15px_rgba(71,234,237,0.3)]"></div>
+</div>
+</div>
+</section>
+<!-- HR Zones -->
+<section class="mb-12">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-[0.75rem] font-bold uppercase tracking-widest text-outline">HR Zone Distribution</h3>
+<span class="text-[10px] font-bold text-on-surface-variant">2H 14M TOTAL</span>
+</div>
+<div class="space-y-4">
+<!-- Zone 5 -->
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-extrabold text-outline w-6">Z5</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[12%]"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface w-12 text-right">08:12</span>
+</div>
+<!-- Zone 4 -->
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-extrabold text-outline w-6">Z4</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[45%]"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface w-12 text-right">42:05</span>
+</div>
+<!-- Zone 3 -->
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-extrabold text-outline w-6">Z3</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[30%]"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface w-12 text-right">28:10</span>
+</div>
+<!-- Zone 2 -->
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-extrabold text-outline w-6">Z2</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant w-[10%]"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface w-12 text-right">09:45</span>
+</div>
+<!-- Zone 1 -->
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-extrabold text-outline w-6">Z1</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-surface-container-highest w-[3%]"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface w-12 text-right">02:30</span>
+</div>
+</div>
+</section>
+<!-- Activities List -->
+<section class="mb-20">
+<h3 class="text-[0.75rem] font-bold uppercase tracking-widest text-outline mb-6">Today's Activities</h3>
+<div class="space-y-3">
+<!-- Activity 1 -->
+<div class="bg-surface-container p-4 rounded-lg flex items-center justify-between group transition-all hover:bg-surface-container-high">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Evening Strength</h4>
+<div class="flex gap-2 mt-1">
+<span class="text-[8px] font-black px-2 py-0.5 rounded-sm bg-tertiary/20 text-tertiary uppercase">Muscular: 14.2</span>
+<span class="text-[8px] font-black px-2 py-0.5 rounded-sm bg-primary/20 text-primary uppercase">Cardio: 8.1</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-bold text-on-surface">1:04:12</span>
+<span class="text-[10px] font-bold text-outline">18:30</span>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="bg-surface-container p-4 rounded-lg flex items-center justify-between group transition-all hover:bg-surface-container-high">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Morning Interval Run</h4>
+<div class="flex gap-2 mt-1">
+<span class="text-[8px] font-black px-2 py-0.5 rounded-sm bg-tertiary/20 text-tertiary uppercase">Muscular: 4.5</span>
+<span class="text-[8px] font-black px-2 py-0.5 rounded-sm bg-primary/20 text-primary uppercase">Cardio: 15.8</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-bold text-on-surface">45:20</span>
+<span class="text-[10px] font-bold text-outline">07:15</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-[32px] bg-neutral-900/60 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<div class="flex justify-around items-center px-4 pb-8 pt-4">
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="home_max">home_max</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#47eaed] bg-[#47eaed]/10 rounded-full py-2 px-4 shadow-[0_0_15px_rgba(71,234,237,0.3)]">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="accessibility_new" style="font-variation-settings: 'FILL' 1;">accessibility_new</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Body</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="fitness_center">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Train</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="restaurant">restaurant</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Nutrition</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="psychology">psychology</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Coach</span>
+</div>
+</div>
+</nav>
+
+```</body></html>

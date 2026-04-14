@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#5c1a00",
+                    "on-surface": "#e4e1e9",
+                    "tertiary-fixed-dim": "#ffb59c",
+                    "error": "#ffb4ab",
+                    "on-primary": "#003738",
+                    "on-primary-fixed": "#002020",
+                    "primary-container": "#00ced1",
+                    "secondary": "#ffe2ab",
+                    "on-tertiary-container": "#872a00",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "on-tertiary-fixed-variant": "#822800",
+                    "on-background": "#e4e1e9",
+                    "surface": "#131318",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-lowest": "#0e0e13",
+                    "primary-fixed-dim": "#2ddbde",
+                    "surface-tint": "#2ddbde",
+                    "inverse-on-surface": "#303036",
+                    "surface-dim": "#131318",
+                    "secondary-container": "#ffbf00",
+                    "surface-container-highest": "#35343a",
+                    "inverse-primary": "#00696b",
+                    "inverse-surface": "#e4e1e9",
+                    "outline-variant": "#3b4949",
+                    "surface-container": "#1f1f25",
+                    "tertiary-container": "#ffa282",
+                    "on-error": "#690005",
+                    "primary": "#47eaed",
+                    "tertiary-fixed": "#ffdbcf",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#5af8fb",
+                    "surface-variant": "#35343a",
+                    "tertiary": "#ffc9b7",
+                    "on-secondary-fixed": "#261a00",
+                    "on-tertiary-fixed": "#380c00",
+                    "on-secondary-container": "#6d5000",
+                    "outline": "#859493",
+                    "on-secondary": "#402d00",
+                    "secondary-fixed": "#ffdfa0",
+                    "background": "#131318",
+                    "surface-container-low": "#1b1b20",
+                    "surface-container-high": "#2a292f",
+                    "on-primary-fixed-variant": "#004f51",
+                    "on-surface-variant": "#bac9c9",
+                    "secondary-fixed-dim": "#fbbc00",
+                    "on-primary-container": "#005354",
+                    "surface-bright": "#39383e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .arc-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+        }
+        .glow-arc {
+            fill: none;
+            stroke: #47eaed;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 232;
+            stroke-dashoffset: 60;
+            filter: drop-shadow(0 0 12px rgba(71, 234, 237, 0.6));
+        }
+        .bg-mesh {
+            background: radial-gradient(circle at 50% -20%, rgba(71, 234, 237, 0.08) 0%, rgba(19, 19, 24, 0) 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 w-full z-50 bg-[#131318]/60 dark:bg-[#131318]/60 backdrop-blur-3xl border-b border-[#ffffff]/10 flex justify-between items-center px-6 h-16 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a woman with calm expression, soft cinematic lighting, minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsYU6ipI3Qpx1Qv-vRcpCyD5b0HZm8cpI-v3SBQkRTL8FiVuHE56ho0_iuO1HLaa3aRHM0L8lOZiwrIZD-gZvVfZ8G6u91vHELv_n4InvuSJwVqt5Hb6cink66rjCYivJzLPVGsRXwVeSt_JyFT9ZkdPv3gA3hjL_BKBm009S_yWYcOTW5YtErkgNs7lfs7rNMFFI3Uhjm2gO5IlxoJU9LViTldDZQeBr0X4bROm6NA2_qD2_pXR1f8qv1rQWOLUpAkRzEwcJ3uJxF"/>
+</div>
+<span class="font-['Manrope'] font-extrabold text-[#47eaed] tracking-tighter text-2xl uppercase">Aira</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-['Manrope'] font-semibold tracking-tight text-lg text-[#47eaed]">98% Confidence</span>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto bg-mesh">
+<!-- Hero Recovery Score -->
+<section class="flex flex-col items-center justify-center py-12 relative">
+<div class="arc-container flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="46" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
+<circle class="glow-arc" cx="50" cy="50" r="46"></circle>
+</svg>
+<div class="text-center">
+<span class="block text-[5rem] font-extrabold leading-none tracking-tighter text-on-surface">74</span>
+<span class="block text-xs font-bold uppercase tracking-[0.2em] text-primary mt-2">Recovery</span>
+</div>
+</div>
+<div class="mt-8 flex gap-4">
+<div class="flex flex-col items-center">
+<span class="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface-variant">Status</span>
+<span class="text-secondary font-semibold">Optimal</span>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface-variant">Trend</span>
+<span class="text-primary font-semibold">+4%</span>
+</div>
+</div>
+</section>
+<!-- Body Narrative Section -->
+<section class="mt-12 space-y-6">
+<h2 class="text-2xl font-semibold tracking-tight text-on-surface">Body Narrative</h2>
+<div class="space-y-4">
+<p class="text-lg leading-relaxed text-on-surface/90 font-light">
+                    Your cardiovascular efficiency has rebounded significantly after the <span class="text-tertiary font-medium italic underline decoration-tertiary/30 underline-offset-4">October slump</span>. HRV stability suggests the nervous system is successfully integrating recent high-intensity loads.
+                </p>
+<p class="text-base text-on-surface-variant leading-relaxed">
+                    Sleep architecture shows a 12-minute increase in Deep Sleep cycles. This shift correlates with your reduced caffeine intake recorded yesterday.
+                </p>
+</div>
+</section>
+<!-- Contributors Section -->
+<section class="mt-16 space-y-8">
+<h3 class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Daily Contributors</h3>
+<div class="grid grid-cols-1 gap-10">
+<!-- Contributor 01 -->
+<div class="group">
+<div class="flex justify-between items-end mb-3">
+<div>
+<span class="block text-[0.65rem] font-bold text-on-surface-variant uppercase mb-1">Strain Balance</span>
+<span class="text-lg font-semibold text-on-surface">Physiological Load</span>
+</div>
+<span class="text-primary font-bold">88%</span>
+</div>
+<div class="relative h-1 w-full bg-surface-container-highest/30 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary w-[88%] shadow-[0_0_8px_rgba(71,234,237,0.4)]"></div>
+</div>
+</div>
+<!-- Contributor 02 -->
+<div class="group">
+<div class="flex justify-between items-end mb-3">
+<div>
+<span class="block text-[0.65rem] font-bold text-on-surface-variant uppercase mb-1">Restoration</span>
+<span class="text-lg font-semibold text-on-surface">Sleep Quality</span>
+</div>
+<span class="text-primary font-bold">62%</span>
+</div>
+<div class="relative h-1 w-full bg-surface-container-highest/30 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary w-[62%] shadow-[0_0_8px_rgba(71,234,237,0.4)]"></div>
+</div>
+</div>
+<!-- Contributor 03 -->
+<div class="group">
+<div class="flex justify-between items-end mb-3">
+<div>
+<span class="block text-[0.65rem] font-bold text-on-surface-variant uppercase mb-1">Cardio</span>
+<span class="text-lg font-semibold text-on-surface">HRV Consistency</span>
+</div>
+<span class="text-secondary font-bold">45%</span>
+</div>
+<div class="relative h-1 w-full bg-surface-container-highest/30 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-secondary w-[45%] shadow-[0_0_8px_rgba(255,226,171,0.4)]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- What-If Teaser -->
+<section class="mt-20 flex justify-center">
+<div class="inline-flex items-center gap-4 px-6 py-4 bg-surface-container-high rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="psychology">psychology</span>
+</div>
+<div>
+<span class="block text-[0.6rem] font-bold uppercase tracking-widest text-on-surface-variant">Aira Prediction</span>
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-semibold">Tomorrow's Score:</span>
+<span class="text-primary font-bold">82</span>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Shell -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full bg-[#1f1f25]/60 backdrop-blur-2xl border border-white/10 z-50 flex justify-around items-center h-20 px-4 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+<button class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#47eaed] drop-shadow-[0_0_8px_rgba(71,234,237,0.5)] scale-110">
+<span class="material-symbols-outlined mb-1" data-icon="accessibility_new">accessibility_new</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Body</span>
+</button>
+<button class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all">
+<span class="material-symbols-outlined mb-1" data-icon="fitness_center">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Train</span>
+</button>
+<button class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all">
+<span class="material-symbols-outlined mb-1" data-icon="restaurant">restaurant</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Eat</span>
+</button>
+<button class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all">
+<span class="material-symbols-outlined mb-1" data-icon="psychology">psychology</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Coach</span>
+</button>
+</nav>
+<!-- FAB Suppression: Contextual exclusion applied for detail view -->
+</body></html>

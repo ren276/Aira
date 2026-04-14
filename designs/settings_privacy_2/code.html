@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aira - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#5c1a00",
+                    "on-surface": "#e4e1e9",
+                    "tertiary-fixed-dim": "#ffb59c",
+                    "error": "#ffb4ab",
+                    "on-primary": "#003738",
+                    "on-primary-fixed": "#002020",
+                    "primary-container": "#00ced1",
+                    "secondary": "#ffe2ab",
+                    "on-tertiary-container": "#872a00",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "on-tertiary-fixed-variant": "#822800",
+                    "on-background": "#e4e1e9",
+                    "surface": "#131318",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-lowest": "#0e0e13",
+                    "primary-fixed-dim": "#2ddbde",
+                    "surface-tint": "#2ddbde",
+                    "inverse-on-surface": "#303036",
+                    "surface-dim": "#131318",
+                    "secondary-container": "#ffbf00",
+                    "surface-container-highest": "#35343a",
+                    "inverse-primary": "#00696b",
+                    "inverse-surface": "#e4e1e9",
+                    "outline-variant": "#3b4949",
+                    "surface-container": "#1f1f25",
+                    "tertiary-container": "#ffa282",
+                    "on-error": "#690005",
+                    "primary": "#47eaed",
+                    "tertiary-fixed": "#ffdbcf",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#5af8fb",
+                    "surface-variant": "#35343a",
+                    "tertiary": "#ffc9b7",
+                    "on-secondary-fixed": "#261a00",
+                    "on-tertiary-fixed": "#380c00",
+                    "on-secondary-container": "#6d5000",
+                    "outline": "#859493",
+                    "on-secondary": "#402d00",
+                    "secondary-fixed": "#ffdfa0",
+                    "background": "#131318",
+                    "surface-container-low": "#1b1b20",
+                    "surface-container-high": "#2a292f",
+                    "on-primary-fixed-variant": "#004f51",
+                    "on-surface-variant": "#bac9c9",
+                    "secondary-fixed-dim": "#fbbc00",
+                    "on-primary-container": "#005354",
+                    "surface-bright": "#39383e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #131318;
+            color: #e4e1e9;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen">
+<header class="fixed top-0 left-0 w-full z-50 bg-[#131318]/60 dark:bg-[#131318]/60 backdrop-blur-3xl border-b border-[#ffffff]/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up minimalist portrait of a woman with clean lighting and editorial high-fashion aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6-VAcVfHD7Gp0JASJ-G1eVquxKPjfav2Qd111g1M3GLJ64y0GcxBgAkkvJFiAQ1WWJtu0KIgYWukW97ruaoz5m2sDveg-oVgBdpswheXpDeVSbY_bGDxmZQspnYaJRZeM-E-SAMU69XbItLOmkai88jVhokxyOv2dFoe4L8JEZqPgg2PbIn4FhuSrlxeRatRAgmy5Y-fPn_QhOGdbRNi1fbv0epb3Sh08vZgbLUznXm1xtA2NShi6IJsiE5-rpXNHn_MiTl88-9oJ"/>
+</div>
+<span class="font-extrabold text-[#47eaed] tracking-tighter text-2xl">Aira</span>
+</div>
+<div class="flex items-center">
+<span class="font-['Manrope'] font-semibold tracking-tight text-lg text-[#47eaed] hover:opacity-80 transition-opacity cursor-pointer">98% Confidence</span>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto space-y-16">
+<section class="flex flex-col items-start gap-6">
+<div class="relative">
+<div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary to-primary-container">
+<div class="w-full h-full rounded-full overflow-hidden bg-surface">
+<img class="w-full h-full object-cover" data-alt="Professional editorial portrait of a woman with soft side lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4l58FY_2wRblRnpljf1Ub4dWb8p3pyXDamtqNYCNQnKO_MrIAX0RTsDmV45mgbGSzT0hqNregDY8VSpvfbbDAArS46Hp1CuyFh5KgS8scteaCcsyxTd5YW_mG-rHh1adf8fO8gzgO_idZ34_WVOIFi2jqsZ3t7EemYdIdc2zl1tKFXcGTz-MLY2zaXowo0Xm7VUdKeW7M4WRWXHfrIRLLdowDCr87NyVJDhplZRpm1zJEfHO4tA61yMYL0Ixun61orhHdrJX2N3Ti"/>
+</div>
+</div>
+</div>
+<div class="space-y-1">
+<h1 class="text-4xl font-extrabold tracking-tight">Elena Vance</h1>
+<p class="text-on-surface-variant font-medium tracking-wide">Premium Tier • Active Member</p>
+</div>
+</section>
+<section class="space-y-8">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-[0.2em] text-primary">Biometric Sync</span>
+<h2 class="text-2xl font-semibold mt-2">Data Sources</h2>
+</div>
+<div class="space-y-6">
+<div class="flex items-center justify-between p-6 bg-surface-container-low rounded-lg transition-all hover:bg-surface-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-primary text-2xl">health_metrics</span>
+</div>
+<div>
+<p class="font-semibold text-lg">Health Connect</p>
+<p class="text-sm text-on-surface-variant">Sync all Android health data</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-14 h-8 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-6 bg-surface-container-low rounded-lg transition-all hover:bg-surface-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-primary text-2xl">fitness_center</span>
+</div>
+<div>
+<p class="font-semibold text-lg">Google Fit</p>
+<p class="text-sm text-on-surface-variant">Import activities and workouts</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-14 h-8 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<section class="space-y-8">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-[0.2em] text-tertiary">Intelligence</span>
+<h2 class="text-2xl font-semibold mt-2">Correction Model</h2>
+</div>
+<div class="p-8 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<p class="text-on-surface-variant leading-relaxed mb-8">
+                    Your personal AI model adapts to your lifestyle. If you feel the predictions have become misaligned with your current routine, you can reset the weights and start fresh.
+                </p>
+<button class="w-full py-4 rounded-full bg-tertiary text-on-tertiary font-bold tracking-tight active:scale-[0.98] transition-transform">
+                    Reset my personal model
+                </button>
+</div>
+</section>
+<section class="space-y-6">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-[0.2em] text-secondary">Integrity</span>
+<h2 class="text-2xl font-semibold mt-2">Privacy</h2>
+</div>
+<div class="space-y-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary text-2xl">shield_person</span>
+<p class="text-xl font-bold tracking-tight text-on-surface leading-tight">
+                        All health data is processed <span class="text-secondary">locally on your device</span>. Aira never uploads your raw biometrics to the cloud.
+                    </p>
+</div>
+<div class="pl-10 space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<p class="text-sm text-on-surface-variant font-medium">End-to-end encrypted sync</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<p class="text-sm text-on-surface-variant font-medium">Zero-knowledge architecture</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<p class="text-sm text-on-surface-variant font-medium">GDPR &amp; HIPAA Compliant</p>
+</div>
+</div>
+</div>
+</section>
+<footer class="pt-12 pb-24 text-center">
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/40">Aira v2.4.0-Clinical</p>
+</footer>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full bg-[#1f1f25]/60 backdrop-blur-2xl border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.5)] z-50 flex justify-around items-center h-20 px-4">
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">accessibility_new</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Body</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Train</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Eat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#47eaed] drop-shadow-[0_0_8px_rgba(71,234,237,0.5)]" href="#">
+<span class="material-symbols-outlined text-2xl">psychology</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Coach</span>
+</a>
+</nav>
+</body></html>

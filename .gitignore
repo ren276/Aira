@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+*.gradle.kts.bak
+
+# Android
+/local.properties
+/app/release/
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+*.iws
+.DS_Store
+
+# Environment secrets
+local.properties
+secrets.properties
+
+# Planning (not for CI)
+# (keep .planning/ tracked in git)
+
+# Generated
+app/build/

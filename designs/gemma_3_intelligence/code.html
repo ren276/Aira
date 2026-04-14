@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aira AI Coach</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#5c1a00",
+                    "on-surface": "#e4e1e9",
+                    "tertiary-fixed-dim": "#ffb59c",
+                    "error": "#ffb4ab",
+                    "on-primary": "#003738",
+                    "on-primary-fixed": "#002020",
+                    "primary-container": "#00ced1",
+                    "secondary": "#ffe2ab",
+                    "on-tertiary-container": "#872a00",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "on-tertiary-fixed-variant": "#822800",
+                    "on-background": "#e4e1e9",
+                    "surface": "#131318",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-lowest": "#0e0e13",
+                    "primary-fixed-dim": "#2ddbde",
+                    "surface-tint": "#2ddbde",
+                    "inverse-on-surface": "#303036",
+                    "surface-dim": "#131318",
+                    "secondary-container": "#ffbf00",
+                    "surface-container-highest": "#35343a",
+                    "inverse-primary": "#00696b",
+                    "inverse-surface": "#e4e1e9",
+                    "outline-variant": "#3b4949",
+                    "surface-container": "#1f1f25",
+                    "tertiary-container": "#ffa282",
+                    "on-error": "#690005",
+                    "primary": "#47eaed",
+                    "tertiary-fixed": "#ffdbcf",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#5af8fb",
+                    "surface-variant": "#35343a",
+                    "tertiary": "#ffc9b7",
+                    "on-secondary-fixed": "#261a00",
+                    "on-tertiary-fixed": "#380c00",
+                    "on-secondary-container": "#6d5000",
+                    "outline": "#859493",
+                    "on-secondary": "#402d00",
+                    "secondary-fixed": "#ffdfa0",
+                    "background": "#131318",
+                    "surface-container-low": "#1b1b20",
+                    "surface-container-high": "#2a292f",
+                    "on-primary-fixed-variant": "#004f51",
+                    "on-surface-variant": "#bac9c9",
+                    "secondary-fixed-dim": "#fbbc00",
+                    "on-primary-container": "#005354",
+                    "surface-bright": "#39383e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1f1f25 0%, #131318 100%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            background: rgba(31, 31, 37, 0.6);
+            border: 0.5px solid rgba(133, 148, 147, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface selection:bg-primary/30 min-h-screen flex flex-col">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 w-full bg-[#131318]/60 dark:bg-[#131318]/60 backdrop-blur-3xl border-b border-[#ffffff]/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+<img alt="user profile portrait" class="w-full h-full object-cover" data-alt="close-up portrait of a fit woman with a confident expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8pZF84B86ZcMNvdCR7hndyTD6-ZSRv3bxAtga0y-8kU71f6rcSabTuWxA45xqrpQSVstYqSgN848UqqwKnmGrJc-_kaE5LdQwFqP2n5R_Ki_3XKdIglklPY9eO7K0AXhzutdAptqfnTYaDI-UHazW9YFl2G_GjsGKn814aLbdsltrlC823G5icqmNHNceCZfv5KMCFssWSbKxixdlFQKnpUC6_XRuksMfSZZcYxQapyNUFxgtOD2JHXyrCNQvRTnRzHn2r9LK0hl4"/>
+</div>
+<span class="font-extrabold text-[#47eaed] tracking-tighter text-2xl">Aira</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-['Manrope'] font-semibold tracking-tight text-lg text-[#47eaed]">98% Confidence</span>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+<div class="w-1.5 h-1.5 rounded-full bg-primary pulse-dot"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary/80">All AI runs on-device · Gemma 3</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-40 px-6 max-w-4xl mx-auto w-full flex flex-col gap-8">
+<!-- Contextual Header Chips -->
+<div class="flex justify-center gap-3">
+<button class="px-4 py-2 rounded-full glass-panel flex items-center gap-2 text-primary hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-sm">database</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Using today's data</span>
+</button>
+<button class="px-4 py-2 rounded-full glass-panel flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors">
+<span class="material-symbols-outlined text-sm">history</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Full history</span>
+</button>
+</div>
+<!-- Conversational Interface -->
+<div class="flex flex-col gap-8">
+<!-- AI Message -->
+<div class="flex flex-col gap-3 max-w-[85%] self-start">
+<div class="p-6 rounded-lg glass-panel relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<p class="text-on-surface leading-relaxed font-body">Good morning. Based on your HRV dip of 12% and slightly elevated resting heart rate last night, I've adjusted your intensity for today. You're currently in a **functional overreach** phase.</p>
+</div>
+<div class="flex gap-2">
+<div class="px-3 py-1 rounded-full bg-surface-container-high flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">HRV: 58ms</span>
+</div>
+<div class="px-3 py-1 rounded-full bg-surface-container-high flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Sleep: 6h 12m</span>
+</div>
+</div>
+</div>
+<!-- User Message (Asymmetric) -->
+<div class="flex flex-col gap-3 max-w-[75%] self-end items-end">
+<div class="p-4 px-6 rounded-lg bg-primary-container/10 border border-primary/20 text-right">
+<p class="text-primary font-medium">I'm feeling a bit stiff in my lower back, though. Should I still do the heavy squats?</p>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="flex flex-col gap-4 self-start w-full">
+<div class="p-8 rounded-lg glass-panel border-l-4 border-primary">
+<div class="flex items-start justify-between mb-6">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">Clinical Recommendation</span>
+<h2 class="text-2xl font-semibold tracking-tight text-white">Pivot to Active Recovery</h2>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">clinical_notes</span>
+</div>
+<p class="text-white/70 mb-8 max-w-lg">I recommend swapping squats for **Glute Bridges** and **Cat-Cow flows**. This will maintain muscular activation without the spinal compression that could exacerbate your stiffness.</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 rounded-lg bg-surface-container-low flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-surface-variant overflow-hidden">
+<img alt="yoga stretch" class="w-full h-full object-cover opacity-60" data-alt="close-up of a person performing a gentle cat-cow yoga stretch on a dark mat in a minimalist room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTXrzx6NqNGaw0_ebwrHTnRdIVdRLPX5Fyuy4XUnV8SbzT-dnrZ_1un7DRZsIWVLXKk5_QjaWTU7sm3drDrYvt4KZbfH05gc_ZOdyGbRGz6D4oo8t7_01AOoMb7U7acwTtHElwGcyY-0n58goM4kJCHx8H4j9UPTxYW4dpVrXaXX0IeCG6ilW5rphrmodCrGbYrkzWlw_yVIILORsz-UV7I8fqD2tsrZD1nbepGFY1jdoQwrNO4UgftaY9GeBcEDw1Ymky-xqJuS0X"/>
+</div>
+<div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-white/40">Next Step</div>
+<div class="text-sm font-semibold">12m Mobility Flow</div>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-surface-container-low flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-surface-variant overflow-hidden">
+<img alt="weight plates" class="w-full h-full object-cover opacity-60" data-alt="cinematic shot of olympic weight plates on a dark gym floor with moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBReUIcdAob5-R7Gd-Z-mNc7P8ssVVzABpNpsKAj9A4sIljNdFaeykFRqFQR5OwsBWOOalBBP7sHUwNKRVFsfruVwH8wSZxX2XsrjnMXt9AIvx-x3MocAIvAjsqUzYsUZ7wCxxQFQNp8gs-R9Kx5xlMs1IZv3cNQf4GsOWzI12K1TA0Zbk8CjM8yJ7MVQ4seOryQ8lAfTlH7OAbAOGgfmj1Q_3OzGAooGF3G3taQOyuq1AZsZs42WaMzh3k-U7VKcYW5UszGmDy075e"/>
+</div>
+<div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-white/40">Status</div>
+<div class="text-sm font-semibold">Program Adjusted</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Predictive Suggestions -->
+<div class="flex flex-wrap justify-center gap-3 mt-4">
+<button class="px-6 py-2.5 rounded-full glass-panel border border-white/5 hover:border-primary/40 hover:text-primary transition-all text-xs font-semibold tracking-wide">
+                Why was recovery low?
+            </button>
+<button class="px-6 py-2.5 rounded-full glass-panel border border-white/5 hover:border-primary/40 hover:text-primary transition-all text-xs font-semibold tracking-wide">
+                Plan my week
+            </button>
+<button class="px-6 py-2.5 rounded-full glass-panel border border-white/5 hover:border-primary/40 hover:text-primary transition-all text-xs font-semibold tracking-wide">
+                Analyze nutrition
+            </button>
+</div>
+</main>
+<!-- Chat Input Area -->
+<div class="fixed bottom-28 left-0 right-0 px-6 z-40">
+<div class="max-w-2xl mx-auto glass-panel p-2 rounded-full flex items-center gap-2 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+<input class="flex-grow bg-transparent border-none focus:ring-0 text-on-surface placeholder-white/20 font-body text-sm px-2" placeholder="Ask Aira about your training..." type="text"/>
+<button class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center hover:shadow-[0_0_12px_rgba(71,234,237,0.3)] transition-all active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-6 left-0 right-0 z-50 flex justify-around items-center h-20 px-4 bg-[#1f1f25]/60 dark:bg-[#1f1f25]/60 backdrop-blur-2xl fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="accessibility_new">accessibility_new</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Body</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Train</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-white/80 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Eat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#47eaed] drop-shadow-[0_0_8px_rgba(71,234,237,0.5)] active:scale-110 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Coach</span>
+</a>
+</nav>
+</body></html>

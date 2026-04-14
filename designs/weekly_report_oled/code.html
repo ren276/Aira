@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aira - Weekly Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#380c00",
+                    "secondary-container": "#ffbf00",
+                    "primary-fixed": "#5af8fb",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-surface-variant": "#bac9c9",
+                    "background": "#131318",
+                    "tertiary-fixed-dim": "#ffb59c",
+                    "inverse-surface": "#e4e1e9",
+                    "on-error": "#690005",
+                    "outline-variant": "#3b4949",
+                    "primary": "#47eaed",
+                    "error-container": "#93000a",
+                    "tertiary-container": "#ffa282",
+                    "on-primary-container": "#005354",
+                    "primary-container": "#00ced1",
+                    "surface-bright": "#39383e",
+                    "on-tertiary-container": "#872a00",
+                    "surface-container-lowest": "#0e0e13",
+                    "on-tertiary": "#5c1a00",
+                    "surface-dim": "#131318",
+                    "surface": "#131318",
+                    "surface-container-highest": "#35343a",
+                    "surface-tint": "#2ddbde",
+                    "on-surface": "#e4e1e9",
+                    "secondary-fixed-dim": "#fbbc00",
+                    "on-primary": "#003738",
+                    "surface-container": "#1f1f25",
+                    "on-secondary-fixed": "#261a00",
+                    "primary-fixed-dim": "#2ddbde",
+                    "on-background": "#e4e1e9",
+                    "inverse-on-surface": "#303036",
+                    "tertiary": "#ffc9b7",
+                    "surface-container-high": "#2a292f",
+                    "on-primary-fixed-variant": "#004f51",
+                    "on-primary-fixed": "#002020",
+                    "secondary": "#ffe2ab",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#6d5000",
+                    "surface-variant": "#35343a",
+                    "on-secondary": "#402d00",
+                    "outline": "#859493",
+                    "inverse-primary": "#00696b",
+                    "on-tertiary-fixed-variant": "#822800",
+                    "surface-container-low": "#1b1b20",
+                    "secondary-fixed": "#ffdfa0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(31, 31, 37, 0.6);
+            backdrop-filter: blur(24px);
+            border: 0.5px solid rgba(59, 73, 73, 0.15);
+        }
+        .oled-shadow {
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="bg-neutral-950/60 backdrop-blur-2xl text-[#47eaed] font-['Manrope'] font-semibold tracking-tight fixed top-0 w-full z-50 border-b border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-6 h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="Portrait of a healthy athletic woman in low lighting with soft teal highlights on her face and shoulder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmwfB7qW_79sAYE_meNlg8BwJmPRrHwRwYk-eowv8IpNG6RetUTpC5pDi5SQstrcCH-R_hKP_NzhVQ--30Pm9_GJY3ZLm9S6kwXPbu3I6rkIO9wRTTaFcmD7FOEReODhlj110p_8p8VJ-6RiSLVCEe7HW9fTJKGJq9htFyw4jBwJt95uVZ77W8gvMYYfRkjR3bYj1ubzos46dMI7t_c85oMrwlLhv9qwRQYsGx9NIxAoN7YbkrnW-zS4MNf0dQiimj2t0vrntvLEXr"/>
+</div>
+<span class="text-2xl font-extrabold tracking-tighter text-[#47eaed]">Aira</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-2xl hover:opacity-80 transition-opacity cursor-pointer">verified</span>
+</div>
+</div>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Hero Section: Weekly Narrative -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-2xl">
+<span class="text-[0.75rem] font-bold uppercase tracking-widest text-primary mb-2 block">WEEKLY INSIGHT</span>
+<h1 class="text-[3.5rem] font-extrabold leading-[1.1] tracking-[-0.04em] mb-6">
+                        Optimized <br/><span class="text-primary">Performance.</span>
+</h1>
+<div class="glass-panel p-8 rounded-lg relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                            Your recovery peaked on Wednesday after a controlled 8-hour sleep cycle. While strain remained high during mid-week sessions, your nervous system showed remarkable resilience. We recommend a lower-intensity focus for the next 48 hours to maintain this metabolic momentum.
+                        </p>
+</div>
+</div>
+<div class="hidden md:block w-48 h-48 rounded-lg overflow-hidden glass-panel p-4 flex flex-col justify-center items-center">
+<span class="text-primary text-5xl font-extrabold">88%</span>
+<span class="text-[0.75rem] font-bold uppercase tracking-widest mt-2">Overall Score</span>
+</div>
+</div>
+</section>
+<!-- 2x2 Metric Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+<!-- Recovery Card -->
+<div class="glass-panel p-8 rounded-lg flex flex-col justify-between min-h-[240px] hover:bg-surface-container transition-colors duration-300">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-widest text-primary">Recovery</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-4xl font-semibold">92</span>
+<span class="text-on-surface-variant text-sm">% avg</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="mt-8 flex items-end gap-1 h-20">
+<div class="flex-1 bg-surface-container-highest rounded-full h-[40%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[60%]"></div>
+<div class="flex-1 bg-primary rounded-full h-[90%] shadow-[0_0_15px_rgba(71,234,237,0.3)]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[75%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[55%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[65%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[85%]"></div>
+</div>
+</div>
+<!-- Sleep Card -->
+<div class="glass-panel p-8 rounded-lg flex flex-col justify-between min-h-[240px] hover:bg-surface-container transition-colors duration-300">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-widest text-secondary">Sleep</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-4xl font-semibold">7h 42m</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div class="mt-8 flex items-end gap-1 h-20">
+<div class="flex-1 bg-surface-container-highest rounded-full h-[70%]"></div>
+<div class="flex-1 bg-secondary rounded-full h-[95%] shadow-[0_0_15px_rgba(255,226,171,0.2)]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[80%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[60%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[85%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[70%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[75%]"></div>
+</div>
+</div>
+<!-- Strain Card -->
+<div class="glass-panel p-8 rounded-lg flex flex-col justify-between min-h-[240px] hover:bg-surface-container transition-colors duration-300">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-widest text-tertiary">Strain</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-4xl font-semibold">16.4</span>
+<span class="text-on-surface-variant text-sm">/ 21</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+</div>
+<div class="mt-8 flex items-end gap-1 h-20">
+<div class="flex-1 bg-surface-container-highest rounded-full h-[40%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[50%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[45%]"></div>
+<div class="flex-1 bg-tertiary rounded-full h-[85%] shadow-[0_0_15px_rgba(255,201,183,0.2)]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[90%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[60%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[55%]"></div>
+</div>
+</div>
+<!-- Stress Card -->
+<div class="glass-panel p-8 rounded-lg flex flex-col justify-between min-h-[240px] hover:bg-surface-container transition-colors duration-300">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[0.75rem] font-bold uppercase tracking-widest text-on-surface-variant">Stress</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-4xl font-semibold">Low</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-2xl">psychology_alt</span>
+</div>
+<div class="mt-8 flex items-end gap-1 h-20">
+<div class="flex-1 bg-surface-container-highest rounded-full h-[30%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[25%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[40%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[35%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[30%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[20%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-full h-[25%]"></div>
+</div>
+</div>
+</section>
+<!-- Progress vs Goals & Callouts -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+<!-- Progress Bars -->
+<div class="lg:col-span-2 glass-panel p-8 rounded-lg">
+<h3 class="text-[1.0rem] font-semibold mb-8">Progress vs Goals</h3>
+<div class="space-y-8">
+<div>
+<div class="flex justify-between text-[0.75rem] font-bold uppercase tracking-widest mb-3">
+<span>Weekly Cardio</span>
+<span class="text-primary">180 / 200 min</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[90%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[0.75rem] font-bold uppercase tracking-widest mb-3">
+<span>Deep Sleep Ratio</span>
+<span class="text-secondary">22% / 25%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[82%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[0.75rem] font-bold uppercase tracking-widest mb-3">
+<span>Daily Readiness</span>
+<span class="text-tertiary">Avg 84 / 80</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Best/Worst Day Callouts -->
+<div class="flex flex-col gap-6">
+<div class="glass-panel p-6 rounded-lg border-l-4 border-primary">
+<span class="text-[0.7rem] font-bold uppercase tracking-widest text-primary opacity-80">Peak Performance</span>
+<h4 class="text-xl font-bold mt-1">Wednesday</h4>
+<p class="text-sm text-on-surface-variant mt-2">Highest HRV recorded this month (84ms).</p>
+</div>
+<div class="glass-panel p-6 rounded-lg border-l-4 border-error">
+<span class="text-[0.7rem] font-bold uppercase tracking-widest text-error opacity-80">Metabolic Dip</span>
+<h4 class="text-xl font-bold mt-1">Sunday</h4>
+<p class="text-sm text-on-surface-variant mt-2">Elevated resting heart rate post-evening meal.</p>
+</div>
+</div>
+</section>
+<!-- Share Button -->
+<div class="flex justify-center mb-12">
+<button class="px-12 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-full font-bold tracking-tight hover:shadow-[0_0_20px_rgba(71,234,237,0.4)] transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">share</span>
+                SHARE REPORT
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-neutral-900/60 backdrop-blur-2xl text-neutral-500 font-['Manrope'] text-[10px] font-bold uppercase tracking-widest fixed bottom-0 w-full z-50 rounded-t-[32px] no-line bg-gradient-to-t from-neutral-900 to-transparent shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+<div class="flex justify-around items-center px-4 pb-8 pt-4">
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors cursor-pointer">
+<span class="material-symbols-outlined mb-1">home_max</span>
+<span>Home</span>
+</div>
+<!-- Active Item: Body -->
+<div class="flex flex-col items-center justify-center text-[#47eaed] bg-[#47eaed]/10 rounded-full py-2 px-4 shadow-[0_0_15px_rgba(71,234,237,0.3)] cursor-pointer">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">accessibility_new</span>
+<span>Body</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors cursor-pointer">
+<span class="material-symbols-outlined mb-1">fitness_center</span>
+<span>Train</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors cursor-pointer">
+<span class="material-symbols-outlined mb-1">restaurant</span>
+<span>Nutrition</span>
+</div>
+<div class="flex flex-col items-center justify-center text-neutral-500 py-2 px-4 hover:text-neutral-200 transition-colors cursor-pointer">
+<span class="material-symbols-outlined mb-1">psychology</span>
+<span>Coach</span>
+</div>
+</div>
+</nav>
+<!-- Background Decoration -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-20 overflow-hidden">
+<div class="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-primary/20 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-tertiary/10 blur-[120px] rounded-full"></div>
+</div>
+</body></html>
