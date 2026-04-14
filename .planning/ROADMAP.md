@@ -39,9 +39,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: [Implement Health Connect Client Data Mapping]
-- [ ] 02-02: [Implement Google Fit Fallback integration]
-- [ ] 02-03: [Set up WorkManager HealthSyncWorker and Source Parsers]
+- [x] 02-01: [Implement Health Connect Client Data Mapping]
+- [x] 02-02: [Implement Google Fit Fallback integration]
+- [x] 02-03: [Set up WorkManager HealthSyncWorker and Source Parsers]
 
 ### Phase 3: Scoring Engines & Logic
 **Goal**: Build the mathematical domain models that derive Aira's insights (Recovery, Strain, Stress, Sleep, etc.) from raw data.

@@ -1,0 +1,124 @@
+package com.aira.health.domain.usecase
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.edit
+import com.aira.health.data.local.dao.HrSampleDao
+import com.aira.health.data.local.dao.HrvSampleDao
+import com.aira.health.data.local.dao.SleepSessionDao
+import com.aira.health.data.local.model.HrSample
+import com.aira.health.data.local.model.HrvSample
+import com.aira.health.data.local.model.SleepSession
+import com.aira.health.data.model.ConfidenceRouter
+import com.aira.health.domain.repository.HealthDataRepository
+import kotlinx.coroutines.flow.first
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import javax.inject.Inject
+
+/**
+ * Orchestrates the full health data ingestion pipeline.
+ *
+ * Strategy:
+ * - First sync: query last 14 days to bootstrap provisional baselines (avoids cold-start)
+ * - Subsequent syncs: query from last successful sync timestamp stored in DataStore
+ * - Conflict resolution: "Highest Confidence Source Wins" via [ConfidenceRouter]
+ * - Data integrity: gaps are preserved (no fake entries inserted for missing data)
+ * - Privacy: all data is persisted to local Room DB only — no network calls here
+ */
+class IngestHealthDataUseCase @Inject constructor(
+    private val repository: HealthDataRepository,
+    private val hrSampleDao: HrSampleDao,
+    private val hrvSampleDao: HrvSampleDao,
+    private val sleepSessionDao: SleepSessionDao,
+    private val dataStore: DataStore<Preferences>
+) {
+
+    companion object {
+        private val LAST_SYNC_KEY = longPreferencesKey("health_last_sync_epoch_ms")
+        /** 14 days in milliseconds — used for first-launch backfill. */
+        private const val BACKFILL_DAYS = 14L
+        /** Maximum age of records to purge (90 days rolling window in raw tables). */
+        private const val PURGE_AFTER_DAYS = 90L
+    }
+
+    /**
+     * Execute the ingestion pipeline. Safe to call from WorkManager or foreground fast-sync.
+     *
+     * @return The number of records ingested across all data types.
+     */
+    suspend operator fun invoke(): Int {
+        val now = Instant.now()
+        val prefs = dataStore.data.first()
+        val lastSyncMs = prefs[LAST_SYNC_KEY]
+
+        // Determine the start of the sync window
+        val syncStart = if (lastSyncMs != null) {
+            Instant.ofEpochMilli(lastSyncMs)
+        } else {
+            // First launch — backfill 14 days
+            now.minus(BACKFILL_DAYS, ChronoUnit.DAYS)
+        }
+
+        var totalIngested = 0
+
+        // ── Heart Rate ────────────────────────────────────────────────────────────
+        val hrSamples = repository.readHeartRate(syncStart, now)
+        val resolvedHr = resolveHrConflicts(hrSamples)
+        hrSampleDao.insertAll(resolvedHr)
+        totalIngested += resolvedHr.size
+
+        // ── HRV ──────────────────────────────────────────────────────────────────
+        val hrvSamples = repository.readHeartRateVariability(syncStart, now)
+        val resolvedHrv = resolveHrvConflicts(hrvSamples)
+        hrvSampleDao.insertAll(resolvedHrv)
+        totalIngested += resolvedHrv.size
+
+        // ── Sleep ─────────────────────────────────────────────────────────────────
+        val sleepSessions = repository.readSleepSessions(syncStart, now)
+        val resolvedSleep = resolveSleepConflicts(sleepSessions)
+        resolvedSleep.forEach { session ->
+            val existing = sleepSessionDao.getRange(session.date, session.date)
+            if (existing.isEmpty()) {
+                sleepSessionDao.insert(session)
+            } else {
+                // Replace only if our new record has higher confidence
+                val best = existing.maxByOrNull { it.confidence }
+                if (best != null && session.confidence > best.confidence) {
+                    sleepSessionDao.insert(session)
+                }
+            }
+        }
+        totalIngested += resolvedSleep.size
+
+        // ── Purge old raw samples (rolling 90-day window) ─────────────────────────
+        val purgeBeforeMs = now.minus(PURGE_AFTER_DAYS, ChronoUnit.DAYS).toEpochMilli()
+        hrSampleDao.purgeOlderThan(purgeBeforeMs)
+        hrvSampleDao.purgeOlderThan(purgeBeforeMs)
+
+        // ── Persist last successful sync timestamp ─────────────────────────────────
+        dataStore.edit { it[LAST_SYNC_KEY] = now.toEpochMilli() }
+
+        return totalIngested
+    }
+
+    // Conflict resolution: for overlapping timestamps, keep only the highest-confidence sample
+    private fun resolveHrConflicts(samples: List<HrSample>): List<HrSample> {
+        return samples
+            .groupBy { it.timestamp }
+            .map { (_, group) -> group.maxByOrNull { it.confidence }!! }
+    }
+
+    private fun resolveHrvConflicts(samples: List<HrvSample>): List<HrvSample> {
+        return samples
+            .groupBy { it.timestamp }
+            .map { (_, group) -> group.maxByOrNull { it.confidence }!! }
+    }
+
+    private fun resolveSleepConflicts(sessions: List<SleepSession>): List<SleepSession> {
+        return sessions
+            .groupBy { it.date }
+            .map { (_, group) -> group.maxByOrNull { it.confidence }!! }
+    }
+}

@@ -18,10 +18,10 @@
 - [ ] **SYNC-01**: Configure secure HTTPS + Certificate Pinning for Supabase telemetry endpoints
 
 ### Data Extraction
-- [ ] **DATA-01**: Implement HealthConnect Repository extracting Sleep, HR, HRV, SpO2, Calories
-- [ ] **DATA-02**: Implement GoogleFit Fallback Repository matching HealthConnect fields
-- [ ] **DATA-03**: Implement wearable source detection mapping `packageName` to confidence weights
-- [ ] **DATA-04**: Configure WorkManager periodic sync (15m charging, 30m idle limit)
+- [x] **DATA-01**: Implement HealthConnect Repository extracting Sleep, HR, HRV, SpO2, Calories
+- [x] **DATA-02**: Implement GoogleFit Fallback Repository matching HealthConnect fields
+- [x] **DATA-03**: Implement wearable source detection mapping `packageName` to confidence weights
+- [x] **DATA-04**: Configure WorkManager periodic sync (15m charging, 30m idle limit)
 
 ### Math & Scoring Engine
 - [ ] **SCORE-01**: Recovery Engine (40% HRV, 25% RHR, 25% Sleep, 10% Prior Strain)
@@ -73,10 +73,10 @@
 | DB-02 | Phase 1 | Pending |
 | AUTH-01 | Phase 1 | Pending |
 | SYNC-01 | Phase 1 | Pending |
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
 | SCORE-01 | Phase 1 | Pending |
 | SCORE-02 | Phase 1 | Pending |
 | SCORE-03 | Phase 1 | Pending |
