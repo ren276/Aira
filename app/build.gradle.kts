@@ -23,13 +23,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Product Flavors: debug / staging / release
+    // Product Flavors: dev / staging / prod
     flavorDimensions += "environment"
     productFlavors {
-        create("debug") {
+        create("dev") {
             dimension = "environment"
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
             buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("SUPABASE_STAGING_URL") ?: ""}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("SUPABASE_STAGING_ANON_KEY") ?: ""}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "false")
@@ -44,7 +44,7 @@ android {
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
         }
-        create("release") {
+        create("prod") {
             dimension = "environment"
             buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("SUPABASE_PROD_URL") ?: ""}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("SUPABASE_PROD_ANON_KEY") ?: ""}\"")
