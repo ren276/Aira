@@ -24,3 +24,4 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 ## Context Threads
 
 - (No threads yet)
+- Phase 03 context gathered on 2026-04-15; resume from `.planning/phases/03-scoring-engines-logic/03-CONTEXT.md`
