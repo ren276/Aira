@@ -15,26 +15,26 @@ created: 2026-04-15
 
 ## Trust Boundaries
 
-| Boundary | Description | Data Crossing |
-|----------|-------------|---------------|
-| Device Health Providers -> App Runtime | Health Connect/Google Fit records are ingested into app process | Biometric samples, sleep/activity measurements |
-| App Runtime -> Local Storage | Ingestion pipeline writes normalized records and sync metadata to local persistence | Time-series physiological data, sync timestamps |
-| Android System Events -> App Runtime | BOOT_COMPLETED and WorkManager scheduler trigger background ingestion | Execution triggers and scheduling metadata |
-| DI/Worker Construction -> Runtime Execution | Hilt provisions repositories and workers for periodic ingestion | Repository instances, worker dependencies |
+| Boundary                                    | Description                                                                         | Data Crossing                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Device Health Providers -> App Runtime      | Health Connect/Google Fit records are ingested into app process                     | Biometric samples, sleep/activity measurements  |
+| App Runtime -> Local Storage                | Ingestion pipeline writes normalized records and sync metadata to local persistence | Time-series physiological data, sync timestamps |
+| Android System Events -> App Runtime        | BOOT_COMPLETED and WorkManager scheduler trigger background ingestion               | Execution triggers and scheduling metadata      |
+| DI/Worker Construction -> Runtime Execution | Hilt provisions repositories and workers for periodic ingestion                     | Repository instances, worker dependencies       |
 
 ---
 
 ## Threat Register
 
-| Threat ID | Category | Component | Disposition | Mitigation | Status |
-|-----------|----------|-----------|-------------|------------|--------|
-| T-02-01 | Tampering | Source confidence arbitration | mitigate | `ConfidenceRouter` centralizes package-based confidence tiers and `IngestHealthDataUseCase` resolves overlapping records via higher confidence selection | closed |
-| T-02-02 | Denial of Service | Background sync continuity | mitigate | `HealthSyncWorker` periodic scheduling + `BootReceiver` reschedule path on reboot with idempotent WorkManager policy | closed |
-| T-02-03 | Spoofing | Data source fallback routing | mitigate | `HealthDataModule` gates Health Connect availability and only falls back to `GoogleFitRepositoryImpl` when provider unavailable | closed |
-| T-02-04 | Information Disclosure | Background worker permissions and triggers | mitigate | Manifest explicitly declares `RECEIVE_BOOT_COMPLETED` and constrained receiver path; worker reads local health providers without requiring network transport | closed |
+| Threat ID | Category               | Component                                  | Disposition | Mitigation                                                                                                                                                   | Status |
+| --------- | ---------------------- | ------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| T-02-01   | Tampering              | Source confidence arbitration              | mitigate    | `ConfidenceRouter` centralizes package-based confidence tiers and `IngestHealthDataUseCase` resolves overlapping records via higher confidence selection     | closed |
+| T-02-02   | Denial of Service      | Background sync continuity                 | mitigate    | `HealthSyncWorker` periodic scheduling + `BootReceiver` reschedule path on reboot with idempotent WorkManager policy                                         | closed |
+| T-02-03   | Spoofing               | Data source fallback routing               | mitigate    | `HealthDataModule` gates Health Connect availability and only falls back to `GoogleFitRepositoryImpl` when provider unavailable                              | closed |
+| T-02-04   | Information Disclosure | Background worker permissions and triggers | mitigate    | Manifest explicitly declares `RECEIVE_BOOT_COMPLETED` and constrained receiver path; worker reads local health providers without requiring network transport | closed |
 
-*Status: open · closed*
-*Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)*
+_Status: open · closed_
+_Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)_
 
 ---
 
@@ -58,9 +58,9 @@ No accepted risks.
 
 ## Security Audit Trail
 
-| Audit Date | Threats Total | Closed | Open | Run By |
-|------------|---------------|--------|------|--------|
-| 2026-04-15 | 4 | 4 | 0 | gsd-secure-phase |
+| Audit Date | Threats Total | Closed | Open | Run By           |
+| ---------- | ------------- | ------ | ---- | ---------------- |
+| 2026-04-15 | 4             | 4      | 0    | gsd-secure-phase |
 
 ---
 
