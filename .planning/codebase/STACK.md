@@ -23,7 +23,7 @@ This document tracks the core technologies, frameworks, and libraries used in th
 
 ## Specialized Libraries
 
-- **Health Connect (1.1.0-alpha07)**: Primary source for Android health data.
+- **Health Connect (1.1.0)**: Primary source for Android health data.
 - **MediaPipe GenAI (0.10.22)**: On-device LLM inference (Gemma).
 - **TensorFlow Lite (2.16.1)**: On-device ML execution.
 - **RevenueCat (7.10.1)**: Subscription management and billing.
@@ -31,6 +31,6 @@ This document tracks the core technologies, frameworks, and libraries used in th
 
 ## Build System
 
-- **Gradle (8.7.3)**: Build automation tool.
-- **AGP (8.7.3)**: Android Gradle Plugin.
+- **Gradle (9.0.0)**: Build automation tool.
+- **AGP (8.13.2)**: Android Gradle Plugin.
 - **Version Catalog**: Centralized dependency management in `gradle/libs.versions.toml`.
