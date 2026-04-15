@@ -77,16 +77,19 @@ Plans:
 1. Concentric Ring architectures animate perfectly dynamically.
 2. The Causal Anomaly card correctly interprets domain logic issues.
 3. Navigation through Main Tabs functions efficiently.
-   **Plans**: 6 plans
+   **Plans**: 9 plans
 
 Plans:
 
-- [ ] 04-01-PLAN.md - Global theming, canvas score rings, vitals strip, and app shell navigation contracts
+- [ ] 04-01-PLAN.md - Global theming and reusable score or vitals atoms
 - [ ] 04-02-PLAN.md - Home dashboard with fixed 2x2 card grid, local-first refresh, and always-on Causal Anomaly card
-- [ ] 04-03-PLAN.md - Metric detail routes for Recovery/Strain/Sleep/Stress with fixed 3-part explanation bottom sheets
-- [ ] 04-04-PLAN.md - Train/Nutrition data-layer prerequisites: DAO/repository CRUD gap closure and scanner dependency baseline
+- [ ] 04-03-PLAN.md - Metric detail routing and explanation sheet contracts
+- [ ] 04-04-PLAN.md - Train and Nutrition DAO plus Room persistence prerequisites
 - [ ] 04-05-PLAN.md - Strength Builder UI flow: quick-add first, optional deep-edit, and historical edit/delete
-- [ ] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode/manual entry, optional deep-edit, and historical edit/delete
+- [ ] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode or manual entry, optional deep-edit, and historical edit/delete
+- [ ] 04-07-PLAN.md - App shell navigation and smart deep-link routing
+- [ ] 04-08-PLAN.md - Train or Nutrition repository wiring and scanner dependency baseline
+- [ ] 04-09-PLAN.md - Recovery/Strain/Sleep/Stress full-detail screens and interaction tests
 
 ## Progress
 
@@ -98,4 +101,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Environment & Persistence   | 3/3            | Complete    | 2026-04-15 |
 | 2. Data Ingestion              | 3/3            | Complete    | 2026-04-15 |
 | 3. Scoring Engines & Logic     | 0/3            | Not started | -          |
-| 4. User Interface & Dashboards | 0/6            | Not started | -          |
+| 4. User Interface & Dashboards | 0/9            | Not started | -          |
