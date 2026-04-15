@@ -21,26 +21,30 @@ class UserRepositoryImpl @Inject constructor(
         if (isGuestMode) {
             return kotlinx.coroutines.flow.flowOf(AuthState.Guest)
         }
-        return supabase.auth.sessionStatus.map { status ->
-            when (status) {
-                is SessionStatus.Authenticated -> {
-                    status.session.user?.let { user ->
-                        AuthState.Authenticated(
-                            session = UserSession(
-                                userId = user.id,
-                                email = user.email,
-                                displayName = user.userMetadata?.get("full_name")?.toString(),
-                                avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
-                                isGuest = false,
-                                isAuthenticated = true
-                            )
+        return supabase.auth.sessionStatus.map(::mapSessionStatus)
+    }
+
+    internal fun mapSessionStatus(status: SessionStatus): AuthState {
+        return when (status) {
+            is SessionStatus.Authenticated -> {
+                status.session.user?.let { user ->
+                    AuthState.Authenticated(
+                        session = UserSession(
+                            userId = user.id,
+                            email = user.email,
+                            displayName = user.userMetadata?.get("full_name")?.toString(),
+                            avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
+                            isGuest = false,
+                            isAuthenticated = true
                         )
-                    } ?: AuthState.Guest
-                }
-                is SessionStatus.NotAuthenticated -> AuthState.Guest
-                is SessionStatus.Initializing -> AuthState.Loading
-                is SessionStatus.RefreshFailure -> AuthState.Error("Refresh failed")
+                    )
+                } ?: AuthState.Guest
             }
+            is SessionStatus.NotAuthenticated -> AuthState.Guest
+            is SessionStatus.LoadingFromStorage -> AuthState.Loading
+            is SessionStatus.NetworkError -> AuthState.Error("Network error")
+            is SessionStatus.Initializing -> AuthState.Loading
+            is SessionStatus.RefreshFailure -> AuthState.Error("Refresh failed")
         }
     }
 

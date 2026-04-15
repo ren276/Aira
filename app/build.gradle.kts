@@ -15,13 +15,16 @@ plugins {
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { input ->
-        localProperties.load(input)
+    localPropertiesFile.inputStream().use { inputStream ->
+        localProperties.load(inputStream)
     }
 }
 
 fun getLocalProperty(key: String): String {
-    return localProperties.getProperty(key) ?: (project.findProperty(key) as? String) ?: ""
+    return localProperties.getProperty(key)
+        ?: (project.findProperty(key) as? String)
+        ?: System.getenv(key)
+        ?: ""
 }
 
 android {
@@ -183,7 +186,7 @@ dependencies {
     // Testing
     testImplementation(libs.junit5.api)
     testRuntimeOnly(libs.junit5.engine)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.coroutines.test)
