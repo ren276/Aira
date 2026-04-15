@@ -89,7 +89,7 @@ Plans:
 - [x] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode or manual entry, optional deep-edit, and historical edit/delete
 - [x] 04-07-PLAN.md - App shell navigation and smart deep-link routing
 - [x] 04-08-PLAN.md - Train or Nutrition repository wiring and scanner dependency baseline
-- [ ] 04-09-PLAN.md - Recovery/Strain/Sleep/Stress full-detail screens and interaction tests
+- [x] 04-09-PLAN.md - Recovery/Strain/Sleep/Stress full-detail screens and interaction tests
 
 ## Progress
 
