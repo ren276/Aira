@@ -41,9 +41,9 @@ status: passed
 
 | Metric            | Value                                                        |
 | ----------------- | ------------------------------------------------------------ |
-| status            | partial                                                      |
-| nyquist_compliant | false                                                        |
-| note              | Manual-only checks remain; no blocking security/UAT failures |
+| status            | complete                                                     |
+| nyquist_compliant | true                                                         |
+| note              | Validation contract closed with manual evidence and no open Nyquist gaps |
 
 ## Acknowledged Gaps
 

@@ -23,5 +23,15 @@ app/google-services.json
 # Planning (not for CI)
 # (keep .planning/ tracked in git)
 
+# Local AI assistant/tooling state
+.claude/
+.codex/
+.gemini/
+.agent/
+
+# Local Kotlin tooling cache
+.kotlin/
+
 # Generated
 app/build/
+

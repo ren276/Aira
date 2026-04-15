@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.aira.health.data.local.dao.*
 import com.aira.health.data.local.model.*
-import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 
 @Database(
@@ -44,11 +43,7 @@ abstract class AiraDatabase : RoomDatabase() {
         const val DATABASE_NAME = "aira_db"
 
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
-            // Convert ByteArray key to SQLCipher's expected format
-            val sqlCipherKey = SQLiteDatabase.getBytes(
-                String(passphrase, Charsets.ISO_8859_1).toCharArray()
-            )
-            val factory = SupportFactory(sqlCipherKey)
+            val factory = SupportFactory(passphrase.copyOf())
 
             return Room.databaseBuilder(
                 context.applicationContext,
