@@ -15,26 +15,26 @@ created: 2026-04-15
 
 ## Trust Boundaries
 
-| Boundary | Description | Data Crossing |
-|----------|-------------|---------------|
-| Device UI -> App Runtime | User interactions enter app process during onboarding/auth | Permission decisions, auth intents |
-| App Runtime -> Local DB | App writes and reads health and profile data in Room | Sensitive biometrics and derived metrics |
-| App Runtime -> Android Keystore | App retrieves encryption material via Keystore APIs | DB encryption key material |
-| App Runtime -> Supabase | App sends auth and optional sync traffic to backend | Auth tokens, account metadata, non-raw derived data |
+| Boundary                        | Description                                                | Data Crossing                                       |
+| ------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| Device UI -> App Runtime        | User interactions enter app process during onboarding/auth | Permission decisions, auth intents                  |
+| App Runtime -> Local DB         | App writes and reads health and profile data in Room       | Sensitive biometrics and derived metrics            |
+| App Runtime -> Android Keystore | App retrieves encryption material via Keystore APIs        | DB encryption key material                          |
+| App Runtime -> Supabase         | App sends auth and optional sync traffic to backend        | Auth tokens, account metadata, non-raw derived data |
 
 ---
 
 ## Threat Register
 
-| Threat ID | Category | Component | Disposition | Mitigation | Status |
-|-----------|----------|-----------|-------------|------------|--------|
-| T-01-01 | Information Disclosure | App window capture | mitigate | `FLAG_SECURE` enabled on sensitive builds in `MainActivity` using `BuildConfig.ENABLE_FLAG_SECURE` | closed |
-| T-01-02 | Information Disclosure | Local persistence | mitigate | SQLCipher `SupportFactory` with passphrase sourced from `KeystoreManager.getDatabasePassphrase()` and `AndroidKeyStore` key alias | closed |
-| T-01-03 | Elevation of Privilege | Health data access scope | mitigate | Permission batching with explicit Core/Body/Advanced gating via `HealthPermissionManager` and onboarding flow | closed |
-| T-01-04 | Information Disclosure | Guest auth path | mitigate | Guest path returns local session without Supabase calls (`signInAsGuest`) and provider notes guest path bypasses initialization | closed |
+| Threat ID | Category               | Component                | Disposition | Mitigation                                                                                                                        | Status |
+| --------- | ---------------------- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| T-01-01   | Information Disclosure | App window capture       | mitigate    | `FLAG_SECURE` enabled on sensitive builds in `MainActivity` using `BuildConfig.ENABLE_FLAG_SECURE`                                | closed |
+| T-01-02   | Information Disclosure | Local persistence        | mitigate    | SQLCipher `SupportFactory` with passphrase sourced from `KeystoreManager.getDatabasePassphrase()` and `AndroidKeyStore` key alias | closed |
+| T-01-03   | Elevation of Privilege | Health data access scope | mitigate    | Permission batching with explicit Core/Body/Advanced gating via `HealthPermissionManager` and onboarding flow                     | closed |
+| T-01-04   | Information Disclosure | Guest auth path          | mitigate    | Guest path returns local session without Supabase calls (`signInAsGuest`) and provider notes guest path bypasses initialization   | closed |
 
-*Status: open · closed*
-*Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)*
+_Status: open · closed_
+_Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)_
 
 ---
 
@@ -59,9 +59,9 @@ No accepted risks.
 
 ## Security Audit Trail
 
-| Audit Date | Threats Total | Closed | Open | Run By |
-|------------|---------------|--------|------|--------|
-| 2026-04-15 | 4 | 4 | 0 | gsd-secure-phase |
+| Audit Date | Threats Total | Closed | Open | Run By           |
+| ---------- | ------------- | ------ | ---- | ---------------- |
+| 2026-04-15 | 4             | 4      | 0    | gsd-secure-phase |
 
 ---
 
