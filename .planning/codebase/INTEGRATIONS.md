@@ -6,7 +6,7 @@ This document outlines the external services and APIs that Aira integrates with.
 
 ### Health Connect
 - **Purpose**: Single source of truth for all on-device health and biometric data.
-- **Integration**: `androidx.health:health-connect-client`.
+- **Integration**: `androidx.health.connect:connect-client`.
 - **Status**: Primary data source. Replaces legacy Google Fit API for biometric reads.
 
 ### Google Fit (Play Services Fitness)
