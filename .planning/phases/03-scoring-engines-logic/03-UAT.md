@@ -6,7 +6,7 @@ source:
   - 03-02-SUMMARY.md
   - 03-03-SUMMARY.md
 started: 2026-04-15T21:02:41.1453983+05:30
-updated: 2026-04-15T21:31:53.7218797+05:30
+updated: 2026-04-15T21:35:19.7846043+05:30
 ---
 
 ## Current Test
@@ -18,9 +18,8 @@ updated: 2026-04-15T21:31:53.7218797+05:30
 ### 1. Recovery and Sleep with partial data
 
 expected: After a sync day where some sleep/recovery inputs are missing, the app still shows visible Recovery and Sleep scores (not blank or hidden), and confidence is shown as lower than a full-data day.
-result: issue
-reported: "App crashes in background worker with java.lang.IllegalStateException: Cannot extract Keystore key bytes from KeystoreManager.getDatabasePassphrase."
-severity: blocker
+result: pass
+retest: "Validated with full startup/sync logcat on 2026-04-15; no IllegalStateException from KeystoreManager.getDatabasePassphrase observed."
 
 ### 2. Strain non-linear intensity behavior
 
@@ -50,23 +49,12 @@ result: pass
 ## Summary
 
 total: 6
-passed: 5
-issues: 1
+passed: 6
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "After a sync day where some sleep/recovery inputs are missing, the app still shows visible Recovery and Sleep scores (not blank or hidden), and confidence is shown as lower than a full-data day."
-  status: failed
-  reason: "User reported: App crashes in background worker with java.lang.IllegalStateException: Cannot extract Keystore key bytes from KeystoreManager.getDatabasePassphrase."
-  severity: blocker
-  test: 1
-  root_cause: "KeystoreManager attempted to read key.encoded from Android Keystore AES key, but Android Keystore keys are non-exportable and return null for encoded bytes."
-  artifacts:
-    - path: "app/src/main/java/com/aira/health/util/security/KeystoreManager.kt"
-      issue: "getDatabasePassphrase used key.encoded and threw IllegalStateException on null."
-  missing:
-    - "Persist a random SQLCipher passphrase encrypted with the Keystore key instead of extracting key bytes."
-  debug_session: "logcat-2026-04-15-keystore-passphrase"
+[none - previously reported keystore crash resolved and retested]
