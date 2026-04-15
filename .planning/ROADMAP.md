@@ -86,7 +86,7 @@ Plans:
 - [x] 04-03-PLAN.md - Metric detail routing and explanation sheet contracts
 - [x] 04-04-PLAN.md - Train and Nutrition DAO plus Room persistence prerequisites
 - [x] 04-05-PLAN.md - Strength Builder UI flow: quick-add first, optional deep-edit, and historical edit/delete
-- [ ] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode or manual entry, optional deep-edit, and historical edit/delete
+- [x] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode or manual entry, optional deep-edit, and historical edit/delete
 - [x] 04-07-PLAN.md - App shell navigation and smart deep-link routing
 - [x] 04-08-PLAN.md - Train or Nutrition repository wiring and scanner dependency baseline
 - [ ] 04-09-PLAN.md - Recovery/Strain/Sleep/Stress full-detail screens and interaction tests
