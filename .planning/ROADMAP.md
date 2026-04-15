@@ -82,7 +82,7 @@ Plans:
 Plans:
 
 - [x] 04-01-PLAN.md - Global theming and reusable score or vitals atoms
-- [ ] 04-02-PLAN.md - Home dashboard with fixed 2x2 card grid, local-first refresh, and always-on Causal Anomaly card
+- [x] 04-02-PLAN.md - Home dashboard with fixed 2x2 card grid, local-first refresh, and always-on Causal Anomaly card
 - [ ] 04-03-PLAN.md - Metric detail routing and explanation sheet contracts
 - [x] 04-04-PLAN.md - Train and Nutrition DAO plus Room persistence prerequisites
 - [ ] 04-05-PLAN.md - Strength Builder UI flow: quick-add first, optional deep-edit, and historical edit/delete
