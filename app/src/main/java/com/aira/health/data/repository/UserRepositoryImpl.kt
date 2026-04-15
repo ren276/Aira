@@ -41,8 +41,6 @@ class UserRepositoryImpl @Inject constructor(
                 } ?: AuthState.Guest
             }
             is SessionStatus.NotAuthenticated -> AuthState.Guest
-            is SessionStatus.LoadingFromStorage -> AuthState.Loading
-            is SessionStatus.NetworkError -> AuthState.Error("Network error")
             is SessionStatus.Initializing -> AuthState.Loading
             is SessionStatus.RefreshFailure -> AuthState.Error("Refresh failed")
         }
