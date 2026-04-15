@@ -37,7 +37,7 @@ class HealthPermissionManager @Inject constructor(
     )
 
     val bodyBatchPermissions: Set<String> = setOf(
-        HealthPermission.getReadPermission(BloodOxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(OxygenSaturationRecord::class),
         HealthPermission.getReadPermission(WeightRecord::class),
         HealthPermission.getReadPermission(BodyFatRecord::class),
         HealthPermission.getReadPermission(LeanBodyMassRecord::class),

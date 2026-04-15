@@ -34,8 +34,7 @@ fun PermissionBatchScreen(
 
     // Permission launcher for current batch
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = HealthConnectClient.getOrCreate(/* context injected at call site */)
-            .permissionController.createRequestPermissionResultContract()
+        contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
     ) { grantedPermissions ->
         viewModel.onBatchPermissionsResult(grantedPermissions)
     }
