@@ -10,6 +10,7 @@ import com.aira.health.presentation.dashboard.home.state.HomeDeltaAnimator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -122,12 +124,10 @@ class HomeViewModel @Inject constructor(
         _isSyncing.update { true }
         HealthSyncWorker.scheduleImmediate(context)
         // Syncing flag is reset when Room emits a fresh row from the worker result
-        // or cleared after a short delay as a safety net
-        viewModelScope.apply {
-            kotlinx.coroutines.launch {
-                kotlinx.coroutines.delay(30_000) // 30 s safety net
-                _isSyncing.update { false }
-            }
+        // or cleared after a short delay as a safety net (T-04-05)
+        viewModelScope.launch {
+            delay(30_000) // 30 s safety net
+            _isSyncing.update { false }
         }
     }
 }
