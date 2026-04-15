@@ -51,6 +51,9 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew testProdDebugUnitTest
+        env:
+          SUPABASE_PROD_URL: ${{ secrets.SUPABASE_PROD_URL }}
+          SUPABASE_PROD_ANON_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
 
       - name: Build debug APK
         run: ./gradlew assembleProdDebug
