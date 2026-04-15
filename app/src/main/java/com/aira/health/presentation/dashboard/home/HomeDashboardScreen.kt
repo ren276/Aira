@@ -1,5 +1,7 @@
+@file:Suppress("FunctionName")
 package com.aira.health.presentation.dashboard.home
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -103,6 +105,15 @@ fun HomeDashboardScreen(
         }
     }
 }
+
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun _HomeSuccessContentForTest(
+    state: HomeUiState.Success,
+    onMetricTap: (String) -> Unit,
+    onRefresh: () -> Unit = {}
+) = HomeSuccessContent(state = state, onMetricTap = onMetricTap, onRefresh = onRefresh)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
