@@ -81,7 +81,7 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md - Global theming and reusable score or vitals atoms
+- [x] 04-01-PLAN.md - Global theming and reusable score or vitals atoms
 - [ ] 04-02-PLAN.md - Home dashboard with fixed 2x2 card grid, local-first refresh, and always-on Causal Anomaly card
 - [ ] 04-03-PLAN.md - Metric detail routing and explanation sheet contracts
 - [ ] 04-04-PLAN.md - Train and Nutrition DAO plus Room persistence prerequisites
