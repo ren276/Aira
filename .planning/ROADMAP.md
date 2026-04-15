@@ -77,14 +77,16 @@ Plans:
 1. Concentric Ring architectures animate perfectly dynamically.
 2. The Causal Anomaly card correctly interprets domain logic issues.
 3. Navigation through Main Tabs functions efficiently.
-   **Plans**: 4 plans
+   **Plans**: 6 plans
 
 Plans:
 
-- [ ] 04-01: [Implement Global Theming, Canvas Score Rings & Atoms]
-- [ ] 04-02: [Build Home Dashboard with 2x2 grid and Insights card]
-- [ ] 04-03: [Build Metric Detail & Bottom Sheet screens]
-- [ ] 04-04: [Build basic Strength Builder & Nutrition Loggers]
+- [ ] 04-01-PLAN.md - Global theming, canvas score rings, vitals strip, and app shell navigation contracts
+- [ ] 04-02-PLAN.md - Home dashboard with fixed 2x2 card grid, local-first refresh, and always-on Causal Anomaly card
+- [ ] 04-03-PLAN.md - Metric detail routes for Recovery/Strain/Sleep/Stress with fixed 3-part explanation bottom sheets
+- [ ] 04-04-PLAN.md - Train/Nutrition data-layer prerequisites: DAO/repository CRUD gap closure and scanner dependency baseline
+- [ ] 04-05-PLAN.md - Strength Builder UI flow: quick-add first, optional deep-edit, and historical edit/delete
+- [ ] 04-06-PLAN.md - Nutrition UI flow: quick-add first, barcode/manual entry, optional deep-edit, and historical edit/delete
 
 ## Progress
 
@@ -96,4 +98,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Environment & Persistence   | 3/3            | Complete    | 2026-04-15 |
 | 2. Data Ingestion              | 3/3            | Complete    | 2026-04-15 |
 | 3. Scoring Engines & Logic     | 0/3            | Not started | -          |
-| 4. User Interface & Dashboards | 0/4            | Not started | -          |
+| 4. User Interface & Dashboards | 0/6            | Not started | -          |
