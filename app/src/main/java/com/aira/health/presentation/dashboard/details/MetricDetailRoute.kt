@@ -35,12 +35,12 @@ fun MetricDetailRoute(
                 Text(text = "Error: ${state.message}")
             }
             is MetricDetailUiState.Success -> {
-                // Here, a later plan (04-09) will inject full graphical content 
-                // like charts and detailed specific views.
-                Column {
-                    Text("Metric Detail: ${state.metricType.name}")
-                    Text("Current Score: ${state.currentScore}")
-                    Text("Confidence: ${state.confidence}")
+                // Delegate to specific metric screens
+                when (state.metricType) {
+                    MetricType.RECOVERY -> com.aira.health.presentation.dashboard.details.screens.RecoveryDetailScreen(state = state)
+                    MetricType.SLEEP -> com.aira.health.presentation.dashboard.details.screens.SleepDetailScreen(state = state)
+                    MetricType.STRAIN -> com.aira.health.presentation.dashboard.details.screens.StrainDetailScreen(state = state)
+                    MetricType.STRESS -> com.aira.health.presentation.dashboard.details.screens.StressDetailScreen(state = state)
                 }
                 
                 // Demo logic: This is currently always visible for the slice test.
