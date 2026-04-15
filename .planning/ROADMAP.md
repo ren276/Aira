@@ -54,9 +54,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: [Build Recovery & Sleep Mathematics Models]
-- [ ] 03-02: [Build Strain, Stress & Energy Bank Models]
-- [ ] 03-03: [Build EMA Baseline algorithms and Confidence Aggregation]
+- [ ] 03-01-PLAN.md — Recovery and Sleep engine math with confidence-aware partial inputs
+- [ ] 03-02-PLAN.md — Strain, Stress, and Energy Bank non-linear engine models
+- [ ] 03-03-PLAN.md — EMA baseline recalculation, full DailyMetrics compute, and worker wiring
 
 ### Phase 4: User Interface & Dashboards
 **Goal**: Surface the calculated insights via performant, beautiful Jetpack Compose screens matching the provided designs.
