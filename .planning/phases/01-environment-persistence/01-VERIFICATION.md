@@ -21,29 +21,29 @@ status: passed
 
 ## UAT Summary
 
-| Metric | Count |
-|--------|-------|
-| total | 4 |
-| passed | 4 |
-| issues | 0 |
-| pending | 0 |
-| skipped | 0 |
-| blocked | 0 |
+| Metric  | Count |
+| ------- | ----- |
+| total   | 4     |
+| passed  | 4     |
+| issues  | 0     |
+| pending | 0     |
+| skipped | 0     |
+| blocked | 0     |
 
 ## Security Gate
 
-| Metric | Value |
-|--------|-------|
-| status | verified |
-| threats_open | 0 |
+| Metric       | Value    |
+| ------------ | -------- |
+| status       | verified |
+| threats_open | 0        |
 
 ## Validation Gate
 
-| Metric | Value |
-|--------|-------|
-| status | partial |
-| nyquist_compliant | false |
-| note | Manual-only checks remain; no blocking security/UAT failures |
+| Metric            | Value                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| status            | partial                                                      |
+| nyquist_compliant | false                                                        |
+| note              | Manual-only checks remain; no blocking security/UAT failures |
 
 ## Acknowledged Gaps
 
