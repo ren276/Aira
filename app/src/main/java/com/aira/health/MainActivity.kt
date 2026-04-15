@@ -21,8 +21,9 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            // AiraNavHost will be wired in Phase 4
-            // Placeholder — theme + nav graph added in 04-01-PLAN
+            com.aira.health.presentation.theme.AiraTheme {
+                com.aira.health.presentation.navigation.AiraNavHost()
+            }
         }
     }
 }
