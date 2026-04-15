@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.0.21"
-agp = "8.7.3"
+agp = "8.13.2"
 compose-bom = "2024.10.01"
 hilt = "2.52"
 room = "2.6.1"
@@ -8,7 +8,7 @@ work = "2.9.1"
 supabase = "3.0.0"
 coil = "2.7.0"
 kotlinx-serialization = "1.7.3"
-health-connect = "1.1.0-alpha07"
+health-connect = "1.1.0"
 play-services-fitness = "21.1.0"
 play-services-auth = "21.2.0"
 mediapipe-genai = "0.10.22"
@@ -26,6 +26,7 @@ datastore = "1.1.1"
 junit5 = "5.11.3"
 mockk = "1.13.13"
 turbine = "1.2.0"
+material = "1.12.0"
 
 [libraries]
 # Compose
@@ -64,7 +65,7 @@ supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-k
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version = "3.0.1" }
 
 # Health & Fitness
-health-connect = { group = "androidx.health", name = "health-connect-client", version.ref = "health-connect" }
+health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "health-connect" }
 play-services-fitness = { group = "com.google.android.gms", name = "play-services-fitness", version.ref = "play-services-fitness" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
 
@@ -104,6 +105,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

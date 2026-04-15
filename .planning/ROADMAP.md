@@ -6,8 +6,8 @@ Aira will be built in four coarse phases for v1, starting with the secure on-dev
 
 ## Phases
 
-- [ ] **Phase 1: Environment & Persistence** - Set up Jetpack Compose, Supabase Auth, and SQLCipher encrypted Room DB.
-- [ ] **Phase 2: Data Ingestion** - Integrate Health Connect Client, Google Fit Fallback, and WorkManager background sync.
+- [x] **Phase 1: Environment & Persistence** - Set up Jetpack Compose, Supabase Auth, and SQLCipher encrypted Room DB.
+- [x] **Phase 2: Data Ingestion** - Integrate Health Connect Client, Google Fit Fallback, and WorkManager background sync.
 - [ ] **Phase 3: Scoring Engines & Logic** - Implement mathematical equations for all 8 scores and EMA baselines.
 - [ ] **Phase 4: User Interface & Dashboards** - Build the visual application, charts, score explanations, and insights.
 
@@ -81,7 +81,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Environment & Persistence | 0/3 | Not started | - |
-| 2. Data Ingestion | 0/3 | Not started | - |
+| 1. Environment & Persistence | 3/3 | Complete | 2026-04-15 |
+| 2. Data Ingestion | 3/3 | Complete | 2026-04-15 |
 | 3. Scoring Engines & Logic | 0/3 | Not started | - |
 | 4. User Interface & Dashboards | 0/4 | Not started | - |

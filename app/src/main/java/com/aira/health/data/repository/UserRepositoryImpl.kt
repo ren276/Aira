@@ -23,21 +23,23 @@ class UserRepositoryImpl @Inject constructor(
         }
         return supabase.auth.sessionStatus.map { status ->
             when (status) {
-                is SessionStatus.Authenticated -> AuthState.Authenticated(
-                    session = status.session.user?.let { user ->
-                        UserSession(
-                            userId = user.id,
-                            email = user.email,
-                            displayName = user.userMetadata?.get("full_name")?.toString(),
-                            avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
-                            isGuest = false,
-                            isAuthenticated = true
+                is SessionStatus.Authenticated -> {
+                    status.session.user?.let { user ->
+                        AuthState.Authenticated(
+                            session = UserSession(
+                                userId = user.id,
+                                email = user.email,
+                                displayName = user.userMetadata?.get("full_name")?.toString(),
+                                avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
+                                isGuest = false,
+                                isAuthenticated = true
+                            )
                         )
-                    } ?: return@map AuthState.Guest
-                )
+                    } ?: AuthState.Guest
+                }
                 is SessionStatus.NotAuthenticated -> AuthState.Guest
-                is SessionStatus.LoadingFromStorage -> AuthState.Loading
-                is SessionStatus.NetworkError -> AuthState.Error("Network error")
+                is SessionStatus.Initializing -> AuthState.Loading
+                is SessionStatus.RefreshFailure -> AuthState.Error("Refresh failed")
             }
         }
     }
