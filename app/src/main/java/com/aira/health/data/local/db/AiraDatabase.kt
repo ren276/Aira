@@ -38,6 +38,7 @@ abstract class AiraDatabase : RoomDatabase() {
     abstract fun userCorrectionDao(): UserCorrectionDao
     abstract fun aiConversationDao(): AiConversationDao
     abstract fun nutritionLogDao(): NutritionLogDao
+    abstract fun workoutSessionDao(): WorkoutSessionDao
 
     companion object {
         const val DATABASE_NAME = "aira_db"

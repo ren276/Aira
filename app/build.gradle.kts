@@ -191,6 +191,8 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.11.3")
+    testImplementation("org.robolectric:robolectric:4.12.1")
+    testImplementation("androidx.test:core-ktx:1.5.0")
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.coroutines.test)
