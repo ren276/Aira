@@ -8,8 +8,8 @@ import com.aira.health.data.local.model.WorkoutSession
  */
 data class TrainUiState(
     // Quick Add Inputs
-    val quickAddExercise: String = "Strength Training",
-    val quickAddDurationMin: String = "45",
+    val quickAddExercise: String = "",
+    val quickAddDurationMin: String = "",
     
     // Validation
     val inputError: String? = null,

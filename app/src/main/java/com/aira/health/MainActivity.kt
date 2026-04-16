@@ -21,9 +21,7 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            com.aira.health.presentation.theme.AiraTheme {
-                com.aira.health.presentation.navigation.AiraNavHost()
-            }
+            com.aira.health.presentation.navigation.AppEntryRoute()
         }
     }
 }

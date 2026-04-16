@@ -8,6 +8,10 @@ import androidx.compose.ui.test.performClick
 import com.aira.health.presentation.theme.AiraTheme
 import org.junit.Rule
 import org.junit.Test
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Compose instrumentation tests for [HomeDashboardScreen] contract.
@@ -111,5 +115,29 @@ class HomeDashboardTest {
         composeRule.onNodeWithContentDescription("Stress metric card").assertIsDisplayed()
         // Anomaly card always present
         composeRule.onNodeWithContentDescription("causal anomaly card").assertIsDisplayed()
+    }
+
+    /**
+     * Test 4: Home header surfaces the confidence and freshness metadata contract.
+     */
+    @Test
+    fun header_showsConfidenceAndLastUpdatedMetadata() {
+        val state = successState()
+        val expectedLastUpdated = formatLastUpdatedLabel(state.lastUpdated)
+
+        composeRule.setContent {
+            AiraTheme {
+                HomeSuccessContentTestWrapper(state = state)
+            }
+        }
+
+        composeRule.onNodeWithText("88% Confidence").assertIsDisplayed()
+        composeRule.onNodeWithText(expectedLastUpdated).assertIsDisplayed()
+    }
+
+    private fun formatLastUpdatedLabel(epochMillis: Long): String {
+        val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a", Locale.US)
+        val instant = Instant.ofEpochMilli(epochMillis)
+        return "Updated ${formatter.format(instant.atZone(ZoneId.systemDefault()))}"
     }
 }

@@ -1,6 +1,8 @@
 package com.aira.health.util.permission
 
+import android.util.Log
 import android.content.Context
+import com.aira.health.BuildConfig
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
@@ -21,6 +23,10 @@ import javax.inject.Singleton
 class HealthPermissionManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
+    companion object {
+        private const val TAG = "AiraHealthPerms"
+    }
 
     enum class PermissionBatch { CORE, BODY, ADVANCED }
 
@@ -72,33 +78,70 @@ class HealthPermissionManager @Inject constructor(
         PermissionBatch.ADVANCED -> advancedBatchPermissions
     }
 
+    fun isBatchSatisfied(
+        grantedPermissions: Set<String>,
+        batch: PermissionBatch
+    ): Boolean {
+        val batchPermissions = getPermissionsForBatch(batch)
+        return batchPermissions.any { it in grantedPermissions }
+    }
+
     /**
      * Check Health Connect availability on this device.
      * Android 10-13: Health Connect app must be installed from Play Store.
      * Android 14+: Health Connect is built-in.
      */
     fun getHealthConnectStatus(): HealthConnectStatus {
-        return when (HealthConnectClient.getSdkStatus(context)) {
+        val sdkStatus = HealthConnectClient.getSdkStatus(context)
+        val status = when (sdkStatus) {
             HealthConnectClient.SDK_AVAILABLE -> HealthConnectStatus.Available
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED ->
                 HealthConnectStatus.UpdateRequired
             else -> HealthConnectStatus.NotInstalled
         }
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Health Connect sdkStatus=$sdkStatus resolvedStatus=${status::class.simpleName}")
+        }
+        return status
     }
 
     suspend fun getGrantedPermissions(): Set<String> {
         val client = HealthConnectClient.getOrCreate(context)
-        return client.permissionController.getGrantedPermissions()
+        val granted = client.permissionController.getGrantedPermissions()
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "Granted permissions -> count=${granted.size} values=[${granted.sorted().joinToString()}]"
+            )
+        }
+        return granted
     }
 
     suspend fun isCoreGranted(): Boolean {
         val granted = getGrantedPermissions()
-        return coreBatchPermissions.all { it in granted }
+        val result = isBatchSatisfied(granted, PermissionBatch.CORE)
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Core batch granted=$result grantedCount=${granted.size} batchSize=${coreBatchPermissions.size}")
+        }
+        return result
     }
 
     suspend fun isBodyGranted(): Boolean {
         val granted = getGrantedPermissions()
-        return bodyBatchPermissions.all { it in granted }
+        val result = isBatchSatisfied(granted, PermissionBatch.BODY)
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Body batch granted=$result grantedCount=${granted.size} batchSize=${bodyBatchPermissions.size}")
+        }
+        return result
+    }
+
+    suspend fun isAdvancedGranted(): Boolean {
+        val granted = getGrantedPermissions()
+        val result = isBatchSatisfied(granted, PermissionBatch.ADVANCED)
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Advanced batch granted=$result grantedCount=${granted.size} batchSize=${advancedBatchPermissions.size}")
+        }
+        return result
     }
 }
 

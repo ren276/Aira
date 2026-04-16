@@ -15,6 +15,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.time.Instant
@@ -87,5 +88,35 @@ class IngestHealthDataUseCaseTest {
         val updated = dataStore.data.first()[key]
         requireNotNull(updated)
         assertEquals(true, updated <= Instant.now().toEpochMilli())
+    }
+
+    @Test
+    fun `invoke continues when one repository read throws`() = runTest {
+        val repository = mockk<HealthDataRepository>()
+        val hrDao = mockk<HrSampleDao>(relaxed = true)
+        val hrvDao = mockk<HrvSampleDao>(relaxed = true)
+        val sleepDao = mockk<SleepSessionDao>(relaxed = true)
+
+        val dataStore = PreferenceDataStoreFactory.create(
+            produceFile = { Files.createTempFile("aira-test", ".preferences_pb").toFile() }
+        )
+
+        coEvery { repository.readHeartRate(any(), any()) } throws SecurityException("missing permission")
+        coEvery { repository.readHeartRateVariability(any(), any()) } returns emptyList()
+        coEvery { repository.readSleepSessions(any(), any()) } returns emptyList()
+
+        val useCase = IngestHealthDataUseCase(repository, hrDao, hrvDao, sleepDao, dataStore)
+
+        val ingestedCount = useCase.invoke()
+
+        assertEquals(0, ingestedCount)
+        coVerify(exactly = 1) { hrDao.insertAll(match { it.isEmpty() }) }
+        coVerify(exactly = 1) { hrvDao.insertAll(match { it.isEmpty() }) }
+        coVerify(exactly = 1) { hrDao.purgeOlderThan(any()) }
+        coVerify(exactly = 1) { hrvDao.purgeOlderThan(any()) }
+
+        val key = longPreferencesKey("health_last_sync_epoch_ms")
+        val updated = dataStore.data.first()[key]
+        assertTrue(updated != null)
     }
 }

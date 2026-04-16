@@ -22,5 +22,7 @@ data class DailyMetrics(
     val sleepEfficiency: Float? = null,
     val totalSteps: Int? = null,
     val activeCalories: Int? = null,
+    val spo2: Float? = null,
+    val skinTemperature: Float? = null,
     val calculatedAt: Long = System.currentTimeMillis()
 )

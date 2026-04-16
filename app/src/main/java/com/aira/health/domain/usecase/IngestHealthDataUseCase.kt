@@ -1,9 +1,11 @@
 package com.aira.health.domain.usecase
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.edit
+import com.aira.health.BuildConfig
 import com.aira.health.data.local.dao.HrSampleDao
 import com.aira.health.data.local.dao.HrvSampleDao
 import com.aira.health.data.local.dao.SleepSessionDao
@@ -36,9 +38,12 @@ class IngestHealthDataUseCase @Inject constructor(
 ) {
 
     companion object {
+        private const val TAG = "AiraHealthIngest"
         private val LAST_SYNC_KEY = longPreferencesKey("health_last_sync_epoch_ms")
         /** 14 days in milliseconds — used for first-launch backfill. */
         private const val BACKFILL_DAYS = 14L
+        /** Re-read a small overlap window to capture delayed writes and late source syncs. */
+        private const val SYNC_OVERLAP_HOURS = 36L
         /** Maximum age of records to purge (90 days rolling window in raw tables). */
         private const val PURGE_AFTER_DAYS = 90L
     }
@@ -53,30 +58,47 @@ class IngestHealthDataUseCase @Inject constructor(
         val prefs = dataStore.data.first()
         val lastSyncMs = prefs[LAST_SYNC_KEY]
 
-        // Determine the start of the sync window
+        // Determine the start of the sync window.
+        // For non-first syncs, overlap by 36h so we do not miss delayed records from source apps.
+        val backfillStart = now.minus(BACKFILL_DAYS, ChronoUnit.DAYS)
         val syncStart = if (lastSyncMs != null) {
-            Instant.ofEpochMilli(lastSyncMs)
+            val overlapStart = Instant.ofEpochMilli(lastSyncMs).minus(SYNC_OVERLAP_HOURS, ChronoUnit.HOURS)
+            if (overlapStart.isAfter(backfillStart)) overlapStart else backfillStart
         } else {
-            // First launch — backfill 14 days
-            now.minus(BACKFILL_DAYS, ChronoUnit.DAYS)
+            backfillStart
+        }
+
+        val sourceAvailable = runCatching { repository.isAvailable() }.getOrDefault(false)
+
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "Sync window start=$syncStart end=$now lastSyncMs=$lastSyncMs sourceAvailable=$sourceAvailable repository=${repository::class.java.simpleName}"
+            )
         }
 
         var totalIngested = 0
 
         // ── Heart Rate ────────────────────────────────────────────────────────────
-        val hrSamples = repository.readHeartRate(syncStart, now)
+        val hrSamples = runCatching {
+            repository.readHeartRate(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedHr = resolveHrConflicts(hrSamples)
         hrSampleDao.insertAll(resolvedHr)
         totalIngested += resolvedHr.size
 
         // ── HRV ──────────────────────────────────────────────────────────────────
-        val hrvSamples = repository.readHeartRateVariability(syncStart, now)
+        val hrvSamples = runCatching {
+            repository.readHeartRateVariability(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedHrv = resolveHrvConflicts(hrvSamples)
         hrvSampleDao.insertAll(resolvedHrv)
         totalIngested += resolvedHrv.size
 
         // ── Sleep ─────────────────────────────────────────────────────────────────
-        val sleepSessions = repository.readSleepSessions(syncStart, now)
+        val sleepSessions = runCatching {
+            repository.readSleepSessions(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedSleep = resolveSleepConflicts(sleepSessions)
         resolvedSleep.forEach { session ->
             val existing = sleepSessionDao.getRange(session.date, session.date)
@@ -92,6 +114,13 @@ class IngestHealthDataUseCase @Inject constructor(
         }
         totalIngested += resolvedSleep.size
 
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "Health Connect raw counts -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}; resolved inserts -> hr=${resolvedHr.size}, hrv=${resolvedHrv.size}, sleep=${resolvedSleep.size}; totalIngested=$totalIngested"
+            )
+        }
+
         // ── Purge old raw samples (rolling 90-day window) ─────────────────────────
         val purgeBeforeMs = now.minus(PURGE_AFTER_DAYS, ChronoUnit.DAYS).toEpochMilli()
         hrSampleDao.purgeOlderThan(purgeBeforeMs)
@@ -99,6 +128,10 @@ class IngestHealthDataUseCase @Inject constructor(
 
         // ── Persist last successful sync timestamp ─────────────────────────────────
         dataStore.edit { it[LAST_SYNC_KEY] = now.toEpochMilli() }
+
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Ingest complete: lastSync=${now.toEpochMilli()} totalIngested=$totalIngested")
+        }
 
         return totalIngested
     }

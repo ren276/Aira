@@ -2,8 +2,10 @@ package com.aira.health.data.local.db
 
 import android.content.Context
 import androidx.room.Database
+import androidx.room.migration.Migration
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.aira.health.data.local.dao.*
 import com.aira.health.data.local.model.*
 import net.sqlcipher.database.SupportFactory
@@ -24,7 +26,7 @@ import net.sqlcipher.database.SupportFactory
         CardioLoadHistory::class,
         AiConversationMessage::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -43,6 +45,13 @@ abstract class AiraDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = "aira_db"
 
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE daily_metrics ADD COLUMN spo2 REAL")
+                db.execSQL("ALTER TABLE daily_metrics ADD COLUMN skinTemperature REAL")
+            }
+        }
+
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
             val factory = SupportFactory(passphrase.copyOf())
 
@@ -52,6 +61,7 @@ abstract class AiraDatabase : RoomDatabase() {
                 DATABASE_NAME
             )
                 .openHelperFactory(factory)
+                .addMigrations(MIGRATION_1_2)
                 .fallbackToDestructiveMigration() // Replace with explicit migrations before v1 release
                 .build()
         }

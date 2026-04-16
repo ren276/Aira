@@ -24,4 +24,7 @@ interface WorkoutSessionDao {
 
     @Query("SELECT * FROM workout_sessions WHERE startTime >= :startMs AND startTime <= :endMs ORDER BY startTime ASC")
     fun observeRange(startMs: Long, endMs: Long): Flow<List<WorkoutSession>>
+
+    @Query("SELECT * FROM workout_sessions WHERE startTime >= :startMs AND startTime <= :endMs ORDER BY startTime ASC")
+    suspend fun getRange(startMs: Long, endMs: Long): List<WorkoutSession>
 }

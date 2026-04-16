@@ -72,6 +72,29 @@ None - discussion stayed within phase scope.
 - Use GSD workflows when user explicitly invokes gsd-\* flows; this phase already follows that path. [VERIFIED: .github/copilot-instructions.md]
 - Do not apply GSD workflows unless explicitly requested by the user. [VERIFIED: .github/copilot-instructions.md]
 
+## Rework Guardrails (Design + Data Integrity)
+
+Phase 04 implementation quality depends on two non-negotiable gates that must be checked before any task is marked done.
+
+### Gate A: Design Source Fidelity
+
+- Root `designs/` directory is the visual source of truth for this phase (`designs/*/code.html` plus `designs/aira_intelligence/DESIGN.md`).
+- New or updated Compose screens must map to one of those source designs and preserve the intended hierarchy (hero focus, card density, typography emphasis, and spacing rhythm).
+- Placeholder-first layouts are allowed only during active development and must be removed before phase verification.
+
+### Gate B: Real Data Pipeline Binding
+
+- Home, detail, coach, train, and nutrition surfaces must be bound to repository/Room flows and derived domain outputs.
+- Hardcoded sample values may be used only in previews or debug-only fixtures, never in runtime screen state.
+- Every score or narrative shown to users must be traceable to local pipeline inputs (`DailyMetrics`, feature repositories, or computed trend windows).
+
+### Acceptance Checklist for Future GSD Runs
+
+- Verify that no runtime composable in Phase 04 renders static mock metrics as production data.
+- Verify confidence and last-updated context are visible on primary score surfaces.
+- Verify metric cards and quick actions navigate to real routes (no placeholder destination strings).
+- Verify onboarding gate is respected before main shell navigation.
+
 ## Summary
 
 Phase 04 should be planned as a UI shell + data binding phase, not as new data-engine work. The backend/domain side already exposes enough baseline health surfaces for Home and metric detail screens through Room-backed models (`DailyMetrics`, `SleepSession`, `HrSample`) and a foreground immediate sync hook (`HealthSyncWorker.scheduleImmediate`). [VERIFIED: app/src/main/java/com/aira/health/data/local/model/DailyMetrics.kt] [VERIFIED: app/src/main/java/com/aira/health/data/local/dao/SleepSessionDao.kt] [VERIFIED: app/src/main/java/com/aira/health/data/local/dao/HrSampleDao.kt] [VERIFIED: app/src/main/java/com/aira/health/data/worker/HealthSyncWorker.kt]

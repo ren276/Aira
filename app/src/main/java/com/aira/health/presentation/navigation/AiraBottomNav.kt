@@ -1,0 +1,141 @@
+package com.aira.health.presentation.navigation
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessibilityNew
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.aira.health.presentation.theme.Theme
+
+data class BottomNavTab(
+    val route: String,
+    val label: String,
+    val icon: ImageVector
+)
+
+@Composable
+fun AiraBottomNav(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val tabs = listOf(
+        BottomNavTab(AiraRoutes.HOME, "Home", Icons.Default.Home),
+        BottomNavTab(AiraRoutes.INSIGHTS, "Insights", Icons.Default.AccessibilityNew),
+        BottomNavTab(AiraRoutes.TRAIN, "Train", Icons.Default.FitnessCenter),
+        BottomNavTab(AiraRoutes.NUTRITION, "Nutrition", Icons.Default.Restaurant),
+        BottomNavTab(AiraRoutes.SETTINGS, "Settings", Icons.Default.Settings)
+    )
+
+    // Glassmorphism effect background mimicking iOS frosted glass
+    Box(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .fillMaxWidth()
+            .height(80.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color(0xFF1F1F25).copy(alpha = 0.6f))
+            // Typically you'd add a blur modifier here if relying on Compose 1.4+, 
+            // but we'll stick to alpha and styling per design tokens
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            tabs.forEach { tab ->
+                val isSelected = currentRoute == tab.route
+                BottomNavItem(
+                    tab = tab,
+                    isSelected = isSelected,
+                    onClick = { onNavigate(tab.route) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BottomNavItem(
+    tab: BottomNavTab,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val color = if (isSelected) Theme.colors.accent else Color.White.copy(alpha = 0.4f)
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.1f else 1.0f,
+        animationSpec = tween(300),
+        label = "nav item scale"
+    )
+    
+    val bgAlpha by animateFloatAsState(
+        targetValue = if (isSelected) 0.1f else 0.0f,
+        animationSpec = tween(300),
+        label = "nav item bg"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .background(
+                color = Theme.colors.accent.copy(alpha = bgAlpha),
+                shape = RoundedCornerShape(999.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .scale(scale)
+    ) {
+        Icon(
+            imageVector = tab.icon,
+            contentDescription = tab.label,
+            tint = color,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        Text(
+            text = tab.label.uppercase(),
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
+            ),
+            color = color
+        )
+    }
+}

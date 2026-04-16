@@ -1,14 +1,22 @@
 package com.aira.health.presentation.dashboard.details
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aira.health.presentation.dashboard.details.components.ExplanationBottomSheet
 
@@ -25,6 +33,7 @@ fun MetricDetailRoute(
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showExplanationSheet by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -35,22 +44,30 @@ fun MetricDetailRoute(
                 Text(text = "Error: ${state.message}")
             }
             is MetricDetailUiState.Success -> {
-                // Delegate to specific metric screens
                 when (state.metricType) {
-                    MetricType.RECOVERY -> com.aira.health.presentation.dashboard.details.screens.RecoveryDetailScreen(state = state)
-                    MetricType.SLEEP -> com.aira.health.presentation.dashboard.details.screens.SleepDetailScreen(state = state)
-                    MetricType.STRAIN -> com.aira.health.presentation.dashboard.details.screens.StrainDetailScreen(state = state)
-                    MetricType.STRESS -> com.aira.health.presentation.dashboard.details.screens.StressDetailScreen(state = state)
+                    MetricType.RECOVERY -> RecoveryDetailScreen(state = state, onNavigateBack = onNavigateUp)
+                    MetricType.SLEEP -> SleepDetailScreen(state = state, onNavigateBack = onNavigateUp)
+                    MetricType.STRAIN -> StrainDetailScreen(state = state, onNavigateBack = onNavigateUp)
+                    MetricType.STRESS -> StressDetailScreen(state = state, onNavigateBack = onNavigateUp)
                 }
-                
-                // Demo logic: This is currently always visible for the slice test.
-                // In full integration this would be conditionally shown via a state trigger.
-                ExplanationBottomSheet(
-                    whatChanged = state.whatChanged,
-                    whyItMatters = state.whyItMatters,
-                    whatToDoNext = state.whatToDoNext,
-                    onDismissRequest = { /* Handle bottom sheet dismissal */ }
-                )
+
+                Button(
+                    onClick = { showExplanationSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Text("Explain")
+                }
+
+                if (showExplanationSheet) {
+                    ExplanationBottomSheet(
+                        whatChanged = state.whatChanged,
+                        whyItMatters = state.whyItMatters,
+                        whatToDoNext = state.whatToDoNext,
+                        onDismissRequest = { showExplanationSheet = false }
+                    )
+                }
             }
         }
     }

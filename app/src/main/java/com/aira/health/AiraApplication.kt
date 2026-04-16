@@ -3,6 +3,7 @@ package com.aira.health
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.aira.health.data.worker.HealthSyncWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -22,6 +23,8 @@ class AiraApplication : Application(), Configuration.Provider {
         FirebaseApp.initializeApp(this)
         // Disable crash reporting in builds where ENABLE_CRASH_REPORTING = false (debug flavor)
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(BuildConfig.ENABLE_CRASH_REPORTING)
+        // Ensure periodic sync is registered even before device reboot events.
+        HealthSyncWorker.schedule(this)
     }
 
     override val workManagerConfiguration: Configuration

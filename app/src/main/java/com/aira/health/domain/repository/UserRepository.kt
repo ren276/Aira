@@ -12,7 +12,10 @@ interface UserRepository {
     /** Observe the current auth state reactively */
     fun observeAuthState(): Flow<AuthState>
 
-    /** Sign in with Google via Supabase OAuth */
+    /** Sign in with Google using an ID token from Google Sign-In */
+    suspend fun signInWithGoogleIdToken(idToken: String): Result<UserSession>
+
+    /** Legacy Google sign-in entry point kept for compatibility */
     suspend fun signInWithGoogle(): Result<UserSession>
 
     /** Sign in with email + password */
@@ -21,7 +24,7 @@ interface UserRepository {
     /** Create a new account with email + password */
     suspend fun signUpWithEmail(email: String, password: String): Result<UserSession>
 
-    /** Start an anonymous guest session — Supabase NOT initialised in this path */
+    /** Start an anonymous guest session */
     suspend fun signInAsGuest(): Result<UserSession>
 
     /** Sign out the current user */

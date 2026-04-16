@@ -3,9 +3,11 @@ package com.aira.health.presentation.nutrition
 import app.cash.turbine.test
 import com.aira.health.data.local.model.NutritionLog
 import com.aira.health.domain.repository.NutritionRepository
+import com.aira.health.presentation.nutrition.scanner.BarcodeScannerGateway
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -26,11 +28,13 @@ class NutritionViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var mockRepository: NutritionRepository
+    private lateinit var mockBarcodeScannerGateway: BarcodeScannerGateway
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         mockRepository = mockk(relaxed = true)
+        mockBarcodeScannerGateway = mockk(relaxed = true)
         every { mockRepository.observeNutrition(any(), any()) } returns flowOf(emptyList())
     }
 
@@ -41,7 +45,7 @@ class NutritionViewModelTest {
 
     @Test
     fun `quick add validates empty food name`() = runTest(testDispatcher) {
-        val viewModel = NutritionViewModel(mockRepository)
+        val viewModel = NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
         viewModel.onFoodNameChange("")
         viewModel.saveQuickAdd()
         
@@ -56,9 +60,10 @@ class NutritionViewModelTest {
 
     @Test
     fun `quick add succeeds with valid inputs mapped to repo`() = runTest(testDispatcher) {
-        val viewModel = NutritionViewModel(mockRepository)
+        val viewModel = NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
         viewModel.onFoodNameChange("Apple")
         viewModel.onCaloriesChange("95")
+        advanceUntilIdle()
         viewModel.saveQuickAdd()
 
         advanceUntilIdle()
@@ -82,7 +87,7 @@ class NutritionViewModelTest {
 
     @Test
     fun `initiate delete prompts confirmation state`() = runTest(testDispatcher) {
-        val viewModel = NutritionViewModel(mockRepository)
+        val viewModel = NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
         viewModel.initiateDelete(123L)
 
         viewModel.uiState.test {
@@ -94,7 +99,7 @@ class NutritionViewModelTest {
 
     @Test
     fun `confirm delete executes block and clears state`() = runTest(testDispatcher) {
-        val viewModel = NutritionViewModel(mockRepository)
+        val viewModel = NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
         viewModel.initiateDelete(456L)
         advanceUntilIdle()
         
@@ -112,7 +117,7 @@ class NutritionViewModelTest {
 
     @Test
     fun `scanner draft populates editable state`() = runTest(testDispatcher) {
-        val viewModel = NutritionViewModel(mockRepository)
+        val viewModel = NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
         viewModel.onScannerDraftReceived(foodName = "Banana", calories = 105f)
 
         viewModel.uiState.test {
@@ -122,5 +127,16 @@ class NutritionViewModelTest {
             assertEquals("105.0", state.quickAddCalories)
             assertEquals("barcode", state.currentLogMethod)
         }
+    }
+
+    @Test
+    fun `observe nutrition uses open ended upper bound so new logs appear immediately`() = runTest(testDispatcher) {
+        val endSlot = slot<Long>()
+        every { mockRepository.observeNutrition(any(), capture(endSlot)) } returns flowOf(emptyList())
+
+        NutritionViewModel(mockRepository, mockBarcodeScannerGateway)
+        advanceUntilIdle()
+
+        assertEquals(Long.MAX_VALUE, endSlot.captured)
     }
 }

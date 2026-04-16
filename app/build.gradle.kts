@@ -99,6 +99,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
         }
     }
 
@@ -123,6 +125,7 @@ dependencies {
     implementation(libs.compose.viewmodel)
     implementation(libs.compose.runtime.livedata)
     implementation(libs.compose.navigation)
+    implementation(libs.compose.ui.google.fonts)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -168,6 +171,7 @@ dependencies {
     // Firebase
     val firebaseBom = platform(libs.firebase.bom)
     implementation(firebaseBom)
+    implementation(libs.firebase.auth)
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.perf)

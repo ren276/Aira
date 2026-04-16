@@ -3,6 +3,7 @@ package com.aira.health.data.repository
 import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
+import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.aira.health.data.local.model.HrSample
@@ -40,8 +41,11 @@ class GoogleFitRepositoryImpl @Inject constructor(
         val account = GoogleSignIn.getLastSignedInAccount(context)
         return account != null && GoogleSignIn.hasPermissions(
             account,
-            com.google.android.gms.fitness.FitnessOptions.builder()
+            FitnessOptions.builder()
                 .addDataType(DataType.TYPE_HEART_RATE_BPM, com.google.android.gms.fitness.FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, com.google.android.gms.fitness.FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CALORIES_EXPENDED, com.google.android.gms.fitness.FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_SLEEP_SEGMENT, com.google.android.gms.fitness.FitnessOptions.ACCESS_READ)
                 .build()
         )
     }

@@ -1,9 +1,11 @@
 package com.aira.health.domain.usecase
 
+import android.util.Log
 import com.aira.health.data.local.dao.BaselineDao
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.model.DailyMetrics
 import com.aira.health.domain.engine.*
+import com.aira.health.BuildConfig
 import javax.inject.Inject
 
 /**
@@ -30,6 +32,10 @@ class ComputeDailyScoresUseCase @Inject constructor(
     private val stressEngine: StressEngine,
     private val energyBankEngine: EnergyBankEngine
 ) {
+
+    private companion object {
+        const val TAG = "AiraScoreCompute"
+    }
 
     /**
      * Compute all health scores for [date] and upsert the result into [DailyMetrics].
@@ -59,12 +65,23 @@ class ComputeDailyScoresUseCase @Inject constructor(
         zone3Min: Float?,
         zone4Min: Float?,
         zone5Min: Float?,
-        totalActiveMin: Float?
+        totalActiveMin: Float?,
+        totalSteps: Int? = null,
+        activeCalories: Int? = null,
+        spo2: Float? = null,
+        skinTemperature: Float? = null
     ) {
         // ── Load baselines ────────────────────────────────────────────────────
         val hrvBaseline  = baselineDao.get("hrv_rmssd")?.value
         val rhrBaseline  = baselineDao.get("rhr")?.value
         val sleepBaseline = baselineDao.get("sleep_score")?.value
+
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "Inputs for $date -> hrvMorning=$hrvMorning, rhrMorning=$rhrMorning, sleepDurationMin=$sleepDurationMin, sleepEfficiency=$sleepEfficiency, sleepDeepFraction=$sleepDeepFraction, hourlyStressScores=$hourlyStressScores, zone1=$zone1Min, zone2=$zone2Min, zone3=$zone3Min, zone4=$zone4Min, zone5=$zone5Min, totalActiveMin=$totalActiveMin, totalSteps=$totalSteps, activeCalories=$activeCalories, spo2=$spo2, skinTemperature=$skinTemperature, baselines(hrv=$hrvBaseline, rhr=$rhrBaseline, sleep=$sleepBaseline)"
+            )
+        }
 
         // ── Load prior day for cross-day state ────────────────────────────────
         val previousDay = dailyMetricsDao.getPreviousDay(date)
@@ -171,10 +188,19 @@ class ComputeDailyScoresUseCase @Inject constructor(
             rhrMorning            = rhrMorning,
             sleepDurationMin      = sleepDurationMin,
             sleepEfficiency       = sleepEfficiency,
-            totalSteps            = null,
-            activeCalories        = null,
+            totalSteps            = totalSteps,
+            activeCalories        = activeCalories,
+            spo2                  = spo2,
+            skinTemperature       = skinTemperature,
             calculatedAt          = System.currentTimeMillis()
         )
+
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "Persisting DailyMetrics(date=${metrics.date}, recovery=${metrics.recoveryScore}, sleep=${metrics.sleepScore}, strain=${metrics.strainScore}, stress=${metrics.stressScore}, energyBank=${metrics.energyBankScore}, readinessToLearn=${metrics.readinessToLearnScore}, nutrition=${metrics.nutritionScore}, confidence=${metrics.dataConfidence}, hrv=${metrics.hrvMorning}, rhr=${metrics.rhrMorning}, sleepMin=${metrics.sleepDurationMin}, steps=${metrics.totalSteps}, calories=${metrics.activeCalories}, spo2=${metrics.spo2}, skinTemp=${metrics.skinTemperature}, calculatedAt=${metrics.calculatedAt})"
+            )
+        }
 
         dailyMetricsDao.upsert(metrics)
     }

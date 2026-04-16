@@ -6,6 +6,8 @@ import com.aira.health.data.repository.WorkoutRepositoryImpl
 import com.aira.health.domain.repository.NutritionRepository
 import com.aira.health.domain.repository.UserRepository
 import com.aira.health.domain.repository.WorkoutRepository
+import com.aira.health.presentation.nutrition.scanner.BarcodeScannerGateway
+import com.aira.health.presentation.nutrition.scanner.MlKitBarcodeScannerGateway
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -27,4 +29,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindNutritionRepository(impl: NutritionRepositoryImpl): NutritionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBarcodeScannerGateway(impl: MlKitBarcodeScannerGateway): BarcodeScannerGateway
 }

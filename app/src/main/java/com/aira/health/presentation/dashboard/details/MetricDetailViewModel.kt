@@ -26,9 +26,7 @@ class MetricDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     // Argument parsing is aligned with MetricDetailRoute contract
-    private val metricId: String = checkNotNull(savedStateHandle["metricId"]) {
-        "metricId argument is required"
-    }
+    private val metricId: String = savedStateHandle["metricId"] ?: MetricType.RECOVERY.id
     
     // T-04-07: Mitigate invalid route arguments by fallback/erroring securely
     val metricType: MetricType? = MetricType.fromIdOrNull(metricId)
@@ -67,15 +65,22 @@ class MetricDetailViewModel @Inject constructor(
         // Map trend data into continuous floats
         val dataPoints = trendMetrics.map { extractScore(it, metricType).toFloat() }
 
-        // Mocks for Phase 04 UI contract (real AI narratives come in a later phase)
+        val previousScore = trendMetrics
+            .dropLast(1)
+            .lastOrNull()
+            ?.let { extractScore(it, metricType) }
+        val trendAverage = if (dataPoints.isNotEmpty()) dataPoints.average().toFloat() else currentScore.toFloat()
+        val delta = previousScore?.let { currentScore - it } ?: 0
+        val vsAverage = currentScore - trendAverage
+
         MetricDetailUiState.Success(
             metricType = metricType,
             currentScore = currentScore,
             trendDataPoints = dataPoints,
             confidence = activeMetrics.dataConfidence, // T-04-08 preserved provenance
-            whatChanged = generateMockWhatChanged(metricType),
-            whyItMatters = generateMockWhyItMatters(metricType),
-            whatToDoNext = generateMockWhatToDoNext(metricType)
+            whatChanged = buildWhatChanged(metricType, currentScore, delta, vsAverage),
+            whyItMatters = buildWhyItMatters(metricType, activeMetrics.dataConfidence),
+            whatToDoNext = buildWhatToDoNext(metricType, currentScore)
         )
     }.stateIn(
         scope = viewModelScope,
@@ -92,24 +97,60 @@ class MetricDetailViewModel @Inject constructor(
         }
     }
 
-    private fun generateMockWhatChanged(type: MetricType) = when (type) {
-        MetricType.RECOVERY -> "Your morning HRV dropped by 12% following yesterday's strenuous activity."
-        MetricType.SLEEP -> "Deep sleep duration fell below your 90-minute baseline."
-        MetricType.STRAIN -> "Cardio load accumulated faster than typical for this time of day."
-        MetricType.STRESS -> "Physiological stress markers remained elevated throughout the night."
+    private fun buildWhatChanged(
+        type: MetricType,
+        current: Int,
+        deltaVsYesterday: Int,
+        deltaVsAverage: Float
+    ): String = when (type) {
+        MetricType.RECOVERY ->
+            "Recovery is $current (${signed(deltaVsYesterday)} vs yesterday, ${signed(deltaVsAverage.toInt())} vs 14-day trend)."
+        MetricType.SLEEP ->
+            "Sleep score is $current (${signed(deltaVsYesterday)} vs yesterday) with a ${signed(deltaVsAverage.toInt())} shift against your recent baseline."
+        MetricType.STRAIN ->
+            "Strain is $current (${signed(deltaVsYesterday)} vs yesterday), indicating ${if (current >= 70) "elevated" else "managed"} training load."
+        MetricType.STRESS ->
+            "Stress is $current (${signed(deltaVsYesterday)} vs yesterday), currently ${if (current >= 65) "above" else "within"} your normal daily band."
     }
 
-    private fun generateMockWhyItMatters(type: MetricType) = when (type) {
-        MetricType.RECOVERY -> "Suppressed HRV indicates your central nervous system is still processing yesterday's load."
-        MetricType.SLEEP -> "Deep sleep is critical for physical tissue repair and human growth hormone release."
-        MetricType.STRAIN -> "Exceeding your capacity without adequate recovery breaks down muscle without supercompensation gains."
-        MetricType.STRESS -> "Prolonged sympathetic dominant states inhibit digestion and immune response."
+    private fun buildWhyItMatters(type: MetricType, confidence: Float): String {
+        val confidencePct = (confidence * 100).toInt().coerceIn(0, 100)
+        val confidenceClause = "Model confidence is $confidencePct%, so this guidance reflects your current local data quality."
+
+        return when (type) {
+            MetricType.RECOVERY ->
+                "Recovery summarizes how ready your system is for adaptation after prior strain and sleep load. $confidenceClause"
+            MetricType.SLEEP ->
+                "Sleep quality drives hormonal repair and nervous-system recalibration, directly affecting next-day readiness. $confidenceClause"
+            MetricType.STRAIN ->
+                "Strain captures exercise load; keeping it aligned with recovery avoids cumulative fatigue and plateau risk. $confidenceClause"
+            MetricType.STRESS ->
+                "Stress reflects autonomic load over the day; sustained high values can suppress recovery and learning readiness. $confidenceClause"
+        }
     }
 
-    private fun generateMockWhatToDoNext(type: MetricType) = when (type) {
-        MetricType.RECOVERY -> "Keep today's strain below 40. Hydrate well and stretch."
-        MetricType.SLEEP -> "Avoid caffeine after 2 PM and reduce screen time an hour before bed."
-        MetricType.STRAIN -> "Prioritise Zone 1/2 recovery work over high-intensity intervals."
-        MetricType.STRESS -> "Take a 10-minute resonance breathing exercise to re-engage your parasympathetic system."
+    private fun buildWhatToDoNext(type: MetricType, score: Int): String = when (type) {
+        MetricType.RECOVERY -> when {
+            score >= 80 -> "Proceed with a quality training block and protect hydration plus post-session downregulation."
+            score >= 60 -> "Use moderate intensity and keep total load capped to protect tomorrow's recovery."
+            else -> "Prioritise recovery: low-intensity movement, sleep extension, and breath-focused downshift work."
+        }
+        MetricType.SLEEP -> when {
+            score >= 80 -> "Maintain current sleep routine and pre-bed wind-down timing."
+            score >= 60 -> "Reduce evening stimulation and target a consistent bedtime for the next 2 nights."
+            else -> "Shift tonight toward recovery: earlier lights-out, lower caffeine, and cooler room temperature."
+        }
+        MetricType.STRAIN -> when {
+            score >= 75 -> "Keep next session lighter or technique-focused to avoid overload carryover."
+            score >= 50 -> "Maintain balanced training with one high-quality effort and sufficient recovery spacing."
+            else -> "If training today, gradually ramp load to stay inside your adaptive range."
+        }
+        MetricType.STRESS -> when {
+            score >= 70 -> "Use low-intensity activity and scheduled recovery breaks to reduce autonomic load."
+            score >= 50 -> "Maintain regular movement and add short breathing resets during the day."
+            else -> "You are in a stable range; maintain current routines and monitor evening recovery signals."
+        }
     }
+
+    private fun signed(value: Int): String = if (value > 0) "+$value" else value.toString()
 }

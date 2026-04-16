@@ -14,12 +14,13 @@ class AppNavHostTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun appNavHostCompilesAndShowsPlaceholders() {
+    fun appNavHostCompilesAndShowsHomeScreen() {
         composeTestRule.setContent {
             AiraNavHost()
         }
-        
-        // Home is the default destination, so its placeholder should exist initially
-        composeTestRule.onNodeWithText("Home Placeholder").assertExists()
+
+        // Bottom nav in locked IA should render these primary entries.
+        composeTestRule.onNodeWithText("HOME").assertExists()
+        composeTestRule.onNodeWithText("INSIGHTS").assertExists()
     }
 }

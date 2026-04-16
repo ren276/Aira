@@ -9,6 +9,9 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import com.aira.health.data.local.model.NutritionLog
 import com.aira.health.domain.repository.NutritionRepository
+import com.aira.health.presentation.nutrition.scanner.BarcodeScannerGateway
+import com.aira.health.presentation.nutrition.scanner.ScannerResult
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -26,59 +29,84 @@ class NutritionFlowTest {
     @Test
     fun quickAdd_validInputs_savesNutrition() {
         val mockRepo = mockk<NutritionRepository>(relaxed = true)
+        val mockScanner = mockk<BarcodeScannerGateway>(relaxed = true)
         every { mockRepo.observeNutrition(any(), any()) } returns flowOf(emptyList())
+        coEvery { mockScanner.scanBarcode() } returns null
 
         composeTestRule.setContent {
             NutritionScreen(
-                viewModel = NutritionViewModel(mockRepo),
+                viewModel = NutritionViewModel(mockRepo, mockScanner),
                 onNavigateToEdit = {}
             )
         }
 
-        // Enter food name
-        composeTestRule.onNodeWithText("Food Name")
-            .performTextClearance()
-        composeTestRule.onNodeWithText("Food Name")
+        composeTestRule.onNodeWithText("Food name")
             .performTextInput("Oatmeal")
 
-        // Enter calories
-        composeTestRule.onNodeWithText("Calories")
-            .performTextClearance()
-        composeTestRule.onNodeWithText("Calories")
+        composeTestRule.onNodeWithText("kcal")
             .performTextInput("250")
 
-        // Save
         composeTestRule.onNodeWithText("Save Entry")
             .performClick()
 
-        // Verify repo interaction
-        coVerify(exactly = 1) { 
+        coVerify(exactly = 1) {
             mockRepo.addNutritionLog(match { it.foodName == "Oatmeal" && it.calories == 250f && it.logMethod == "manual" })
+        }
+    }
+
+    @Test
+    fun scannerUnavailable_showsErrorAndDoesNotSave() {
+        val mockRepo = mockk<NutritionRepository>(relaxed = true)
+        val mockScanner = mockk<BarcodeScannerGateway>(relaxed = true)
+        every { mockRepo.observeNutrition(any(), any()) } returns flowOf(emptyList())
+        coEvery { mockScanner.scanBarcode() } returns null
+
+        composeTestRule.setContent {
+            NutritionScreen(
+                viewModel = NutritionViewModel(mockRepo, mockScanner),
+                onNavigateToEdit = {}
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("Scan")
+            .performClick()
+
+        composeTestRule.onNodeWithText("Scanner is unavailable in this build. Enter food manually.")
+            .assertIsDisplayed()
+
+        coVerify(exactly = 0) {
+            mockRepo.addNutritionLog(any())
         }
     }
 
     @Test
     fun scannerDraft_populatesFields_savesNutrition() {
         val mockRepo = mockk<NutritionRepository>(relaxed = true)
+        val mockScanner = mockk<BarcodeScannerGateway>(relaxed = true)
         every { mockRepo.observeNutrition(any(), any()) } returns flowOf(emptyList())
+        coEvery { mockScanner.scanBarcode() } returns ScannerResult(
+            barcode = "123",
+            foodName = "Scanned Food",
+            calories = 200f,
+            proteinG = null,
+            carbsG = null,
+            fatG = null
+        )
 
         composeTestRule.setContent {
             NutritionScreen(
-                viewModel = NutritionViewModel(mockRepo),
+                viewModel = NutritionViewModel(mockRepo, mockScanner),
                 onNavigateToEdit = {}
             )
         }
 
-        // Click scan barcode (which our UI simulates by populating fields)
-        composeTestRule.onNodeWithContentDescription("Scan Barcode")
+        composeTestRule.onNodeWithContentDescription("Scan")
             .performClick()
 
-        // Save
         composeTestRule.onNodeWithText("Save Entry")
             .performClick()
 
-        // Verify repo interaction with scanned data
-        coVerify(exactly = 1) { 
+        coVerify(exactly = 1) {
             mockRepo.addNutritionLog(match { it.foodName == "Scanned Food" && it.calories == 200f && it.logMethod == "barcode" })
         }
     }
@@ -86,27 +114,37 @@ class NutritionFlowTest {
     @Test
     fun history_clickDelete_showsConfirmation_deletesEntry() {
         val mockRepo = mockk<NutritionRepository>(relaxed = true)
-        val flow = MutableStateFlow(emptyList<NutritionLog>())
+        val mockScanner = mockk<BarcodeScannerGateway>(relaxed = true)
+        val flow = MutableStateFlow(
+            listOf(
+                NutritionLog(
+                    id = 1L,
+                    timestamp = Instant.now().toEpochMilli(),
+                    foodName = "Dummy Food",
+                    calories = 100f,
+                    proteinG = 0f,
+                    carbsG = 0f,
+                    fatG = 0f,
+                    logMethod = "manual"
+                )
+            )
+        )
         every { mockRepo.observeNutrition(any(), any()) } returns flow
 
         composeTestRule.setContent {
             NutritionScreen(
-                viewModel = NutritionViewModel(mockRepo),
+                viewModel = NutritionViewModel(mockRepo, mockScanner),
                 onNavigateToEdit = {}
             )
         }
 
-        // Click delete on the static dummy item in the History section
         composeTestRule.onNodeWithContentDescription("Delete").performClick()
 
-        // Confirm dialog text (from UI-SPEC)
-        composeTestRule.onNodeWithText("Delete nutrition entry").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Remove this meal log permanently? This action cannot be undone.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Delete meal log").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Remove this log permanently?").assertIsDisplayed()
 
-        // Confirm deletion
         composeTestRule.onNodeWithText("Delete").performClick()
 
-        // Verify repository deletion
         coVerify(exactly = 1) { mockRepo.deleteNutritionLog(1L) }
     }
 }

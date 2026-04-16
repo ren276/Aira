@@ -3,12 +3,18 @@ package com.aira.health.presentation.dashboard.home
 import app.cash.turbine.test
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.model.DailyMetrics
+import com.aira.health.domain.model.AuthState
+import com.aira.health.domain.model.UserSession
+import com.aira.health.domain.repository.UserRepository
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import android.content.Context
@@ -20,11 +26,10 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import com.aira.health.data.worker.HealthSyncWorker
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 
 /**
  * Unit tests for [HomeViewModel] covering:
@@ -39,6 +44,7 @@ class HomeViewModelTest {
     private lateinit var viewModel: HomeViewModel
     private lateinit var mockDao: DailyMetricsDao
     private lateinit var mockContext: Context
+    private lateinit var mockUserRepository: UserRepository
 
     // Backing flows for the mock DAO
     private val todayFlow = MutableStateFlow<DailyMetrics?>(null)
@@ -68,10 +74,28 @@ class HomeViewModelTest {
             every { observeRecent(any()) } returns recentFlow
         }
         mockContext = mockk(relaxed = true)
+        mockUserRepository = mockk(relaxed = true)
+        every { mockUserRepository.observeAuthState() } returns MutableStateFlow(
+            AuthState.Authenticated(
+                UserSession(
+                    userId = "user-1",
+                    email = "test@aira.health",
+                    displayName = "Test User",
+                    avatarUrl = null,
+                    isGuest = false,
+                    isAuthenticated = true
+                )
+            )
+        )
         mockkObject(HealthSyncWorker)
         every { HealthSyncWorker.scheduleImmediate(any()) } returns Unit
+        every { HealthSyncWorker.schedule(any()) } returns Unit
 
-        viewModel = HomeViewModel(dailyMetricsDao = mockDao, context = mockContext)
+        viewModel = HomeViewModel(
+            dailyMetricsDao = mockDao,
+            userRepository = mockUserRepository,
+            context = mockContext
+        )
     }
 
     @After
@@ -91,17 +115,14 @@ class HomeViewModelTest {
 
         viewModel.uiState.test {
             advanceUntilIdle()
-            val emissions = cancelAndConsumeRemainingEvents()
-            val successState = emissions.filterIsInstance<app.cash.turbine.Event.Item<HomeUiState>>()
-                .map { it.value }
-                .filterIsInstance<HomeUiState.Success>()
-                .firstOrNull()
+            val successState = awaitFirstSuccessEmission()
 
-            assertNotNull(successState, "Expected at least one Success emission")
-            assertEquals(80, successState.recoveryScore)
+            assertNotNull("Expected at least one Success emission", successState)
+            assertEquals(80, successState!!.recoveryScore)
             // Confidence and lastUpdated must always be present (D-08)
             assertTrue(successState.confidence >= 0f)
             assertTrue(successState.lastUpdated > 0L)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -113,18 +134,25 @@ class HomeViewModelTest {
     @Test
     fun `requestRefresh schedules immediate work without clearing existing UI data`() = runTest(testDispatcher) {
         todayFlow.value = makeMetrics()
-        advanceUntilIdle()
+        viewModel.uiState.test {
+            advanceUntilIdle()
+            val cachedState = awaitFirstSuccessEmission()
+            assertNotNull("Expected cached success state before refresh", cachedState)
 
-        viewModel.requestRefresh()
-        advanceUntilIdle()
+            viewModel.requestRefresh()
+            runCurrent()
 
-        // Worker was called
-        verify { HealthSyncWorker.scheduleImmediate(mockContext) }
+            // Worker was called
+            verify { HealthSyncWorker.scheduleImmediate(mockContext) }
 
-        // Current state is still Success, not Loading — critical D-08 behaviour
-        val state = viewModel.uiState.value
-        assertIs<HomeUiState.Success>(state, "State must remain Success after refresh, not revert to Loading")
-        assertTrue(state.isSyncing, "isSyncing must be true while sync is pending")
+            // Current state is still Success, not Loading — critical D-08 behaviour
+            val refreshedState = awaitFirstSuccessEmission()
+            assertTrue("State must remain Success after refresh, not revert to Loading", refreshedState is HomeUiState.Success)
+            refreshedState as HomeUiState.Success
+            assertTrue("isSyncing must be true while sync is pending", refreshedState.isSyncing)
+
+            cancelAndConsumeRemainingEvents()
+        }
     }
 
     /**
@@ -132,29 +160,46 @@ class HomeViewModelTest {
      */
     @Test
     fun `score change after sync emits delta animation payloads with confidence metadata`() = runTest(testDispatcher) {
-        // Initial cached state
         todayFlow.value = makeMetrics(recovery = 70, confidence = 0.80f)
-        advanceUntilIdle()
 
-        // Simulate sync result — Room emits a new row
-        todayFlow.value = makeMetrics(recovery = 85, confidence = 0.92f)
-        advanceUntilIdle()
+        viewModel.uiState.test {
+            advanceUntilIdle()
+            val initialState = awaitFirstSuccessEmission()
+            assertEquals(70, initialState.recoveryScore)
 
-        val state = viewModel.uiState.value
-        assertIs<HomeUiState.Success>(state)
+            // Simulate sync result — Room emits a new row
+            todayFlow.value = makeMetrics(recovery = 85, confidence = 0.92f)
+            advanceUntilIdle()
 
-        // Delta must be non-null because recovery changed
-        val delta = state.recoveryDelta
-        assertNotNull(delta, "Delta must be produced when score changes")
-        assertEquals(70, delta.previous)
-        assertEquals(85, delta.current)
-        assertEquals(DeltaDirection.UP, delta.direction)
+            val updatedState = awaitFirstSuccessEmission()
+            assertTrue("State must be Success", updatedState is HomeUiState.Success)
 
-        // Confidence/lastUpdated always present after sync
-        assertEquals(0.92f, state.confidence, 0.001f)
-        assertTrue(state.lastUpdated > 0L)
+            // Delta must be non-null because recovery changed
+            val delta = updatedState.recoveryDelta
+            assertNotNull("Delta must be produced when score changes", delta)
+            assertEquals(70, delta!!.previous)
+            assertEquals(85, delta.current)
+            assertEquals(DeltaDirection.UP, delta.direction)
 
-        // Unchanged scores produce no delta
-        assertNull(state.sleepDelta, "Unchanged sleep score must not produce a delta")
+            // Confidence/lastUpdated always present after sync
+            assertEquals(0.92f, updatedState.confidence, 0.001f)
+            assertTrue(updatedState.lastUpdated > 0L)
+
+            // Unchanged scores produce no delta
+            assertNull("Unchanged sleep score must not produce a delta", updatedState.sleepDelta)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    private suspend fun app.cash.turbine.ReceiveTurbine<HomeUiState>.awaitFirstSuccessEmission(): HomeUiState.Success {
+        repeat(8) {
+            when (val emission = awaitItem()) {
+                is HomeUiState.Success -> return emission
+                else -> Unit
+            }
+        }
+
+        throw AssertionError("Expected at least one Success emission")
     }
 }
