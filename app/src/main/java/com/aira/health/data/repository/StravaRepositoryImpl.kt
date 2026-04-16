@@ -85,6 +85,12 @@ class StravaRepositoryImpl @Inject constructor(
             code = code
         )
 
+        if (!hasRequiredScopes(tokenResponse.scope)) {
+            throw IllegalStateException(
+                "Strava authorization missing required scope. Please allow activity permissions and retry."
+            )
+        }
+
         tokenStore.save(
             StravaTokenSession(
                 accessToken = tokenResponse.accessToken,
@@ -98,6 +104,12 @@ class StravaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun disconnect(): Result<Unit> = runCatching {
+        tokenStore.read()?.let { session ->
+            // Best-effort revoke. Local disconnect should still succeed if network revoke fails.
+            runCatching {
+                stravaApiClient.deauthorize(session.accessToken)
+            }
+        }
         tokenStore.clear()
         connectionStore.markDisconnected()
     }
@@ -343,6 +355,15 @@ class StravaRepositoryImpl @Inject constructor(
         if (requireSecret && BuildConfig.STRAVA_CLIENT_SECRET.isBlank()) {
             throw IllegalStateException("Strava client secret is not configured")
         }
+    }
+
+    private fun hasRequiredScopes(scope: String): Boolean {
+        val granted = scope
+            .split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .toSet()
+        return granted.contains("activity:read") || granted.contains("activity:read_all")
     }
 
     private data class IngestOutcome(

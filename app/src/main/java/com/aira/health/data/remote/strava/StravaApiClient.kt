@@ -61,6 +61,13 @@ class StravaApiClient @Inject constructor() {
         return postToken(body)
     }
 
+    suspend fun deauthorize(accessToken: String) {
+        val body = mapOf(
+            "access_token" to accessToken
+        )
+        postOAuthForm(body = body, endpointPath = "deauthorize")
+    }
+
     suspend fun getActivities(
         accessToken: String,
         page: Int,
@@ -101,7 +108,15 @@ class StravaApiClient @Inject constructor() {
     }
 
     private suspend fun postToken(body: Map<String, String>): StravaTokenResponse = withContext(Dispatchers.IO) {
-        val url = URL("$OAUTH_URL/token")
+        val payload = postOAuthForm(body = body, endpointPath = "token")
+        return@withContext json.decodeFromString<StravaTokenResponse>(payload)
+    }
+
+    private suspend fun postOAuthForm(
+        body: Map<String, String>,
+        endpointPath: String
+    ): String = withContext(Dispatchers.IO) {
+        val url = URL("$OAUTH_URL/$endpointPath")
         val encodedBody = body.entries.joinToString("&") { (key, value) ->
             "${encode(key)}=${encode(value)}"
         }
@@ -122,12 +137,12 @@ class StravaApiClient @Inject constructor() {
         val status = connection.responseCode
         val payload = readResponsePayload(connection)
         if (status in 200..299) {
-            return@withContext json.decodeFromString<StravaTokenResponse>(payload)
+            return@withContext payload
         }
 
         throw StravaApiException(
             statusCode = status,
-            message = payload.ifBlank { "Strava token request failed ($status)" },
+            message = payload.ifBlank { "Strava oauth $endpointPath request failed ($status)" },
             retryAfterSeconds = connection.getHeaderField("Retry-After")?.toLongOrNull()
         )
     }
