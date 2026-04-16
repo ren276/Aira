@@ -113,17 +113,17 @@ fun PermissionBatchScreen(
         HealthPermissionManager.PermissionBatch.CORE -> BatchUi(
             title = "Connect your\nwearables",
             subtitle = "Aira reads biometric data locally via Health Connect to build your physiological baseline.",
-            stepIndex = 2
+            stepIndex = 3
         )
         HealthPermissionManager.PermissionBatch.BODY -> BatchUi(
             title = "Connect your\nbody metrics",
             subtitle = "Aira uses body composition data locally via Health Connect to build your physiological baseline.",
-            stepIndex = 3
+            stepIndex = 4
         )
         HealthPermissionManager.PermissionBatch.ADVANCED -> BatchUi(
             title = "Connect\nclinical metrics",
             subtitle = "Aira reads clinical data locally via Health Connect to build your physiological baseline.",
-            stepIndex = 4
+            stepIndex = 5
         )
     }
 
@@ -255,7 +255,7 @@ private fun HealthConnectInstallPrompt(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "STEP 2 OF ${OnboardingFlow.TOTAL_STEPS}",
+                "STEP 3 OF ${OnboardingFlow.TOTAL_STEPS}",
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 color = Theme.colors.onSurfaceVariant,
                 textAlign = TextAlign.Center

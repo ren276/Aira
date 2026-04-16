@@ -1,10 +1,14 @@
 package com.aira.health.presentation.navigation
 
+import android.net.Uri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.aira.health.domain.model.AuthState
+import com.aira.health.domain.model.StravaConnectionState
+import com.aira.health.domain.model.StravaSyncSummary
 import com.aira.health.domain.model.UserSession
+import com.aira.health.domain.repository.StravaRepository
 import com.aira.health.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +48,8 @@ class AppEntryViewModelTest {
     @Test
     fun unauthenticatedUserKeepsAuthStepIncomplete() = runTest {
         val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
-        val viewModel = AppEntryViewModel(createDataStore(), repository)
+        val stravaRepository = FakeStravaRepository()
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
 
         val state = viewModel.awaitReadyState()
 
@@ -57,7 +62,8 @@ class AppEntryViewModelTest {
     fun googleIdTokenSuccessClearsErrorAndCompletesAuthStep() = runTest {
         val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
         repository.googleIdTokenResult = Result.success(authenticatedSession())
-        val viewModel = AppEntryViewModel(createDataStore(), repository)
+        val stravaRepository = FakeStravaRepository()
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
 
         viewModel.signInWithGoogleIdToken("token")
         advanceUntilIdle()
@@ -74,7 +80,8 @@ class AppEntryViewModelTest {
     fun googleIdTokenFailureExposesErrorAndKeepsAuthStepIncomplete() = runTest {
         val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
         repository.googleIdTokenResult = Result.failure(IllegalStateException("Bad token"))
-        val viewModel = AppEntryViewModel(createDataStore(), repository)
+        val stravaRepository = FakeStravaRepository()
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
 
         viewModel.signInWithGoogleIdToken("bad")
         advanceUntilIdle()
@@ -91,7 +98,8 @@ class AppEntryViewModelTest {
     fun continueAsGuestMarksAuthStepCompleted() = runTest {
         val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
         repository.guestResult = Result.success(guestSession())
-        val viewModel = AppEntryViewModel(createDataStore(), repository)
+        val stravaRepository = FakeStravaRepository()
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
 
         viewModel.continueAsGuest()
         advanceUntilIdle()
@@ -106,7 +114,10 @@ class AppEntryViewModelTest {
     @Test
     fun completeOnboardingPersistsCompletionFlag() = runTest {
         val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
-        val viewModel = AppEntryViewModel(createDataStore(), repository)
+        val stravaRepository = FakeStravaRepository(
+            initialConnectionState = StravaConnectionState(isConnected = true)
+        )
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
 
         viewModel.completeOnboarding()
         advanceUntilIdle()
@@ -116,6 +127,23 @@ class AppEntryViewModelTest {
             .first()
 
         assertTrue(state.onboardingCompleted)
+    }
+
+    @Test
+    fun startStravaConnectionPublishesPendingAuthUrl() = runTest {
+        val repository = FakeUserRepository(initialAuthState = AuthState.Guest)
+        val stravaRepository = FakeStravaRepository().apply {
+            createAuthorizationUrlResult = Result.success("aira://example")
+        }
+        val viewModel = AppEntryViewModel(createDataStore(), repository, stravaRepository)
+
+        viewModel.startStravaConnection()
+        advanceUntilIdle()
+
+        val state = viewModel.awaitReadyState()
+        assertEquals("aira://example", state.pendingStravaAuthUrl)
+        assertEquals(null, state.stravaErrorMessage)
+        assertFalse(state.stravaAuthInProgress)
     }
 
     private suspend fun AppEntryViewModel.awaitReadyState(): AppEntryUiState {
@@ -229,5 +257,40 @@ private class FakeUserRepository(
 
     override suspend fun getCurrentSession(): UserSession? {
         return (authState.value as? AuthState.Authenticated)?.session
+    }
+}
+
+private class FakeStravaRepository(
+    initialConnectionState: StravaConnectionState = StravaConnectionState()
+) : StravaRepository {
+
+    private val state = MutableStateFlow(initialConnectionState)
+
+    var createAuthorizationUrlResult: Result<String> = Result.failure(
+        IllegalStateException("not configured")
+    )
+    var handleCallbackResult: Result<Unit> = Result.success(Unit)
+    var disconnectResult: Result<Unit> = Result.success(Unit)
+    var syncResult: Result<StravaSyncSummary> = Result.success(
+        StravaSyncSummary(
+            insertedCount = 0,
+            skippedCount = 0,
+            pagesFetched = 0,
+            backfillComplete = false
+        )
+    )
+
+    override fun observeConnectionState(): Flow<StravaConnectionState> = state
+
+    override suspend fun createAuthorizationUrl(): Result<String> = createAuthorizationUrlResult
+
+    override suspend fun handleAuthorizationCallback(callbackUri: Uri): Result<Unit> {
+        return handleCallbackResult
+    }
+
+    override suspend fun disconnect(): Result<Unit> = disconnectResult
+
+    override suspend fun syncActivities(maxPagesPerRun: Int): Result<StravaSyncSummary> {
+        return syncResult
     }
 }

@@ -27,6 +27,11 @@ fun getLocalProperty(key: String): String {
         ?: ""
 }
 
+fun getLocalPropertyOrDefault(key: String, defaultValue: String): String {
+    val value = getLocalProperty(key)
+    return if (value.isBlank()) defaultValue else value
+}
+
 android {
     namespace = "com.aira.health"
     compileSdk = 36
@@ -39,6 +44,13 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "STRAVA_CLIENT_ID", "\"${getLocalProperty("STRAVA_CLIENT_ID")}\"")
+        buildConfigField("String", "STRAVA_CLIENT_SECRET", "\"${getLocalProperty("STRAVA_CLIENT_SECRET")}\"")
+        buildConfigField(
+            "String",
+            "STRAVA_REDIRECT_URI",
+            "\"${getLocalPropertyOrDefault("STRAVA_REDIRECT_URI", "aira://strava-auth/callback")}\""
+        )
     }
 
     // Product Flavors: dev / staging / prod

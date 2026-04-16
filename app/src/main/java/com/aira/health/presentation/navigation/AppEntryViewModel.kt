@@ -8,7 +8,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aira.health.domain.model.AuthState
+import com.aira.health.domain.model.StravaConnectionState
+import com.aira.health.domain.repository.StravaRepository
 import com.aira.health.domain.repository.UserRepository
+import android.net.Uri
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +29,11 @@ data class AppEntryUiState(
     val forceOledDarkTheme: Boolean? = null,
     val authState: AuthState = AuthState.Loading,
     val authStepCompleted: Boolean = false,
+    val stravaConnected: Boolean = false,
+    val stravaReconnectRequired: Boolean = false,
+    val stravaAuthInProgress: Boolean = false,
+    val pendingStravaAuthUrl: String? = null,
+    val stravaErrorMessage: String? = null,
     val authInProgress: Boolean = false,
     val authErrorMessage: String? = null,
     val loading: Boolean = true
@@ -37,10 +45,17 @@ private data class AuthActionState(
     val errorMessage: String? = null
 )
 
+private data class StravaActionState(
+    val inProgress: Boolean = false,
+    val pendingAuthUrl: String? = null,
+    val errorMessage: String? = null
+)
+
 @HiltViewModel
 class AppEntryViewModel @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val stravaRepository: StravaRepository
 ) : ViewModel() {
 
     private companion object {
@@ -49,6 +64,7 @@ class AppEntryViewModel @Inject constructor(
     }
 
     private val authActionState = MutableStateFlow(AuthActionState())
+    private val stravaActionState = MutableStateFlow(StravaActionState())
 
     private val appPrefs = dataStore.data
         .catch { emit(emptyPreferences()) }
@@ -62,21 +78,32 @@ class AppEntryViewModel @Inject constructor(
     private val authState = userRepository.observeAuthState()
         .catch { emit(AuthState.Error("Unable to read auth state")) }
 
+    private val stravaConnectionState = stravaRepository.observeConnectionState()
+        .catch { emit(StravaConnectionState()) }
+
     val uiState: StateFlow<AppEntryUiState> = combine(
         appPrefs,
         authState,
-        authActionState
-    ) { prefs, currentAuthState, actionState ->
+        authActionState,
+        stravaConnectionState,
+        stravaActionState
+    ) { prefs, currentAuthState, actionState, stravaState, stravaAction ->
         val onboardingCompleted = prefs.first
         val forceOledDarkTheme = prefs.second
         val authStepCompleted =
             currentAuthState is AuthState.Authenticated || actionState.guestAccessGranted
+        val stravaStepCompleted = stravaState.isConnected && !stravaState.reconnectRequired
 
         AppEntryUiState(
             onboardingCompleted = onboardingCompleted,
             forceOledDarkTheme = forceOledDarkTheme,
             authState = currentAuthState,
             authStepCompleted = authStepCompleted,
+            stravaConnected = stravaStepCompleted,
+            stravaReconnectRequired = stravaState.reconnectRequired,
+            stravaAuthInProgress = stravaAction.inProgress,
+            pendingStravaAuthUrl = stravaAction.pendingAuthUrl,
+            stravaErrorMessage = stravaAction.errorMessage,
             authInProgress = actionState.inProgress,
             authErrorMessage = actionState.errorMessage,
             loading = false
@@ -107,6 +134,10 @@ class AppEntryViewModel @Inject constructor(
 
     fun setAuthErrorMessage(message: String) {
         authActionState.update { it.copy(inProgress = false, errorMessage = message) }
+    }
+
+    fun setStravaErrorMessage(message: String) {
+        stravaActionState.update { it.copy(inProgress = false, errorMessage = message) }
     }
 
     fun signInWithEmail(email: String, password: String) {
@@ -161,6 +192,58 @@ class AppEntryViewModel @Inject constructor(
                     it.copy(
                         inProgress = false,
                         errorMessage = result.exceptionOrNull()?.message ?: "Guest sign-in failed"
+                    )
+                }
+            }
+        }
+    }
+
+    fun startStravaConnection() {
+        stravaActionState.update { it.copy(inProgress = true, errorMessage = null, pendingAuthUrl = null) }
+
+        viewModelScope.launch {
+            val result = stravaRepository.createAuthorizationUrl()
+            stravaActionState.update {
+                if (result.isSuccess) {
+                    it.copy(
+                        inProgress = false,
+                        pendingAuthUrl = result.getOrNull(),
+                        errorMessage = null
+                    )
+                } else {
+                    it.copy(
+                        inProgress = false,
+                        pendingAuthUrl = null,
+                        errorMessage = result.exceptionOrNull()?.message ?: "Unable to connect Strava"
+                    )
+                }
+            }
+        }
+    }
+
+    fun consumePendingStravaAuthUrl() {
+        stravaActionState.update { it.copy(pendingAuthUrl = null) }
+    }
+
+    fun handleStravaAuthCallback(rawUri: String) {
+        val callbackUri = runCatching { Uri.parse(rawUri) }.getOrNull()
+        if (callbackUri == null) {
+            stravaActionState.update {
+                it.copy(inProgress = false, errorMessage = "Invalid Strava callback URI")
+            }
+            return
+        }
+
+        stravaActionState.update { it.copy(inProgress = true, errorMessage = null) }
+        viewModelScope.launch {
+            val result = stravaRepository.handleAuthorizationCallback(callbackUri)
+            stravaActionState.update {
+                if (result.isSuccess) {
+                    it.copy(inProgress = false, errorMessage = null)
+                } else {
+                    it.copy(
+                        inProgress = false,
+                        errorMessage = result.exceptionOrNull()?.message ?: "Strava authorization failed"
                     )
                 }
             }

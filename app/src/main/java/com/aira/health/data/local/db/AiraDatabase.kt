@@ -26,7 +26,7 @@ import net.sqlcipher.database.SupportFactory
         CardioLoadHistory::class,
         AiConversationMessage::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -52,6 +52,13 @@ abstract class AiraDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN externalId TEXT")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_workout_sessions_sourcePackage_externalId ON workout_sessions(sourcePackage, externalId)")
+            }
+        }
+
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
             val factory = SupportFactory(passphrase.copyOf())
 
@@ -62,6 +69,7 @@ abstract class AiraDatabase : RoomDatabase() {
             )
                 .openHelperFactory(factory)
                 .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_2_3)
                 .fallbackToDestructiveMigration() // Replace with explicit migrations before v1 release
                 .build()
         }

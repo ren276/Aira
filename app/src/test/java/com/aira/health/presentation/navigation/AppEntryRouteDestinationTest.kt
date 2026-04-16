@@ -49,11 +49,27 @@ class AppEntryRouteDestinationTest {
             loading = false,
             onboardingCompleted = false,
             authStepCompleted = true,
+            stravaConnected = true,
             authState = AuthState.Guest
         )
 
         val destination = resolveAppEntryDestination(state)
 
         assertEquals(AppEntryDestination.PERMISSION_ONBOARDING, destination)
+    }
+
+    @Test
+    fun resolveDestinationReturnsStravaOnboardingWhenAuthCompleteButStravaMissing() {
+        val state = AppEntryUiState(
+            loading = false,
+            onboardingCompleted = false,
+            authStepCompleted = true,
+            stravaConnected = false,
+            authState = AuthState.Guest
+        )
+
+        val destination = resolveAppEntryDestination(state)
+
+        assertEquals(AppEntryDestination.STRAVA_ONBOARDING, destination)
     }
 }

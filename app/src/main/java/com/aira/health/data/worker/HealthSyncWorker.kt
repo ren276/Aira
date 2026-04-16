@@ -19,6 +19,7 @@ import com.aira.health.data.local.dao.WorkoutSessionDao
 import com.aira.health.domain.repository.HealthDataRepository
 import com.aira.health.domain.usecase.ComputeDailyScoresUseCase
 import com.aira.health.domain.usecase.IngestHealthDataUseCase
+import com.aira.health.domain.usecase.SyncStravaActivitiesUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.Instant
@@ -48,6 +49,7 @@ class HealthSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val ingestHealthData: IngestHealthDataUseCase,
+    private val syncStravaActivities: SyncStravaActivitiesUseCase,
     private val computeDailyScores: ComputeDailyScoresUseCase,
     private val hrSampleDao: HrSampleDao,
     private val hrvSampleDao: HrvSampleDao,
@@ -61,6 +63,10 @@ class HealthSyncWorker @AssistedInject constructor(
             // Step 1 — Ingest fresh health data from Health Connect
             // Ingest should not abort score computation when one source read fails.
             runCatching { ingestHealthData() }
+
+            // Step 1b — Ingest Strava activities into Room. Keep score computation resilient
+            // by handling external API failures without aborting the worker.
+            runCatching { syncStravaActivities() }
 
             // Step 2 — Compute and persist scores for today
             val today = LocalDate.now().toString()
