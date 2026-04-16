@@ -144,7 +144,7 @@ Plans:
 **Goal:** Add mandatory Strava onboarding connection, full-history plus incremental activity ingestion, and local-first persistence that feeds Aira daily metrics.
 **Requirements**: [DATA-01, DATA-04, SYNC-01, UI-02, UI-03]
 **Depends on:** Phase 5
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 **Success Criteria** (what must be TRUE):
 
@@ -155,4 +155,4 @@ Plans:
 
 Plans:
 
-- [ ] 06-01-PLAN.md — Strava onboarding, OAuth lifecycle, full-history backfill, incremental sync, and metrics persistence
+- [x] 06-01-PLAN.md — Strava onboarding, OAuth lifecycle, full-history backfill, incremental sync, and metrics persistence
