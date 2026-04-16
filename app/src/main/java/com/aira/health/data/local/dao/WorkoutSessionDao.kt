@@ -28,6 +28,20 @@ interface WorkoutSessionDao {
     @Query("SELECT * FROM workout_sessions WHERE sourcePackage = :sourcePackage AND externalId = :externalId LIMIT 1")
     suspend fun getBySourceAndExternalId(sourcePackage: String, externalId: String): WorkoutSession?
 
+    @Query(
+        "SELECT * FROM workout_sessions " +
+            "WHERE exerciseType = :exerciseType " +
+            "AND ABS(startTime - :startTime) <= :toleranceMs " +
+            "AND ABS(endTime - :endTime) <= :toleranceMs " +
+            "ORDER BY confidence DESC LIMIT 1"
+    )
+    suspend fun findBestMatchByTimeAndType(
+        startTime: Long,
+        endTime: Long,
+        exerciseType: String,
+        toleranceMs: Long
+    ): WorkoutSession?
+
     @Query("SELECT * FROM workout_sessions WHERE startTime >= :startMs AND startTime <= :endMs ORDER BY startTime ASC")
     fun observeRange(startMs: Long, endMs: Long): Flow<List<WorkoutSession>>
 

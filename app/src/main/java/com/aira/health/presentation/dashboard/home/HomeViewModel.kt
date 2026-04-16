@@ -1,10 +1,8 @@
 package com.aira.health.presentation.dashboard.home
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aira.health.BuildConfig
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.model.DailyMetrics
 import com.aira.health.data.worker.HealthSyncWorker
@@ -46,10 +44,6 @@ class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-
-    private companion object {
-        const val TAG = "AiraHomeDebug"
-    }
 
     private val _isSyncing = MutableStateFlow(false)
 
@@ -219,11 +213,8 @@ class HomeViewModel @Inject constructor(
             anomaly        = anomalyPayload
         )
     }
-    .onEach { state ->
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Home UI emission -> ${state.toDebugSummary()}")
-        }
-    }
+    .distinctUntilChanged()
+    .onEach { _ -> }
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

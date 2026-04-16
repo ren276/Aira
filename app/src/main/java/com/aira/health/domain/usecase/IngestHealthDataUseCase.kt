@@ -1,11 +1,9 @@
 package com.aira.health.domain.usecase
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.edit
-import com.aira.health.BuildConfig
 import com.aira.health.data.local.dao.HrSampleDao
 import com.aira.health.data.local.dao.HrvSampleDao
 import com.aira.health.data.local.dao.SleepSessionDao
@@ -38,7 +36,6 @@ class IngestHealthDataUseCase @Inject constructor(
 ) {
 
     companion object {
-        private const val TAG = "AiraHealthIngest"
         private val LAST_SYNC_KEY = longPreferencesKey("health_last_sync_epoch_ms")
         /** 14 days in milliseconds — used for first-launch backfill. */
         private const val BACKFILL_DAYS = 14L
@@ -69,13 +66,6 @@ class IngestHealthDataUseCase @Inject constructor(
         }
 
         val sourceAvailable = runCatching { repository.isAvailable() }.getOrDefault(false)
-
-        if (BuildConfig.DEBUG) {
-            Log.i(
-                TAG,
-                "Sync window start=$syncStart end=$now lastSyncMs=$lastSyncMs sourceAvailable=$sourceAvailable repository=${repository::class.java.simpleName}"
-            )
-        }
 
         var totalIngested = 0
 
@@ -114,13 +104,6 @@ class IngestHealthDataUseCase @Inject constructor(
         }
         totalIngested += resolvedSleep.size
 
-        if (BuildConfig.DEBUG) {
-            Log.i(
-                TAG,
-                "Health Connect raw counts -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}; resolved inserts -> hr=${resolvedHr.size}, hrv=${resolvedHrv.size}, sleep=${resolvedSleep.size}; totalIngested=$totalIngested"
-            )
-        }
-
         // ── Purge old raw samples (rolling 90-day window) ─────────────────────────
         val purgeBeforeMs = now.minus(PURGE_AFTER_DAYS, ChronoUnit.DAYS).toEpochMilli()
         hrSampleDao.purgeOlderThan(purgeBeforeMs)
@@ -128,10 +111,6 @@ class IngestHealthDataUseCase @Inject constructor(
 
         // ── Persist last successful sync timestamp ─────────────────────────────────
         dataStore.edit { it[LAST_SYNC_KEY] = now.toEpochMilli() }
-
-        if (BuildConfig.DEBUG) {
-            Log.i(TAG, "Ingest complete: lastSync=${now.toEpochMilli()} totalIngested=$totalIngested")
-        }
 
         return totalIngested
     }

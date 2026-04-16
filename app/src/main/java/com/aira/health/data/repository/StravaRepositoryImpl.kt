@@ -8,6 +8,7 @@ import com.aira.health.data.model.ConfidenceRouter
 import com.aira.health.data.remote.strava.StravaActivityDto
 import com.aira.health.data.remote.strava.StravaApiClient
 import com.aira.health.data.remote.strava.StravaApiException
+import com.aira.health.data.remote.strava.StravaRateLimitInfo
 import com.aira.health.data.strava.StravaConnectionStore
 import com.aira.health.data.strava.StravaSyncCursor
 import com.aira.health.data.strava.StravaTokenSession
@@ -39,6 +40,11 @@ class StravaRepositoryImpl @Inject constructor(
         const val TOKEN_EXPIRY_SKEW_SECONDS = 90L
         const val INCREMENTAL_OVERLAP_MS = 60L * 60L * 1000L
         const val DEFAULT_INCREMENTAL_LOOKBACK_MS = 14L * 24L * 60L * 60L * 1000L
+        const val DUPLICATE_TOLERANCE_MS = 5L * 60L * 1000L
+        const val RATE_LIMIT_PRETHROTTLE_RATIO = 0.90
+        const val RATE_LIMIT_DEFER_SECONDS = 15L * 60L
+        const val TRANSIENT_SERVER_DEFER_SECONDS = 5L * 60L
+        const val MAX_DEFER_SECONDS = 60L * 60L
     }
 
     override fun observeConnectionState(): Flow<StravaConnectionState> {
@@ -115,8 +121,24 @@ class StravaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncActivities(maxPagesPerRun: Int): Result<StravaSyncSummary> {
+        val nowMs = System.currentTimeMillis()
+        val deferredUntil = connectionStore.getSyncDeferredUntilEpochMs()
+        if (deferredUntil != null && nowMs < deferredUntil) {
+            val cursor = connectionStore.getSyncCursor()
+            return Result.success(
+                StravaSyncSummary(
+                    insertedCount = 0,
+                    skippedCount = 0,
+                    pagesFetched = 0,
+                    backfillComplete = cursor.backfillComplete,
+                    throttled = true,
+                    deferredUntilEpochMs = deferredUntil,
+                    message = "Strava sync is temporarily deferred and will retry automatically."
+                )
+            )
+        }
+
         return runCatching {
-            ensureClientConfigured(requireSecret = true)
             val accessToken = getValidAccessToken()
             val cursor = connectionStore.getSyncCursor()
 
@@ -135,11 +157,22 @@ class StravaRepositoryImpl @Inject constructor(
             }
 
             connectionStore.updateLastSync(System.currentTimeMillis())
+            connectionStore.clearSyncDeferral()
             summary
         }.onFailure { throwable ->
             if (throwable is StravaApiException && throwable.isAuthFailure) {
                 tokenStore.clear()
                 connectionStore.markReconnectRequired()
+                return@onFailure
+            }
+
+            if (throwable is StravaApiException && (throwable.isRateLimited || throwable.isTransientServerFailure)) {
+                val deferredUntilMs = deferSyncFromFailure(throwable)
+                connectionStore.deferSyncUntil(
+                    deferredUntilEpochMs = deferredUntilMs,
+                    errorCode = throwable.statusCode,
+                    errorMessage = userSafeSyncError(throwable.statusCode)
+                )
             }
         }
     }
@@ -156,13 +189,14 @@ class StravaRepositoryImpl @Inject constructor(
         var newestEpochMs = cursor.incrementalAfterEpochMs ?: 0L
 
         repeat(maxPagesPerRun) {
-            val activities = stravaApiClient.getActivities(
+            val page = stravaApiClient.getActivitiesPage(
                 accessToken = accessToken,
                 page = 1,
                 perPage = PER_PAGE,
                 afterEpochSeconds = null,
                 beforeEpochSeconds = nextBeforeEpochMs?.div(1000)
             )
+            val activities = page.activities
 
             if (activities.isEmpty()) {
                 val incrementalStart = if (newestEpochMs > 0L) newestEpochMs else System.currentTimeMillis()
@@ -196,6 +230,19 @@ class StravaRepositoryImpl @Inject constructor(
                     backfillComplete = true
                 )
             }
+
+            val throttledUntilMs = maybePreThrottle(page.rateLimits, page.retryAfterSeconds)
+            if (throttledUntilMs != null) {
+                return StravaSyncSummary(
+                    insertedCount = insertedCount,
+                    skippedCount = skippedCount,
+                    pagesFetched = pagesFetched,
+                    backfillComplete = false,
+                    throttled = true,
+                    deferredUntilEpochMs = throttledUntilMs,
+                    message = "Strava API limits are near capacity. Continuing backfill on next sync window."
+                )
+            }
         }
 
         return StravaSyncSummary(
@@ -222,13 +269,14 @@ class StravaRepositoryImpl @Inject constructor(
         var newestEpochMs = baselineAfterEpochMs
 
         for (page in 1..maxPagesPerRun) {
-            val activities = stravaApiClient.getActivities(
+            val activityPage = stravaApiClient.getActivitiesPage(
                 accessToken = accessToken,
                 page = page,
                 perPage = PER_PAGE,
                 afterEpochSeconds = incrementalAfterEpochSec,
                 beforeEpochSeconds = null
             )
+            val activities = activityPage.activities
             if (activities.isEmpty()) {
                 break
             }
@@ -241,6 +289,19 @@ class StravaRepositoryImpl @Inject constructor(
 
             if (activities.size < PER_PAGE) {
                 break
+            }
+
+            val throttledUntilMs = maybePreThrottle(activityPage.rateLimits, activityPage.retryAfterSeconds)
+            if (throttledUntilMs != null) {
+                return StravaSyncSummary(
+                    insertedCount = insertedCount,
+                    skippedCount = skippedCount,
+                    pagesFetched = pagesFetched,
+                    backfillComplete = true,
+                    throttled = true,
+                    deferredUntilEpochMs = throttledUntilMs,
+                    message = "Strava incremental sync paused briefly to respect API limits."
+                )
             }
         }
 
@@ -276,6 +337,21 @@ class StravaRepositoryImpl @Inject constructor(
             val durationSec = max(activity.movingTimeSec ?: 0, activity.elapsedTimeSec ?: 0)
             val safeDurationSec = max(durationSec, 60)
             val durationMin = max(1, safeDurationSec / 60)
+            val mappedExerciseType = mapExerciseType(activity)
+            val stravaConfidence = ConfidenceRouter.getConfidenceFloat(STRAVA_SOURCE_PACKAGE)
+
+            val bestExisting = workoutSessionDao.findBestMatchByTimeAndType(
+                startTime = startEpochMs,
+                endTime = startEpochMs + safeDurationSec * 1000L,
+                exerciseType = mappedExerciseType,
+                toleranceMs = DUPLICATE_TOLERANCE_MS
+            )
+            if (bestExisting != null && bestExisting.sourcePackage != STRAVA_SOURCE_PACKAGE) {
+                if (bestExisting.confidence >= stravaConfidence) {
+                    skippedCount += 1
+                    return@forEach
+                }
+            }
 
             val calculatedCalories = activity.calories?.toInt()
                 ?: activity.kiloJoules?.times(0.239_005_74f)?.toInt()
@@ -285,15 +361,14 @@ class StravaRepositoryImpl @Inject constructor(
                 WorkoutSession(
                     startTime = startEpochMs,
                     endTime = startEpochMs + safeDurationSec * 1000L,
-                    exerciseType = (activity.sportType ?: activity.type ?: "WORKOUT")
-                        .uppercase(Locale.US),
+                    exerciseType = mappedExerciseType,
                     durationMin = durationMin,
                     activeCalories = max(0, calculatedCalories),
                     avgHr = max(0, (activity.averageHeartRate ?: 0f).toInt()),
                     maxHr = max(0, (activity.maxHeartRate ?: 0f).toInt()),
                     sourcePackage = STRAVA_SOURCE_PACKAGE,
                     externalId = activity.id.toString(),
-                    confidence = ConfidenceRouter.getConfidenceFloat(STRAVA_SOURCE_PACKAGE)
+                    confidence = stravaConfidence
                 )
             )
 
@@ -364,6 +439,60 @@ class StravaRepositoryImpl @Inject constructor(
             .filter { it.isNotEmpty() }
             .toSet()
         return granted.contains("activity:read") || granted.contains("activity:read_all")
+    }
+
+    private fun mapExerciseType(activity: StravaActivityDto): String {
+        val raw = (activity.sportType ?: activity.type ?: "WORKOUT")
+            .trim()
+            .uppercase(Locale.US)
+
+        return when (raw) {
+            "RUN", "TRAILRUN", "VIRTUALRUN", "RUNNING" -> "RUNNING"
+            "RIDE", "VIRTUALRIDE", "EBIKERIDE", "GRAVELRIDE", "MOUNTAINBIKERIDE", "CYCLING" -> "CYCLING"
+            "WALK", "WALKING" -> "WALKING"
+            "HIKE", "HIKING" -> "HIKING"
+            "SWIM", "SWIMMING" -> "SWIMMING"
+            "WORKOUT", "CROSSFIT", "WEIGHTTRAINING", "ELLIPTICAL" -> "WORKOUT"
+            else -> raw.ifBlank { "WORKOUT" }
+        }
+    }
+
+    private suspend fun maybePreThrottle(
+        rateLimits: StravaRateLimitInfo?,
+        retryAfterSeconds: Long?
+    ): Long? {
+        if (rateLimits?.shouldPreThrottle(RATE_LIMIT_PRETHROTTLE_RATIO) != true) {
+            return null
+        }
+        val deferSeconds = (retryAfterSeconds ?: RATE_LIMIT_DEFER_SECONDS)
+            .coerceIn(60L, MAX_DEFER_SECONDS)
+        val deferredUntilMs = System.currentTimeMillis() + deferSeconds * 1000L
+        connectionStore.deferSyncUntil(
+            deferredUntilEpochMs = deferredUntilMs,
+            errorCode = 429,
+            errorMessage = "Strava sync is pacing requests to stay within API limits."
+        )
+        return deferredUntilMs
+    }
+
+    private fun deferSyncFromFailure(exception: StravaApiException): Long {
+        val fallbackSeconds = if (exception.isRateLimited) {
+            RATE_LIMIT_DEFER_SECONDS
+        } else {
+            TRANSIENT_SERVER_DEFER_SECONDS
+        }
+        val deferSeconds = (exception.retryAfterSeconds ?: fallbackSeconds)
+            .coerceIn(60L, MAX_DEFER_SECONDS)
+        return System.currentTimeMillis() + deferSeconds * 1000L
+    }
+
+    private fun userSafeSyncError(statusCode: Int): String {
+        return when (statusCode) {
+            401, 403 -> "Strava connection expired. Reconnect to continue syncing."
+            429 -> "Strava is rate limiting requests. Sync will resume automatically shortly."
+            in 500..599 -> "Strava is temporarily unavailable. Aira will retry automatically."
+            else -> "Strava sync encountered a temporary issue. Aira will retry automatically."
+        }
     }
 
     private data class IngestOutcome(

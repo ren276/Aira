@@ -13,13 +13,18 @@ import kotlinx.serialization.json.Json
 class StravaApiException(
     val statusCode: Int,
     message: String,
-    val retryAfterSeconds: Long? = null
+    val retryAfterSeconds: Long? = null,
+    val endpointPath: String? = null,
+    val rateLimits: StravaRateLimitInfo? = null
 ) : RuntimeException(message) {
     val isAuthFailure: Boolean
         get() = statusCode == HttpURLConnection.HTTP_UNAUTHORIZED || statusCode == HttpURLConnection.HTTP_FORBIDDEN
 
     val isRateLimited: Boolean
         get() = statusCode == 429
+
+    val isTransientServerFailure: Boolean
+        get() = statusCode in 500..599
 }
 
 class StravaApiClient @Inject constructor() {
@@ -68,13 +73,13 @@ class StravaApiClient @Inject constructor() {
         postOAuthForm(body = body, endpointPath = "deauthorize")
     }
 
-    suspend fun getActivities(
+    suspend fun getActivitiesPage(
         accessToken: String,
         page: Int,
         perPage: Int,
         afterEpochSeconds: Long?,
         beforeEpochSeconds: Long?
-    ): List<StravaActivityDto> = withContext(Dispatchers.IO) {
+    ): StravaActivitiesPage = withContext(Dispatchers.IO) {
         val query = buildString {
             append("per_page=").append(perPage)
             append("&page=").append(page)
@@ -96,15 +101,39 @@ class StravaApiClient @Inject constructor() {
 
         val status = connection.responseCode
         val payload = readResponsePayload(connection)
+        val rateLimits = parseRateLimitInfo(connection)
+        val retryAfter = connection.getHeaderField("Retry-After")?.toLongOrNull()
         if (status in 200..299) {
-            return@withContext json.decodeFromString<List<StravaActivityDto>>(payload)
+            return@withContext StravaActivitiesPage(
+                activities = json.decodeFromString<List<StravaActivityDto>>(payload),
+                rateLimits = rateLimits,
+                retryAfterSeconds = retryAfter
+            )
         }
 
         throw StravaApiException(
             statusCode = status,
             message = payload.ifBlank { "Strava activities request failed ($status)" },
-            retryAfterSeconds = connection.getHeaderField("Retry-After")?.toLongOrNull()
+            retryAfterSeconds = retryAfter,
+            endpointPath = "/athlete/activities",
+            rateLimits = rateLimits
         )
+    }
+
+    suspend fun getActivities(
+        accessToken: String,
+        page: Int,
+        perPage: Int,
+        afterEpochSeconds: Long?,
+        beforeEpochSeconds: Long?
+    ): List<StravaActivityDto> {
+        return getActivitiesPage(
+            accessToken = accessToken,
+            page = page,
+            perPage = perPage,
+            afterEpochSeconds = afterEpochSeconds,
+            beforeEpochSeconds = beforeEpochSeconds
+        ).activities
     }
 
     private suspend fun postToken(body: Map<String, String>): StravaTokenResponse = withContext(Dispatchers.IO) {
@@ -143,7 +172,47 @@ class StravaApiClient @Inject constructor() {
         throw StravaApiException(
             statusCode = status,
             message = payload.ifBlank { "Strava oauth $endpointPath request failed ($status)" },
-            retryAfterSeconds = connection.getHeaderField("Retry-After")?.toLongOrNull()
+            retryAfterSeconds = connection.getHeaderField("Retry-After")?.toLongOrNull(),
+            endpointPath = "/oauth/$endpointPath",
+            rateLimits = parseRateLimitInfo(connection)
+        )
+    }
+
+    private fun parseRateLimitInfo(connection: HttpURLConnection): StravaRateLimitInfo? {
+        val overall = parseRateLimitWindow(
+            limitHeader = connection.getHeaderField("X-RateLimit-Limit"),
+            usageHeader = connection.getHeaderField("X-RateLimit-Usage")
+        )
+        val read = parseRateLimitWindow(
+            limitHeader = connection.getHeaderField("X-ReadRateLimit-Limit"),
+            usageHeader = connection.getHeaderField("X-ReadRateLimit-Usage")
+        )
+        if (overall == null && read == null) {
+            return null
+        }
+        return StravaRateLimitInfo(overall = overall, read = read)
+    }
+
+    private fun parseRateLimitWindow(
+        limitHeader: String?,
+        usageHeader: String?
+    ): StravaRateLimitWindow? {
+        val limitParts = limitHeader
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?: return null
+        val usageParts = usageHeader
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?: return null
+        if (limitParts.size < 2 || usageParts.size < 2) {
+            return null
+        }
+        return StravaRateLimitWindow(
+            shortWindowLimit = limitParts[0],
+            dailyLimit = limitParts[1],
+            shortWindowUsage = usageParts[0],
+            dailyUsage = usageParts[1]
         )
     }
 

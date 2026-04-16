@@ -1,9 +1,7 @@
 package com.aira.health.di
 
 import android.content.Context
-import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
-import com.aira.health.BuildConfig
 import com.aira.health.data.repository.HealthConnectRepositoryImpl
 import com.aira.health.data.repository.GoogleFitRepositoryImpl
 import com.aira.health.data.repository.SourceMergingHealthDataRepository
@@ -18,8 +16,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object HealthDataModule {
-
-    private const val TAG = "AiraHealthSource"
 
     /**
      * Provides a [HealthConnectClient] if Health Connect is available on this device.
@@ -37,12 +33,6 @@ object HealthDataModule {
             HealthConnectClient.getOrCreate(context)
         } else {
             null
-        }
-        if (BuildConfig.DEBUG) {
-            Log.i(
-                TAG,
-                "HealthConnectClient selection -> sdkStatus=$sdkStatus clientAvailable=${client != null}"
-            )
         }
         return client
     }
@@ -66,12 +56,6 @@ object HealthDataModule {
             )
         } else {
             googleFitRepository
-        }
-        if (BuildConfig.DEBUG) {
-            Log.i(
-                TAG,
-                "HealthDataRepository selection -> healthConnectClient=${healthConnectClient != null} selected=${repository::class.java.simpleName}"
-            )
         }
         return repository
     }

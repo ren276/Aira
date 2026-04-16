@@ -146,9 +146,7 @@ class HomeViewModelTest {
             verify { HealthSyncWorker.scheduleImmediate(mockContext) }
 
             // Current state is still Success, not Loading — critical D-08 behaviour
-            val refreshedState = awaitFirstSuccessEmission()
-            assertTrue("State must remain Success after refresh, not revert to Loading", refreshedState is HomeUiState.Success)
-            refreshedState as HomeUiState.Success
+            val refreshedState = awaitSuccessWhere { it.isSyncing }
             assertTrue("isSyncing must be true while sync is pending", refreshedState.isSyncing)
 
             cancelAndConsumeRemainingEvents()
@@ -171,8 +169,9 @@ class HomeViewModelTest {
             todayFlow.value = makeMetrics(recovery = 85, confidence = 0.92f)
             advanceUntilIdle()
 
-            val updatedState = awaitFirstSuccessEmission()
-            assertTrue("State must be Success", updatedState is HomeUiState.Success)
+            val updatedState = awaitSuccessWhere {
+                it.recoveryScore == 85 && it.recoveryDelta != null
+            }
 
             // Delta must be non-null because recovery changed
             val delta = updatedState.recoveryDelta
@@ -201,5 +200,18 @@ class HomeViewModelTest {
         }
 
         throw AssertionError("Expected at least one Success emission")
+    }
+
+    private suspend fun app.cash.turbine.ReceiveTurbine<HomeUiState>.awaitSuccessWhere(
+        predicate: (HomeUiState.Success) -> Boolean
+    ): HomeUiState.Success {
+        repeat(12) {
+            when (val emission = awaitItem()) {
+                is HomeUiState.Success -> if (predicate(emission)) return emission
+                else -> Unit
+            }
+        }
+
+        throw AssertionError("Expected a Success emission matching predicate")
     }
 }

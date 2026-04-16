@@ -29,6 +29,11 @@ class StravaConnectionStore @Inject constructor(
         val STRAVA_BACKFILL_COMPLETE = booleanPreferencesKey("strava_backfill_complete")
         val STRAVA_BACKFILL_BEFORE_EPOCH_MS = longPreferencesKey("strava_backfill_before_epoch_ms")
         val STRAVA_INCREMENTAL_AFTER_EPOCH_MS = longPreferencesKey("strava_incremental_after_epoch_ms")
+        val STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS = longPreferencesKey("strava_sync_defer_until_epoch_ms")
+        val STRAVA_LAST_SYNC_ERROR_CODE = longPreferencesKey("strava_last_sync_error_code")
+        val STRAVA_LAST_SYNC_ERROR_MESSAGE = stringPreferencesKey("strava_last_sync_error_message")
+        val STRAVA_HEALTH_CONNECT_MIRROR_ENABLED =
+            booleanPreferencesKey("strava_health_connect_mirror_enabled")
     }
 
     fun observeConnectionState(): Flow<StravaConnectionState> {
@@ -39,7 +44,10 @@ class StravaConnectionStore @Inject constructor(
                     isConnected = prefs[STRAVA_CONNECTED] ?: false,
                     reconnectRequired = prefs[STRAVA_RECONNECT_REQUIRED] ?: false,
                     athleteId = prefs[STRAVA_ATHLETE_ID],
-                    lastSyncEpochMs = prefs[STRAVA_LAST_SYNC_EPOCH_MS]
+                    lastSyncEpochMs = prefs[STRAVA_LAST_SYNC_EPOCH_MS],
+                    deferredSyncUntilEpochMs = prefs[STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS],
+                    lastSyncErrorCode = prefs[STRAVA_LAST_SYNC_ERROR_CODE]?.toInt(),
+                    lastSyncErrorMessage = prefs[STRAVA_LAST_SYNC_ERROR_MESSAGE]
                 )
             }
     }
@@ -68,6 +76,9 @@ class StravaConnectionStore @Inject constructor(
             prefs.remove(STRAVA_BACKFILL_BEFORE_EPOCH_MS)
             prefs.remove(STRAVA_INCREMENTAL_AFTER_EPOCH_MS)
             prefs.remove(STRAVA_LAST_SYNC_EPOCH_MS)
+            prefs.remove(STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_CODE)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_MESSAGE)
         }
     }
 
@@ -88,6 +99,9 @@ class StravaConnectionStore @Inject constructor(
             prefs.remove(STRAVA_BACKFILL_COMPLETE)
             prefs.remove(STRAVA_BACKFILL_BEFORE_EPOCH_MS)
             prefs.remove(STRAVA_INCREMENTAL_AFTER_EPOCH_MS)
+            prefs.remove(STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_CODE)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_MESSAGE)
         }
     }
 
@@ -131,6 +145,57 @@ class StravaConnectionStore @Inject constructor(
     suspend fun updateLastSync(syncEpochMs: Long) {
         dataStore.edit { prefs ->
             prefs[STRAVA_LAST_SYNC_EPOCH_MS] = syncEpochMs
+            prefs.remove(STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_CODE)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_MESSAGE)
+        }
+    }
+
+    suspend fun getSyncDeferredUntilEpochMs(): Long? {
+        return dataStore.data
+            .catch { emit(emptyPreferences()) }
+            .map { it[STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS] }
+            .first()
+    }
+
+    suspend fun deferSyncUntil(
+        deferredUntilEpochMs: Long,
+        errorCode: Int? = null,
+        errorMessage: String? = null
+    ) {
+        dataStore.edit { prefs ->
+            prefs[STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS] = deferredUntilEpochMs
+            if (errorCode != null) {
+                prefs[STRAVA_LAST_SYNC_ERROR_CODE] = errorCode.toLong()
+            } else {
+                prefs.remove(STRAVA_LAST_SYNC_ERROR_CODE)
+            }
+            if (!errorMessage.isNullOrBlank()) {
+                prefs[STRAVA_LAST_SYNC_ERROR_MESSAGE] = errorMessage
+            } else {
+                prefs.remove(STRAVA_LAST_SYNC_ERROR_MESSAGE)
+            }
+        }
+    }
+
+    suspend fun clearSyncDeferral() {
+        dataStore.edit { prefs ->
+            prefs.remove(STRAVA_SYNC_DEFER_UNTIL_EPOCH_MS)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_CODE)
+            prefs.remove(STRAVA_LAST_SYNC_ERROR_MESSAGE)
+        }
+    }
+
+    suspend fun isHealthConnectMirrorEnabled(): Boolean {
+        return dataStore.data
+            .catch { emit(emptyPreferences()) }
+            .map { it[STRAVA_HEALTH_CONNECT_MIRROR_ENABLED] ?: false }
+            .first()
+    }
+
+    suspend fun setHealthConnectMirrorEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[STRAVA_HEALTH_CONNECT_MIRROR_ENABLED] = enabled
         }
     }
 }

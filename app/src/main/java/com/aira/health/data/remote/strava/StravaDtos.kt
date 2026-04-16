@@ -34,3 +34,37 @@ data class StravaActivityDto(
     @SerialName("start_date") val startDate: String,
     @SerialName("start_date_local") val startDateLocal: String? = null
 )
+
+data class StravaRateLimitWindow(
+    val shortWindowLimit: Int,
+    val dailyLimit: Int,
+    val shortWindowUsage: Int,
+    val dailyUsage: Int
+) {
+    fun shortUsageRatio(): Double =
+        if (shortWindowLimit <= 0) 0.0 else shortWindowUsage.toDouble() / shortWindowLimit.toDouble()
+
+    fun dailyUsageRatio(): Double =
+        if (dailyLimit <= 0) 0.0 else dailyUsage.toDouble() / dailyLimit.toDouble()
+
+    fun maxUsageRatio(): Double = maxOf(shortUsageRatio(), dailyUsageRatio())
+}
+
+data class StravaRateLimitInfo(
+    val overall: StravaRateLimitWindow? = null,
+    val read: StravaRateLimitWindow? = null
+) {
+    fun maxUsageRatio(): Double = maxOf(
+        overall?.maxUsageRatio() ?: 0.0,
+        read?.maxUsageRatio() ?: 0.0
+    )
+
+    fun shouldPreThrottle(thresholdRatio: Double = 0.90): Boolean =
+        maxUsageRatio() >= thresholdRatio
+}
+
+data class StravaActivitiesPage(
+    val activities: List<StravaActivityDto>,
+    val rateLimits: StravaRateLimitInfo? = null,
+    val retryAfterSeconds: Long? = null
+)

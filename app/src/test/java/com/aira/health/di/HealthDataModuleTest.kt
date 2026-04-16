@@ -2,8 +2,8 @@ package com.aira.health.di
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
-import com.aira.health.data.repository.HealthConnectRepositoryImpl
 import com.aira.health.data.repository.GoogleFitRepositoryImpl
+import com.aira.health.data.repository.SourceMergingHealthDataRepository
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import org.junit.jupiter.api.AfterEach
@@ -24,7 +24,7 @@ class HealthDataModuleTest {
 
         val repository = HealthDataModule.provideHealthDataRepository(context, client)
 
-        assertTrue(repository is HealthConnectRepositoryImpl)
+        assertTrue(repository is SourceMergingHealthDataRepository)
     }
 
     @Test
