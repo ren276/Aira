@@ -1,6 +1,6 @@
 package com.aira.health.ai.runtime
 
-import com.google.mediapipe.tasks.genai.llminference.LlmInference
+
 
 /**
  * Immutable configuration for the on-device AI runtime engine.
@@ -34,7 +34,7 @@ data class RuntimeConfig(
      * Preferred inference backend.
      * CPU is the safe default for this phase — GPU/OpenCL has device-specific stability risks.
      */
-    val backend: LlmInference.Backend = LlmInference.Backend.CPU,
+    val backend: HardwareBackend = HardwareBackend.CPU,
 
     /** Coroutine-level timeout applied around each generation call. */
     val timeoutMillis: Long = DEFAULT_TIMEOUT_MS,
@@ -48,4 +48,6 @@ data class RuntimeConfig(
         const val DEFAULT_RANDOM_SEED: Int = 7
         const val DEFAULT_TIMEOUT_MS: Long = 2_500L
     }
+
+    enum class HardwareBackend { CPU, GPU }
 }

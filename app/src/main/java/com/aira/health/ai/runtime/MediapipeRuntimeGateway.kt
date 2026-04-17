@@ -132,9 +132,15 @@ class MediapipeRuntimeGateway @Inject constructor(
             return try {
                 val modelPath = resolveModelPath()
                 validateModelPath(modelPath)
+                
+                val mpBackend = when (config.backend) {
+                    RuntimeConfig.HardwareBackend.CPU -> LlmInference.Backend.CPU
+                    RuntimeConfig.HardwareBackend.GPU -> LlmInference.Backend.GPU
+                }
+                
                 val options = LlmInference.LlmInferenceOptions.builder()
                     .setModelPath(modelPath)
-                    .setPreferredBackend(config.backend)
+                    .setPreferredBackend(mpBackend)
                     .setMaxTokens(config.maxTokens)
                     .setMaxTopK(config.maxTopK)
                     .build()
