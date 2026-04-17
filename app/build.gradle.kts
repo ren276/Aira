@@ -223,6 +223,11 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.test.manifest)
+    
+    // Macrobenchmark & Performance testing (Phase 07)
+    implementation(libs.profileinstaller)
+    androidTestImplementation(libs.benchmark.macro.junit4)
+    androidTestImplementation(libs.uiautomator)
 }
 
 kotlin {
