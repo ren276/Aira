@@ -27,6 +27,11 @@ fun getLocalProperty(key: String): String {
         ?: ""
 }
 
+fun getLocalPropertyOrDefault(key: String, defaultValue: String): String {
+    val value = getLocalProperty(key)
+    return if (value.isBlank()) defaultValue else value
+}
+
 android {
     namespace = "com.aira.health"
     compileSdk = 36
@@ -39,6 +44,13 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "STRAVA_CLIENT_ID", "\"${getLocalProperty("STRAVA_CLIENT_ID")}\"")
+        buildConfigField("String", "STRAVA_CLIENT_SECRET", "\"${getLocalProperty("STRAVA_CLIENT_SECRET")}\"")
+        buildConfigField(
+            "String",
+            "STRAVA_REDIRECT_URI",
+            "\"${getLocalPropertyOrDefault("STRAVA_REDIRECT_URI", "aira://strava-auth/callback")}\""
+        )
     }
 
     // Product Flavors: dev / staging / prod
@@ -99,6 +111,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
         }
     }
 
@@ -123,6 +137,7 @@ dependencies {
     implementation(libs.compose.viewmodel)
     implementation(libs.compose.runtime.livedata)
     implementation(libs.compose.navigation)
+    implementation(libs.compose.ui.google.fonts)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -136,6 +151,7 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher)
+    implementation(libs.androidx.sqlite)
     implementation(libs.security.crypto)
 
     // WorkManager
@@ -168,6 +184,7 @@ dependencies {
     // Firebase
     val firebaseBom = platform(libs.firebase.bom)
     implementation(firebaseBom)
+    implementation(libs.firebase.auth)
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.perf)
@@ -183,7 +200,13 @@ dependencies {
     // ML & AI (declared now, model loaded at runtime)
     implementation(libs.mediapipe.genai)
     implementation(libs.tensorflow.lite)
-    implementation(libs.tensorflow.lite.support)
+
+    // Camera & Scanner (Phase 04 baseline)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.mlkit.barcode)
 
     // Testing
     testImplementation(libs.junit5.api)
@@ -191,7 +214,10 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.11.3")
+    testImplementation("org.robolectric:robolectric:4.12.1")
+    testImplementation("androidx.test:core-ktx:1.5.0")
     testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
     testImplementation(libs.turbine)
     testImplementation(libs.coroutines.test)
     androidTestImplementation(composeBom)

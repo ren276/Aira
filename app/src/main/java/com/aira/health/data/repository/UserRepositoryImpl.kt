@@ -3,104 +3,97 @@ package com.aira.health.data.repository
 import com.aira.health.domain.model.AuthState
 import com.aira.health.domain.model.UserSession
 import com.aira.health.domain.repository.UserRepository
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.Google
-import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.auth.status.SessionStatus
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
-    private val supabase: SupabaseClient,
-    private val isGuestMode: Boolean = false
+    private val firebaseAuth: FirebaseAuth
 ) : UserRepository {
 
     override fun observeAuthState(): Flow<AuthState> {
-        if (isGuestMode) {
-            return kotlinx.coroutines.flow.flowOf(AuthState.Guest)
-        }
-        return supabase.auth.sessionStatus.map(::mapSessionStatus)
-    }
+        return callbackFlow {
+            trySend(mapFirebaseAuthState(firebaseAuth.currentUser))
 
-    internal fun mapSessionStatus(status: SessionStatus): AuthState {
-        return when (status) {
-            is SessionStatus.Authenticated -> {
-                status.session.user?.let { user ->
-                    AuthState.Authenticated(
-                        session = UserSession(
-                            userId = user.id,
-                            email = user.email,
-                            displayName = user.userMetadata?.get("full_name")?.toString(),
-                            avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
-                            isGuest = false,
-                            isAuthenticated = true
-                        )
-                    )
-                } ?: AuthState.Guest
+            val listener = FirebaseAuth.AuthStateListener { auth ->
+                trySend(mapFirebaseAuthState(auth.currentUser))
             }
-            is SessionStatus.NotAuthenticated -> AuthState.Guest
-            is SessionStatus.Initializing -> AuthState.Loading
-            is SessionStatus.RefreshFailure -> AuthState.Error("Refresh failed")
+
+            firebaseAuth.addAuthStateListener(listener)
+            awaitClose { firebaseAuth.removeAuthStateListener(listener) }
         }
     }
 
-    override suspend fun signInWithGoogle(): Result<UserSession> = runCatching {
-        supabase.auth.signInWith(Google)
+    private fun mapFirebaseAuthState(user: FirebaseUser?): AuthState {
+        return user?.let {
+            AuthState.Authenticated(session = mapFirebaseUser(it))
+        } ?: AuthState.Guest
+    }
+
+    internal fun mapFirebaseUser(user: FirebaseUser): UserSession {
+        return UserSession(
+            userId = user.uid,
+            email = user.email,
+            displayName = user.displayName,
+            avatarUrl = user.photoUrl?.toString(),
+            isGuest = user.isAnonymous,
+            isAuthenticated = !user.isAnonymous
+        )
+    }
+
+    override suspend fun signInWithGoogleIdToken(idToken: String): Result<UserSession> = runCatching {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential).await()
         getCurrentSession() ?: throw IllegalStateException("No session after Google sign-in")
     }
 
+    override suspend fun signInWithGoogle(): Result<UserSession> = runCatching {
+        throw UnsupportedOperationException("Google sign-in requires ID token flow")
+    }
+
     override suspend fun signInWithEmail(email: String, password: String): Result<UserSession> = runCatching {
-        supabase.auth.signInWith(Email) {
-            this.email = email
-            this.password = password
-        }
+        firebaseAuth.signInWithEmailAndPassword(email, password).await()
         getCurrentSession() ?: throw IllegalStateException("No session after email sign-in")
     }
 
     override suspend fun signUpWithEmail(email: String, password: String): Result<UserSession> = runCatching {
-        supabase.auth.signUpWith(Email) {
-            this.email = email
-            this.password = password
-        }
+        firebaseAuth.createUserWithEmailAndPassword(email, password).await()
         getCurrentSession() ?: throw IllegalStateException("No session after email sign-up")
     }
 
     override suspend fun signInAsGuest(): Result<UserSession> = runCatching {
-        // Guest mode: Supabase is never used. Return a local pseudo-session.
-        UserSession(
-            userId = "guest",
-            email = null,
-            displayName = "Guest",
-            avatarUrl = null,
-            isGuest = true,
-            isAuthenticated = false
-        )
+        firebaseAuth.signInAnonymously().await()
+        getCurrentSession() ?: throw IllegalStateException("No session after guest sign-in")
     }
 
     override suspend fun signOut(): Result<Unit> = runCatching {
-        supabase.auth.signOut()
+        firebaseAuth.signOut()
     }
 
     override suspend fun upgradeGuestAccount(email: String, password: String): Result<UserSession> = runCatching {
-        supabase.auth.signUpWith(Email) {
-            this.email = email
-            this.password = password
+        val currentUser = firebaseAuth.currentUser
+        val credential = EmailAuthProvider.getCredential(email, password)
+
+        if (currentUser?.isAnonymous == true) {
+            currentUser.linkWithCredential(credential).await()
+        } else if (currentUser == null) {
+            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+        } else {
+            firebaseAuth.signInWithEmailAndPassword(email, password).await()
         }
+
         // TODO Phase 4: trigger Room → Supabase data migration job
         getCurrentSession() ?: throw IllegalStateException("No session after account upgrade")
     }
 
     override suspend fun getCurrentSession(): UserSession? {
-        val user = supabase.auth.currentUserOrNull() ?: return null
-        return UserSession(
-            userId = user.id,
-            email = user.email,
-            displayName = user.userMetadata?.get("full_name")?.toString(),
-            avatarUrl = user.userMetadata?.get("avatar_url")?.toString(),
-            isGuest = false,
-            isAuthenticated = true
-        )
+        val user = firebaseAuth.currentUser ?: return null
+        return mapFirebaseUser(user)
     }
 }

@@ -1,0 +1,135 @@
+package com.aira.health.presentation.settings
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.aira.health.data.local.dao.DailyMetricsDao
+import com.aira.health.domain.model.AuthState
+import com.aira.health.domain.repository.UserRepository
+import com.aira.health.util.permission.HealthConnectStatus
+import com.aira.health.util.permission.HealthPermissionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+data class SettingsUiState(
+    val forceOledDarkTheme: Boolean? = null,
+    val loading: Boolean = true,
+    val profileName: String = "Profile unavailable",
+    val planStatus: String = "Plan status unavailable",
+    val healthConnectSyncEnabled: Boolean = false,
+    val cloudBackupEnabled: Boolean = false,
+    val localModelStatus: String = "Local model status unavailable",
+    val confidencePercent: Int? = null
+)
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+    private val dailyMetricsDao: DailyMetricsDao,
+    private val userRepository: UserRepository,
+    private val healthPermissionManager: HealthPermissionManager
+) : ViewModel() {
+
+    private companion object {
+        val FORCE_OLED_DARK_THEME = booleanPreferencesKey("force_oled_dark_theme")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val CLOUD_BACKUP_ENABLED = booleanPreferencesKey("cloud_backup_enabled")
+    }
+
+    private data class PermissionState(
+        val coreGranted: Boolean = false,
+        val status: HealthConnectStatus = HealthConnectStatus.NotInstalled
+    )
+
+    private val permissionState = MutableStateFlow(PermissionState())
+
+    init {
+        viewModelScope.launch {
+            val coreGranted = runCatching { healthPermissionManager.isCoreGranted() }.getOrDefault(false)
+            val status = healthPermissionManager.getHealthConnectStatus()
+            permissionState.value = PermissionState(coreGranted = coreGranted, status = status)
+        }
+    }
+
+    val uiState: StateFlow<SettingsUiState> = combine(
+        dataStore.data
+            .catch { emit(emptyPreferences()) },
+        dailyMetricsDao.observeRecent(7),
+        permissionState,
+        userRepository.observeAuthState()
+    ) { prefs, recentMetrics, permissions, authState ->
+        val latest = recentMetrics.firstOrNull()
+        val confidence = latest?.dataConfidence?.times(100f)?.toInt()?.coerceIn(0, 100)
+        val profileName = when (authState) {
+            is AuthState.Authenticated -> {
+                authState.session.displayName
+                    ?.takeIf { it.isNotBlank() }
+                    ?: authState.session.email
+                        ?.substringBefore('@')
+                        ?.takeIf { it.isNotBlank() }
+                    ?: "Signed-in user"
+            }
+            AuthState.Guest -> "Guest user"
+            AuthState.Loading -> "Loading profile"
+            is AuthState.Error -> "Profile unavailable"
+        }
+        val planStatus = when {
+            authState is AuthState.Authenticated -> "Firebase account connected"
+            authState is AuthState.Guest -> "Guest mode"
+            authState is AuthState.Error -> "Auth issue detected"
+            recentMetrics.size >= 7 -> "Baseline calibrated"
+            recentMetrics.isEmpty() -> "Awaiting first sync"
+            else -> "Calibrating (${recentMetrics.size}/7 days)"
+        }
+        val localModelStatus = when {
+            confidence == null -> "Local model warming up"
+            confidence >= 75 -> "Local model ready ($confidence% confidence)"
+            confidence >= 40 -> "Local model learning ($confidence% confidence)"
+            else -> "Local model low confidence ($confidence%)"
+        }
+
+        val syncEnabled = permissions.coreGranted && permissions.status == HealthConnectStatus.Available
+
+        SettingsUiState(
+            forceOledDarkTheme = prefs[FORCE_OLED_DARK_THEME],
+            loading = false,
+            profileName = profileName,
+            planStatus = planStatus,
+            healthConnectSyncEnabled = syncEnabled,
+            cloudBackupEnabled = prefs[CLOUD_BACKUP_ENABLED] ?: false,
+            localModelStatus = localModelStatus,
+            confidencePercent = confidence
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsUiState()
+    )
+
+    fun setForceOledDarkTheme(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.edit { prefs ->
+                prefs[FORCE_OLED_DARK_THEME] = enabled
+            }
+        }
+    }
+
+    fun setCloudBackupEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.edit { prefs ->
+                prefs[CLOUD_BACKUP_ENABLED] = enabled
+            }
+        }
+    }
+}

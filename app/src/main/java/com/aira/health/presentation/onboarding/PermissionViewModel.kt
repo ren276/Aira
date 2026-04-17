@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class PermissionUiState(
     val currentBatch: HealthPermissionManager.PermissionBatch = HealthPermissionManager.PermissionBatch.CORE,
     val showRationaleScreen: Boolean = true,
+    val coreRequestAttempted: Boolean = false,
     val isLimitedModeSelected: Boolean = false,
     val healthConnectStatus: HealthConnectStatus = HealthConnectStatus.Available,
     val isCoreGranted: Boolean = false,
@@ -31,10 +32,10 @@ class PermissionViewModel @Inject constructor(
     val uiState: StateFlow<PermissionUiState> = _uiState.asStateFlow()
 
     init {
-        checkHealthConnectAvailability()
+        refreshHealthConnectAvailability()
     }
 
-    private fun checkHealthConnectAvailability() {
+    fun refreshHealthConnectAvailability() {
         viewModelScope.launch {
             val status = permissionManager.getHealthConnectStatus()
             _uiState.value = _uiState.value.copy(healthConnectStatus = status)
@@ -43,19 +44,63 @@ class PermissionViewModel @Inject constructor(
 
     fun onBatchPermissionsResult(granted: Set<String>) {
         viewModelScope.launch {
-            val coreGranted = permissionManager.isCoreGranted()
-            val bodyGranted = permissionManager.isBodyGranted()
-            _uiState.value = _uiState.value.copy(
-                isCoreGranted = coreGranted,
-                isBodyGranted = bodyGranted,
-                showRationaleScreen = false
+            val grantedNow = permissionManager.getGrantedPermissions() + granted
+            val coreGranted = permissionManager.isBatchSatisfied(
+                grantedPermissions = grantedNow,
+                batch = HealthPermissionManager.PermissionBatch.CORE
             )
+            val bodyGranted = permissionManager.isBatchSatisfied(
+                grantedPermissions = grantedNow,
+                batch = HealthPermissionManager.PermissionBatch.BODY
+            )
+            val advancedGranted = permissionManager.isBatchSatisfied(
+                grantedPermissions = grantedNow,
+                batch = HealthPermissionManager.PermissionBatch.ADVANCED
+            )
+
+            when (_uiState.value.currentBatch) {
+                HealthPermissionManager.PermissionBatch.CORE -> {
+                    _uiState.value = if (coreGranted) {
+                        _uiState.value.copy(
+                            isCoreGranted = true,
+                            currentBatch = HealthPermissionManager.PermissionBatch.BODY,
+                            showRationaleScreen = true
+                        )
+                    } else {
+                        // Hard block remains, user can choose limited mode.
+                        _uiState.value.copy(
+                            isCoreGranted = false,
+                            showRationaleScreen = true
+                        )
+                    }
+                }
+
+                HealthPermissionManager.PermissionBatch.BODY -> {
+                    _uiState.value = _uiState.value.copy(
+                        isBodyGranted = bodyGranted,
+                        currentBatch = HealthPermissionManager.PermissionBatch.ADVANCED,
+                        showRationaleScreen = true
+                    )
+                }
+
+                HealthPermissionManager.PermissionBatch.ADVANCED -> {
+                    _uiState.value = _uiState.value.copy(
+                        isAdvancedGranted = advancedGranted,
+                        onboardingComplete = true,
+                        showRationaleScreen = false
+                    )
+                }
+            }
         }
     }
 
     /** User taps "Grant access" on the rationale screen — dismiss rationale, launch system dialog */
     fun onGrantAccessTapped() {
-        _uiState.value = _uiState.value.copy(showRationaleScreen = false)
+        _uiState.value = _uiState.value.copy(
+            showRationaleScreen = false,
+            coreRequestAttempted = _uiState.value.coreRequestAttempted ||
+                _uiState.value.currentBatch == HealthPermissionManager.PermissionBatch.CORE
+        )
     }
 
     /** Core was denied — hard block. User can tap "Use limited mode" to proceed */

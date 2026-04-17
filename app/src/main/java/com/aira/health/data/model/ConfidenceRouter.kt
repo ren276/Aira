@@ -28,7 +28,8 @@ object ConfidenceRouter {
         "com.coros.wearable",                    // Coros
         "com.polar.polarbeat",                   // Polar
         "com.suunto.app",                        // Suunto
-        "com.wahoo.app"                          // Wahoo
+        "com.wahoo.app",                         // Wahoo
+        "com.strava"                             // Strava
     )
 
     // Tier 3 — Consumer smartwatch platforms

@@ -52,4 +52,10 @@ object DatabaseModule {
 
     @Provides
     fun provideNutritionLogDao(db: AiraDatabase): NutritionLogDao = db.nutritionLogDao()
+
+    @Provides
+    fun provideWorkoutSessionDao(db: AiraDatabase): WorkoutSessionDao = db.workoutSessionDao()
+
+    @Provides
+    fun provideStravaActivityRawDao(db: AiraDatabase): StravaActivityRawDao = db.stravaActivityRawDao()
 }

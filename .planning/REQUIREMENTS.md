@@ -31,12 +31,12 @@
 - [ ] **SCORE-05**: EMA Baseline Engine (handles 7-day cold start flat averages)
 
 ### UI / Presentation
-- [ ] **UI-01**: Light/Dark/OLED Themes with Custom Canvas Score Arcs
-- [ ] **UI-02**: Home Dashboard with 2x2 Score Grid + Causal Insight Card
-- [ ] **UI-03**: Detail Screens for Recovery, Strain, Sleep, Stress with explanation bottom sheets
-- [ ] **UI-04**: Health Monitor real-time vitals strip component
-- [ ] **UI-05**: Basic Strength Builder (manual sets/reps logging)
-- [ ] **UI-06**: Basic Nutrition Logger (barcode scanner integration + manual fields)
+- [x] **UI-01**: Light/Dark/OLED Themes with Custom Canvas Score Arcs
+- [x] **UI-02**: Home Dashboard with 2x2 Score Grid + Causal Insight Card
+- [x] **UI-03**: Detail Screens for Recovery, Strain, Sleep, Stress with explanation bottom sheets
+- [x] **UI-04**: Health Monitor real-time vitals strip component
+- [x] **UI-05**: Basic Strength Builder (manual sets/reps logging)
+- [x] **UI-06**: Basic Nutrition Logger (barcode scanner integration + manual fields)
 
 ## v2 Requirements
 
@@ -82,12 +82,12 @@
 | SCORE-03 | Phase 1 | Pending |
 | SCORE-04 | Phase 1 | Pending |
 | SCORE-05 | Phase 1 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
-| UI-03 | Phase 1 | Pending |
-| UI-04 | Phase 1 | Pending |
-| UI-05 | Phase 1 | Pending |
-| UI-06 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
+| UI-02 | Phase 1 | Complete |
+| UI-03 | Phase 1 | Complete |
+| UI-04 | Phase 1 | Complete |
+| UI-05 | Phase 1 | Complete |
+| UI-06 | Phase 1 | Complete |
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
 | AI-03 | Phase 2 | Pending |

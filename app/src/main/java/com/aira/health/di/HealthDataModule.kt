@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import com.aira.health.data.repository.HealthConnectRepositoryImpl
 import com.aira.health.data.repository.GoogleFitRepositoryImpl
+import com.aira.health.data.repository.SourceMergingHealthDataRepository
 import com.aira.health.domain.repository.HealthDataRepository
 import dagger.Module
 import dagger.Provides
@@ -27,17 +28,19 @@ object HealthDataModule {
     fun provideHealthConnectClient(
         @ApplicationContext context: Context
     ): HealthConnectClient? {
-        return if (HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE) {
+        val sdkStatus = HealthConnectClient.getSdkStatus(context)
+        val client = if (sdkStatus == HealthConnectClient.SDK_AVAILABLE) {
             HealthConnectClient.getOrCreate(context)
         } else {
             null
         }
+        return client
     }
 
     /**
      * Provides the correct [HealthDataRepository] implementation based on device capability:
-     * - Health Connect available → [HealthConnectRepositoryImpl] (primary)
-     * - Health Connect unavailable → [GoogleFitRepositoryImpl] (fallback for Android 10-12)
+     * - Health Connect available → merge Health Connect with Google Fit fallback/bridge
+     * - Health Connect unavailable → Google Fit only (legacy fallback)
      */
     @Provides
     @Singleton
@@ -45,10 +48,15 @@ object HealthDataModule {
         @ApplicationContext context: Context,
         healthConnectClient: HealthConnectClient?
     ): HealthDataRepository {
-        return if (healthConnectClient != null) {
-            HealthConnectRepositoryImpl(healthConnectClient)
+        val googleFitRepository = GoogleFitRepositoryImpl(context)
+        val repository = if (healthConnectClient != null) {
+            SourceMergingHealthDataRepository(
+                healthConnectRepository = HealthConnectRepositoryImpl(healthConnectClient),
+                googleFitRepository = googleFitRepository
+            )
         } else {
-            GoogleFitRepositoryImpl(context)
+            googleFitRepository
         }
+        return repository
     }
 }

@@ -1,6 +1,96 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-15
+**Analysis Date:** 2026-04-16
+
+## Runtime Data Wiring & UI Alignment Phase 5
+
+**Primary scope:** runtime Compose surfaces that still need contract alignment, static-copy cleanup, or tighter binding to local data flows.
+
+### Include in the phase
+
+**Home dashboard and score shell:**
+
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeDashboardScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeViewModel.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeUiState.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/CausalAnomalyCard.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/ForecastGuidanceCard.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/EnergyBankChart.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/MetricGridCard.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/VitalSparkline.kt`
+- Flow: `DailyMetricsDao.observeByDate()` / `observeRecent()` feed `HomeViewModel`, which triggers `HealthSyncWorker.scheduleImmediate()` for refresh and maps `DailyMetrics` into the 2x2 card grid.
+- Concern: `HomeUiState.Success.lastUpdated` is present in the state contract but the screen does not surface it, and `ConfidenceMetaRow` exists in `presentation/common/components/ConfidenceMetaRow.kt` but is not used here.
+
+**Metric detail surfaces:**
+
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/details/MetricDetailRoute.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/MetricDetailViewModel.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/MetricDetailUiState.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/RecoveryDetailScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/SleepDetailScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/StrainDetailScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/StressDetailScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/components/ExplanationBottomSheet.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/components/MetricTrendWindow.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/components/FactorBreakdownCard.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/details/components/ActionGuidanceCard.kt`
+- Flow: `MetricDetailViewModel` reads `DailyMetricsDao.getLast14Days()` and `getRange()`, derives the selected metric from `MetricType`, and passes the 3-part explanation contract into the bottom sheet.
+- Concern: the detail screens are already data-backed, but they still rely on a shared `DailyMetrics` row only; if the rewrite needs richer factor attribution, that is a domain/data dependency rather than a UI-only change.
+
+**Train and nutrition CRUD flows:**
+
+- Files: `app/src/main/java/com/aira/health/presentation/train/TrainScreen.kt`, `app/src/main/java/com/aira/health/presentation/train/TrainViewModel.kt`, `app/src/main/java/com/aira/health/presentation/train/TrainEditScreen.kt`, `app/src/main/java/com/aira/health/presentation/train/TrainEditViewModel.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/NutritionScreen.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/NutritionViewModel.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/NutritionEditScreen.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/NutritionEditViewModel.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/scanner/BarcodeScannerGateway.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/scanner/MlKitBarcodeScannerGateway.kt`
+- Flow: `WorkoutRepositoryImpl` and `NutritionRepositoryImpl` bridge the screen state to `WorkoutSessionDao` and `NutritionLogDao`; the edit screens load by ID and commit update/delete mutations back through the repositories.
+- Concern: these flows are structurally complete, so the phase should focus on state alignment, empty/error behavior, and route semantics rather than new persistence work.
+
+**Secondary runtime surfaces that are still data-wiring sensitive:**
+
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/body/BodyScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/coach/CoachScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/WeeklyReportScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/WhatIfSimulatorScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/InsightsPredictionsScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/DataConfidenceScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/DataCorrectionsScreen.kt`, `app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt`
+- Flow: most of these surfaces read `HomeViewModel` or `DailyMetricsDao` directly and render derived text or summary cards from local data.
+- Concern: several are heuristic or static-copy surfaces rather than fully independent data products, so they are better treated as alignment/polish work after the core dashboard and edit flows are stable.
+
+### Stale static state and contract mismatches
+
+**Home header metadata is under-rendered:**
+
+- Issue: `HomeUiState.Success.lastUpdated` is part of the contract, but `HomeDashboardScreen.kt` only displays the confidence badge and does not surface the last-updated context.
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeUiState.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeDashboardScreen.kt`, `app/src/main/java/com/aira/health/presentation/common/components/ConfidenceMetaRow.kt`
+- Impact: the primary score surface does not meet its own state contract and hides freshness information that should be visible during runtime wiring.
+
+**Visual scaffolding still contains transitional content:**
+
+- Issue: `HomeDashboardScreen.kt` still contains placeholder comments for the top app bar and avatar slot, `ForecastGuidanceCard.kt` is explicitly static fallback text, and `EnergyBankChart.kt` draws a dummy curve for visual approximation.
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/home/HomeDashboardScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/ForecastGuidanceCard.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/home/components/EnergyBankChart.kt`
+- Impact: these surfaces can look finished while still shipping transitional copy or approximated visuals.
+
+**Heuristic narrative surfaces should not be mistaken for independent data pipelines:**
+
+- Issue: `BodyScreen.kt` and `CoachScreen.kt` derive their narrative from `HomeUiState.Success`, while `WeeklyReportViewModel.kt`, `WhatIfViewModel.kt`, and `InsightsPredictionsViewModel.kt` compute lightweight projections from recent `DailyMetrics` rows.
+- Files: `app/src/main/java/com/aira/health/presentation/dashboard/body/BodyScreen.kt`, `app/src/main/java/com/aira/health/presentation/dashboard/coach/CoachScreen.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/WeeklyReportViewModel.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/WhatIfViewModel.kt`, `app/src/main/java/com/aira/health/presentation/supplementary/InsightsPredictionsViewModel.kt`
+- Impact: the UI is data-connected, but the phase should avoid promising stronger model-backed behavior than the current runtime actually provides.
+
+**Settings toggles are local preferences only:**
+
+- Issue: `SettingsViewModel.kt` persists `cloud_backup_enabled` in DataStore, but there is no downstream consumer in the runtime data flow.
+- Files: `app/src/main/java/com/aira/health/presentation/settings/SettingsViewModel.kt`, `app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt`
+- Impact: the UI suggests a functional backup feature when the current code only stores a preference flag.
+
+### Main implementation risks and dependencies
+
+**Freshness depends on the sync worker chain:**
+
+- Dependency: `HealthSyncWorker.kt` orchestrates `IngestHealthDataUseCase.kt` and `ComputeDailyScoresUseCase.kt`, then persists `DailyMetrics` for the UI to consume.
+- Files: `app/src/main/java/com/aira/health/data/worker/HealthSyncWorker.kt`, `app/src/main/java/com/aira/health/domain/usecase/IngestHealthDataUseCase.kt`, `app/src/main/java/com/aira/health/domain/usecase/ComputeDailyScoresUseCase.kt`
+- Risk: if this chain stalls, the Compose surfaces will continue rendering cached rows and derived heuristics, which can mask a stale runtime state problem.
+
+**Source-selection fallback can look like empty data:**
+
+- Dependency: `HealthDataModule.kt` switches between Health Connect and Google Fit at runtime.
+- Files: `app/src/main/java/com/aira/health/di/HealthDataModule.kt`, `app/src/main/java/com/aira/health/data/repository/HealthConnectRepositoryImpl.kt`, `app/src/main/java/com/aira/health/data/repository/GoogleFitRepositoryImpl.kt`
+- Risk: Google Fit failures are currently best-effort, so a wiring problem can present as a legitimate no-data state in Home and detail screens.
+
+**Edit flows are sensitive to ID routing and mutation round trips:**
+
+- Dependency: `AiraRoutes.kt`, `AiraNavHost.kt`, `TrainEditScreen.kt`, and `NutritionEditScreen.kt` all rely on ID-only navigation arguments and post-save back navigation.
+- Files: `app/src/main/java/com/aira/health/presentation/navigation/AiraRoutes.kt`, `app/src/main/java/com/aira/health/presentation/navigation/AiraNavHost.kt`, `app/src/main/java/com/aira/health/presentation/train/TrainEditScreen.kt`, `app/src/main/java/com/aira/health/presentation/nutrition/NutritionEditScreen.kt`
+- Risk: route parsing or mutation failure is user-visible immediately because these are interactive write paths.
+
+### Suggested phase boundary and waves
+
+**Include now:** `HomeDashboardScreen.kt`, `MetricDetailRoute.kt` and all four metric detail screens, `TrainScreen.kt` / `TrainEditScreen.kt`, `NutritionScreen.kt` / `NutritionEditScreen.kt`, `SettingsScreen.kt`, `AccountScreen.kt`, `DataConfidenceScreen.kt`, `DataCorrectionsScreen.kt`, `WeeklyReportScreen.kt`, `WhatIfSimulatorScreen.kt`, `InsightsPredictionsScreen.kt`, `BodyScreen.kt`, `CoachScreen.kt`.
+
+**Defer:** onboarding/auth entry, ingestion math changes, new data-source integrations, and any AI/backend feature work that would expand beyond current runtime contracts.
+
+**Wave 1:** root shell and route contract alignment, including last-updated/confidence visibility.
+
+**Wave 2:** home dashboard and metric detail surfaces, including static-copy cleanup and fallback-state normalization.
+
+**Wave 3:** Train and Nutrition edit flows, barcode/scanner path validation, and mutation round-trip checks.
+
+**Wave 4:** secondary runtime surfaces (`Body`, `Coach`, reports, simulations, settings) plus final polish, accessibility, and regression tests.
 
 ## Tech Debt
 

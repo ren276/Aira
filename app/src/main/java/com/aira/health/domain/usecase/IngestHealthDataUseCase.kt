@@ -39,6 +39,8 @@ class IngestHealthDataUseCase @Inject constructor(
         private val LAST_SYNC_KEY = longPreferencesKey("health_last_sync_epoch_ms")
         /** 14 days in milliseconds — used for first-launch backfill. */
         private const val BACKFILL_DAYS = 14L
+        /** Re-read a small overlap window to capture delayed writes and late source syncs. */
+        private const val SYNC_OVERLAP_HOURS = 36L
         /** Maximum age of records to purge (90 days rolling window in raw tables). */
         private const val PURGE_AFTER_DAYS = 90L
     }
@@ -53,30 +55,40 @@ class IngestHealthDataUseCase @Inject constructor(
         val prefs = dataStore.data.first()
         val lastSyncMs = prefs[LAST_SYNC_KEY]
 
-        // Determine the start of the sync window
+        // Determine the start of the sync window.
+        // For non-first syncs, overlap by 36h so we do not miss delayed records from source apps.
+        val backfillStart = now.minus(BACKFILL_DAYS, ChronoUnit.DAYS)
         val syncStart = if (lastSyncMs != null) {
-            Instant.ofEpochMilli(lastSyncMs)
+            val overlapStart = Instant.ofEpochMilli(lastSyncMs).minus(SYNC_OVERLAP_HOURS, ChronoUnit.HOURS)
+            if (overlapStart.isAfter(backfillStart)) overlapStart else backfillStart
         } else {
-            // First launch — backfill 14 days
-            now.minus(BACKFILL_DAYS, ChronoUnit.DAYS)
+            backfillStart
         }
+
+        val sourceAvailable = runCatching { repository.isAvailable() }.getOrDefault(false)
 
         var totalIngested = 0
 
         // ── Heart Rate ────────────────────────────────────────────────────────────
-        val hrSamples = repository.readHeartRate(syncStart, now)
+        val hrSamples = runCatching {
+            repository.readHeartRate(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedHr = resolveHrConflicts(hrSamples)
         hrSampleDao.insertAll(resolvedHr)
         totalIngested += resolvedHr.size
 
         // ── HRV ──────────────────────────────────────────────────────────────────
-        val hrvSamples = repository.readHeartRateVariability(syncStart, now)
+        val hrvSamples = runCatching {
+            repository.readHeartRateVariability(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedHrv = resolveHrvConflicts(hrvSamples)
         hrvSampleDao.insertAll(resolvedHrv)
         totalIngested += resolvedHrv.size
 
         // ── Sleep ─────────────────────────────────────────────────────────────────
-        val sleepSessions = repository.readSleepSessions(syncStart, now)
+        val sleepSessions = runCatching {
+            repository.readSleepSessions(syncStart, now)
+        }.getOrDefault(emptyList())
         val resolvedSleep = resolveSleepConflicts(sleepSessions)
         resolvedSleep.forEach { session ->
             val existing = sleepSessionDao.getRange(session.date, session.date)

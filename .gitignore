@@ -34,4 +34,6 @@ app/google-services.json
 
 # Generated
 app/build/
+.health_connect_export.db
+.planning/health_connect_export.db
 

@@ -1,4 +1,6 @@
 [versions]
+androidx-camera = "1.6.0"
+mlkit-barcode = "17.3.0"
 kotlin = "2.0.21"
 agp = "8.13.2"
 compose-bom = "2024.10.01"
@@ -12,11 +14,12 @@ health-connect = "1.1.0"
 play-services-fitness = "21.1.0"
 play-services-auth = "21.2.0"
 mediapipe-genai = "0.10.22"
-tensorflow-lite = "2.16.1"
+tensorflow-lite = "2.17.0"
 tensorflow-lite-support = "0.4.4"
 revenuecat = "7.10.1"
 firebase-bom = "33.6.0"
-sqlcipher = "4.5.4"
+sqlcipher = "4.14.1"
+androidx-sqlite = "2.6.2"
 security-crypto = "1.1.0-alpha06"
 biometric = "1.2.0-alpha05"
 navigation-compose = "2.8.4"
@@ -41,6 +44,7 @@ compose-activity = { group = "androidx.activity", name = "activity-compose", ver
 compose-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
+compose-ui-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 
 # Hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -76,15 +80,24 @@ tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflow-lite-support" }
 
 # Security & Encryption
-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
+sqlcipher = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlcipher" }
+androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "androidx-sqlite" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
+
+# Camera & Scanner
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "androidx-camera" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "androidx-camera" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "androidx-camera" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "androidx-camera" }
+mlkit-barcode = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode" }
 
 # Monetisation
 revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf-ktx" }
@@ -103,6 +116,7 @@ junit5-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.
 junit5-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }

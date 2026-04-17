@@ -59,7 +59,12 @@ class ComputeDailyScoresUseCase @Inject constructor(
         zone3Min: Float?,
         zone4Min: Float?,
         zone5Min: Float?,
-        totalActiveMin: Float?
+        totalActiveMin: Float?,
+        totalSteps: Int? = null,
+        totalDistanceMeters: Float? = null,
+        activeCalories: Int? = null,
+        spo2: Float? = null,
+        skinTemperature: Float? = null
     ) {
         // ── Load baselines ────────────────────────────────────────────────────
         val hrvBaseline  = baselineDao.get("hrv_rmssd")?.value
@@ -171,8 +176,11 @@ class ComputeDailyScoresUseCase @Inject constructor(
             rhrMorning            = rhrMorning,
             sleepDurationMin      = sleepDurationMin,
             sleepEfficiency       = sleepEfficiency,
-            totalSteps            = null,
-            activeCalories        = null,
+            totalSteps            = totalSteps,
+            totalDistanceMeters   = totalDistanceMeters,
+            activeCalories        = activeCalories,
+            spo2                  = spo2,
+            skinTemperature       = skinTemperature,
             calculatedAt          = System.currentTimeMillis()
         )
 

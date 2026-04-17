@@ -14,4 +14,13 @@ interface NutritionLogDao {
 
     @Query("SELECT SUM(calories) FROM nutrition_log WHERE timestamp BETWEEN :startMs AND :endMs")
     suspend fun getTotalCalories(startMs: Long, endMs: Long): Float?
+
+    @Query("SELECT * FROM nutrition_log WHERE id = :id")
+    suspend fun getById(id: Long): NutritionLog?
+
+    @Update
+    suspend fun update(log: NutritionLog)
+
+    @Query("DELETE FROM nutrition_log WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
