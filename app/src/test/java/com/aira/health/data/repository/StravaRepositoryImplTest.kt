@@ -1,5 +1,6 @@
 package com.aira.health.data.repository
 
+import com.aira.health.data.local.dao.StravaActivityRawDao
 import com.aira.health.data.local.dao.WorkoutSessionDao
 import com.aira.health.data.local.model.WorkoutSession
 import com.aira.health.data.remote.strava.StravaActivitiesPage
@@ -27,6 +28,7 @@ class StravaRepositoryImplTest {
     private lateinit var tokenStore: StravaTokenStore
     private lateinit var connectionStore: StravaConnectionStore
     private lateinit var workoutSessionDao: WorkoutSessionDao
+    private lateinit var stravaActivityRawDao: StravaActivityRawDao
     private lateinit var repository: StravaRepositoryImpl
 
     @Before
@@ -35,12 +37,14 @@ class StravaRepositoryImplTest {
         tokenStore = mockk(relaxed = true)
         connectionStore = mockk(relaxed = true)
         workoutSessionDao = mockk(relaxed = true)
+        stravaActivityRawDao = mockk(relaxed = true)
 
         repository = StravaRepositoryImpl(
             stravaApiClient = apiClient,
             tokenStore = tokenStore,
             connectionStore = connectionStore,
-            workoutSessionDao = workoutSessionDao
+            workoutSessionDao = workoutSessionDao,
+            stravaActivityRawDao = stravaActivityRawDao
         )
     }
 
@@ -98,7 +102,7 @@ class StravaRepositoryImplTest {
     }
 
     @Test
-    fun `syncActivities skips duplicate when higher-confidence source already exists`() = runTest {
+    fun `syncActivities keeps strava activity even when another source overlaps`() = runTest {
         coEvery { connectionStore.getSyncDeferredUntilEpochMs() } returns null
         coEvery { connectionStore.getSyncCursor() } returns StravaSyncCursor(
             backfillComplete = true,
@@ -128,36 +132,14 @@ class StravaRepositoryImplTest {
                 )
             )
         )
-        coEvery {
-            workoutSessionDao.findBestMatchByTimeAndType(
-                startTime = any(),
-                endTime = any(),
-                exerciseType = any(),
-                toleranceMs = any()
-            )
-        } returns WorkoutSession(
-            id = 77L,
-            startTime = 1L,
-            endTime = 2L,
-            exerciseType = "CYCLING",
-            durationMin = 60,
-            sourcePackage = "com.google.android.apps.fitness",
-            confidence = 1f
-        )
+        coEvery { workoutSessionDao.insertOrIgnore(any()) } returns 11L
 
         val summary = repository.syncActivities(maxPagesPerRun = 1).getOrThrow()
 
-        assertEquals(0, summary.insertedCount)
-        assertEquals(1, summary.skippedCount)
-        coVerify(exactly = 0) { workoutSessionDao.insertOrIgnore(any()) }
-        coVerify {
-            workoutSessionDao.findBestMatchByTimeAndType(
-                startTime = any(),
-                endTime = any(),
-                exerciseType = "CYCLING",
-                toleranceMs = any()
-            )
-        }
+        assertEquals(1, summary.insertedCount)
+        assertEquals(0, summary.skippedCount)
+        coVerify(exactly = 1) { workoutSessionDao.insertOrIgnore(any()) }
+        coVerify(exactly = 1) { stravaActivityRawDao.upsert(any()) }
     }
 
     @Test

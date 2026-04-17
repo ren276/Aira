@@ -16,6 +16,8 @@ import com.aira.health.data.local.dao.HrSampleDao
 import com.aira.health.data.local.dao.HrvSampleDao
 import com.aira.health.data.local.dao.SleepSessionDao
 import com.aira.health.data.local.dao.WorkoutSessionDao
+import com.aira.health.data.local.model.HrSample
+import com.aira.health.data.local.model.WorkoutSession
 import com.aira.health.domain.repository.HealthDataRepository
 import com.aira.health.domain.usecase.ComputeDailyScoresUseCase
 import com.aira.health.domain.usecase.IngestHealthDataUseCase
@@ -128,24 +130,52 @@ class HealthSyncWorker @AssistedInject constructor(
             }.getOrDefault(emptyList()).map { it.second }
             val avgSpo2 = if (spo2Values.isNotEmpty()) spo2Values.average().toFloat() else null
 
-            val totalSteps = runCatching {
+            val healthSteps = runCatching {
                 healthDataRepository.readSteps(dayStartInstant, now)
             }.getOrDefault(emptyList())
                 .sumOf { it.second }
+                .coerceAtLeast(0L)
+
+            val stravaSteps = workouts
+                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
+                .sumOf { (it.steps ?: 0).toLong() }
+                .coerceAtLeast(0L)
+
+            val totalSteps = (healthSteps + stravaSteps)
                 .toInt()
                 .takeIf { it > 0 }
 
-            val activeCalories = runCatching {
+            val healthActiveCalories = runCatching {
                 healthDataRepository.readActiveCalories(dayStartInstant, now)
             }.getOrDefault(emptyList())
                 .sumOf { it.second }
                 .toInt()
+                .coerceAtLeast(0)
+
+            val stravaActiveCalories = workouts
+                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
+                .sumOf { it.activeCalories }
+                .coerceAtLeast(0)
+
+            val activeCalories = (healthActiveCalories + stravaActiveCalories)
                 .takeIf { it > 0 }
+
+            val totalDistanceMeters = workouts
+                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
+                .sumOf { (it.distanceMeters ?: 0f).toDouble() }
+                .toFloat()
+                .takeIf { it > 0f }
+
+            val zoneMinutes = deriveHeartRateZoneMinutes(
+                hrSamples = hrSamples,
+                workouts = workouts,
+                restingHr = rhrMorning
+            )
 
             if (BuildConfig.DEBUG) {
                 Log.i(
                     TAG,
-                    "Today=$today raw Room -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}, workouts=${workouts.size}; derived -> rhrMorning=$rhrMorning, hrvMorning=$hrvMorning, sleepDurationMin=$sleepDurationMin, sleepEfficiency=$sleepEfficiency, sleepDeepFraction=$sleepDeepFraction, totalActiveMin=$totalActiveMin, spo2Count=${spo2Values.size}, avgSpo2=$avgSpo2, steps=$totalSteps, activeCalories=$activeCalories"
+                    "Today=$today raw Room -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}, workouts=${workouts.size}; derived -> rhrMorning=$rhrMorning, hrvMorning=$hrvMorning, sleepDurationMin=$sleepDurationMin, sleepEfficiency=$sleepEfficiency, sleepDeepFraction=$sleepDeepFraction, totalActiveMin=$totalActiveMin, spo2Count=${spo2Values.size}, avgSpo2=$avgSpo2, steps=$totalSteps (hc=$healthSteps, strava=$stravaSteps), activeCalories=$activeCalories (hc=$healthActiveCalories, strava=$stravaActiveCalories), distanceMeters=$totalDistanceMeters, zones=[${zoneMinutes.zone1}, ${zoneMinutes.zone2}, ${zoneMinutes.zone3}, ${zoneMinutes.zone4}, ${zoneMinutes.zone5}]"
                 )
             }
 
@@ -157,13 +187,14 @@ class HealthSyncWorker @AssistedInject constructor(
                 sleepEfficiency = sleepEfficiency,
                 sleepDeepFraction = sleepDeepFraction,
                 hourlyStressScores = hourlyStressScores,
-                zone1Min = null,
-                zone2Min = null,
-                zone3Min = null,
-                zone4Min = null,
-                zone5Min = null,
+                zone1Min = zoneMinutes.zone1,
+                zone2Min = zoneMinutes.zone2,
+                zone3Min = zoneMinutes.zone3,
+                zone4Min = zoneMinutes.zone4,
+                zone5Min = zoneMinutes.zone5,
                 totalActiveMin = totalActiveMin,
                 totalSteps = totalSteps,
+                totalDistanceMeters = totalDistanceMeters,
                 activeCalories = activeCalories,
                 spo2 = avgSpo2,
                 skinTemperature = null
@@ -180,8 +211,88 @@ class HealthSyncWorker @AssistedInject constructor(
         }
     }
 
+    private fun deriveHeartRateZoneMinutes(
+        hrSamples: List<HrSample>,
+        workouts: List<WorkoutSession>,
+        restingHr: Float?
+    ): ZoneMinutes {
+        val workoutHrSignals = workouts
+            .mapNotNull { workout ->
+                val avgHr = workout.avgHr.takeIf { it > 0 }?.toFloat() ?: return@mapNotNull null
+                val duration = workout.durationMin.takeIf { it > 0 }?.toFloat() ?: return@mapNotNull null
+                avgHr to duration
+            }
+
+        if (hrSamples.isEmpty() && workoutHrSignals.isEmpty()) {
+            return ZoneMinutes()
+        }
+
+        val baseResting = restingHr?.takeIf { it > 0f }
+            ?: hrSamples.minOfOrNull { it.bpm }?.toFloat()
+            ?: workoutHrSignals.minOfOrNull { it.first }
+            ?: 60f
+
+        val observedPeak = maxOf(
+            hrSamples.maxOfOrNull { it.bpm }?.toFloat() ?: (baseResting + 40f),
+            workoutHrSignals.maxOfOrNull { it.first } ?: (baseResting + 40f)
+        )
+        val zoneMaxHr = maxOf(observedPeak, baseResting + 30f)
+
+        var z1 = 0f
+        var z2 = 0f
+        var z3 = 0f
+        var z4 = 0f
+        var z5 = 0f
+
+        fun addMinutesToZone(bpm: Float, minutes: Float) {
+            if (minutes <= 0f) return
+            val reserve = (zoneMaxHr - baseResting).coerceAtLeast(1f)
+            val intensity = ((bpm - baseResting) / reserve).coerceIn(0f, 1f)
+            when {
+                intensity < 0.60f -> z1 += minutes
+                intensity < 0.70f -> z2 += minutes
+                intensity < 0.80f -> z3 += minutes
+                intensity < 0.90f -> z4 += minutes
+                else -> z5 += minutes
+            }
+        }
+
+        if (hrSamples.isNotEmpty()) {
+            val sorted = hrSamples.sortedBy { it.timestamp }
+            sorted.forEachIndexed { index, sample ->
+                val intervalMinutes = if (index < sorted.lastIndex) {
+                    ((sorted[index + 1].timestamp - sample.timestamp) / 60_000f).coerceIn(0f, 2f)
+                } else {
+                    0.5f
+                }
+                addMinutesToZone(sample.bpm.toFloat(), intervalMinutes)
+            }
+        }
+
+        workoutHrSignals.forEach { (avgHr, durationMinutes) ->
+            addMinutesToZone(avgHr, durationMinutes)
+        }
+
+        return ZoneMinutes(
+            zone1 = z1,
+            zone2 = z2,
+            zone3 = z3,
+            zone4 = z4,
+            zone5 = z5
+        )
+    }
+
+    private data class ZoneMinutes(
+        val zone1: Float? = null,
+        val zone2: Float? = null,
+        val zone3: Float? = null,
+        val zone4: Float? = null,
+        val zone5: Float? = null
+    )
+
     companion object {
         private const val TAG = "AiraHealthSync"
+        private const val STRAVA_SOURCE_PACKAGE = "com.strava"
         const val WORK_NAME = "aira_health_sync"
 
         /**

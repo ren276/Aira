@@ -151,6 +151,7 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher)
+    implementation(libs.androidx.sqlite)
     implementation(libs.security.crypto)
 
     // WorkManager
@@ -199,7 +200,6 @@ dependencies {
     // ML & AI (declared now, model loaded at runtime)
     implementation(libs.mediapipe.genai)
     implementation(libs.tensorflow.lite)
-    implementation(libs.tensorflow.lite.support)
 
     // Camera & Scanner (Phase 04 baseline)
     implementation(libs.androidx.camera.core)

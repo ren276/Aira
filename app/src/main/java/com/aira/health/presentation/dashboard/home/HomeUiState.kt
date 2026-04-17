@@ -18,6 +18,7 @@ sealed interface HomeUiState {
     data class Empty(
         val message: String,
         val userName: String = "Athlete",
+        val profileImageUrl: String? = null,
         val greeting: String = "Morning",
         val statusHeadline: String = "Sync required",
         val isSyncing: Boolean = false
@@ -43,6 +44,7 @@ sealed interface HomeUiState {
 
         // Home Header Greeting
         val userName: String = "",
+        val profileImageUrl: String? = null,
         val greeting: String = "",
         val statusHeadline: String = "",
 

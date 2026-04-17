@@ -3,9 +3,12 @@ package com.aira.health.presentation.dashboard.details
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.aira.health.data.local.dao.DailyMetricsDao
+import com.aira.health.data.local.dao.HrSampleDao
+import com.aira.health.data.local.dao.HrvSampleDao
+import com.aira.health.data.local.dao.SleepSessionDao
+import com.aira.health.data.local.dao.WorkoutSessionDao
 import com.aira.health.data.local.model.DailyMetrics
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,11 +31,19 @@ class MetricDetailViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var mockDao: DailyMetricsDao
+    private lateinit var mockHrSampleDao: HrSampleDao
+    private lateinit var mockHrvSampleDao: HrvSampleDao
+    private lateinit var mockSleepSessionDao: SleepSessionDao
+    private lateinit var mockWorkoutSessionDao: WorkoutSessionDao
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         mockDao = mockk(relaxed = true)
+        mockHrSampleDao = mockk(relaxed = true)
+        mockHrvSampleDao = mockk(relaxed = true)
+        mockSleepSessionDao = mockk(relaxed = true)
+        mockWorkoutSessionDao = mockk(relaxed = true)
     }
 
     @After
@@ -43,7 +54,14 @@ class MetricDetailViewModelTest {
     @Test
     fun `invalid metric id emits Error state`() = runTest(testDispatcher) {
         val savedStateHandle = SavedStateHandle(mapOf("metricId" to "unknown_metric"))
-        val viewModel = MetricDetailViewModel(mockDao, savedStateHandle)
+        val viewModel = MetricDetailViewModel(
+            dailyMetricsDao = mockDao,
+            hrSampleDao = mockHrSampleDao,
+            hrvSampleDao = mockHrvSampleDao,
+            sleepSessionDao = mockSleepSessionDao,
+            workoutSessionDao = mockWorkoutSessionDao,
+            savedStateHandle = savedStateHandle
+        )
 
         viewModel.uiState.test {
             advanceUntilIdle()
@@ -67,7 +85,14 @@ class MetricDetailViewModelTest {
         coEvery { mockDao.getLast14Days() } returns recentMetrics
 
         val savedStateHandle = SavedStateHandle(mapOf("metricId" to "recovery"))
-        val viewModel = MetricDetailViewModel(mockDao, savedStateHandle)
+        val viewModel = MetricDetailViewModel(
+            dailyMetricsDao = mockDao,
+            hrSampleDao = mockHrSampleDao,
+            hrvSampleDao = mockHrvSampleDao,
+            sleepSessionDao = mockSleepSessionDao,
+            workoutSessionDao = mockWorkoutSessionDao,
+            savedStateHandle = savedStateHandle
+        )
 
         viewModel.uiState.test {
             advanceUntilIdle()
@@ -87,6 +112,8 @@ class MetricDetailViewModelTest {
             assertTrue("whatChanged must not be empty", successState.whatChanged.isNotBlank())
             assertTrue("whyItMatters must not be empty", successState.whyItMatters.isNotBlank())
             assertTrue("whatToDoNext must not be empty", successState.whatToDoNext.isNotBlank())
+            assertTrue("dataSources must be present", successState.dataSources.isNotEmpty())
+            assertTrue("consideredData must be present", successState.consideredData.isNotEmpty())
         }
     }
 }

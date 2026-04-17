@@ -9,6 +9,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import org.json.JSONArray
 
 class StravaApiException(
     val statusCode: Int,
@@ -104,8 +105,18 @@ class StravaApiClient @Inject constructor() {
         val rateLimits = parseRateLimitInfo(connection)
         val retryAfter = connection.getHeaderField("Retry-After")?.toLongOrNull()
         if (status in 200..299) {
+            val activitiesJson = JSONArray(payload)
+            val activities = buildList {
+                for (index in 0 until activitiesJson.length()) {
+                    val raw = activitiesJson.get(index).toString()
+                    add(
+                        json.decodeFromString<StravaActivityDto>(raw)
+                            .copy(rawPayload = raw)
+                    )
+                }
+            }
             return@withContext StravaActivitiesPage(
-                activities = json.decodeFromString<List<StravaActivityDto>>(payload),
+                activities = activities,
                 rateLimits = rateLimits,
                 retryAfterSeconds = retryAfter
             )

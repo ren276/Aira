@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
 import com.aira.health.presentation.theme.Theme
 import kotlin.math.cos
 import kotlin.math.sin
@@ -90,6 +91,17 @@ fun StrainDetailScreen(
                 message = state.whatChanged
             )
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        item {
+            DataProvenanceCard(
+                dataSources = state.dataSources,
+                consideredData = state.consideredData,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
         
         // Target Range

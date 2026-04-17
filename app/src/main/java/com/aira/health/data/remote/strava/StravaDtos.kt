@@ -2,6 +2,7 @@ package com.aira.health.data.remote.strava
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class StravaTokenResponse(
@@ -10,7 +11,7 @@ data class StravaTokenResponse(
     @SerialName("refresh_token") val refreshToken: String,
     @SerialName("expires_at") val expiresAt: Long,
     @SerialName("expires_in") val expiresIn: Long,
-    @SerialName("scope") val scope: String,
+    @SerialName("scope") val scope: String = "",
     @SerialName("athlete") val athlete: StravaAthleteDto
 )
 
@@ -31,8 +32,10 @@ data class StravaActivityDto(
     @SerialName("max_heartrate") val maxHeartRate: Float? = null,
     @SerialName("kilojoules") val kiloJoules: Float? = null,
     @SerialName("calories") val calories: Float? = null,
+    @SerialName("steps") val steps: Int? = null,
     @SerialName("start_date") val startDate: String,
-    @SerialName("start_date_local") val startDateLocal: String? = null
+    @SerialName("start_date_local") val startDateLocal: String? = null,
+    @Transient val rawPayload: String = ""
 )
 
 data class StravaRateLimitWindow(

@@ -17,6 +17,8 @@ data class WorkoutSession(
     val activeCalories: Int = 0,
     val avgHr: Int = 0,
     val maxHr: Int = 0,
+    val distanceMeters: Float? = null,
+    val steps: Int? = null,
     val strainScore: Float = 0f,
     val cardioLoadContribution: Float = 0f,
     val muscularStrainJson: String = "{}",

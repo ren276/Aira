@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aira.health.presentation.dashboard.details.components.ActionGuidanceCard
+import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
 import com.aira.health.presentation.dashboard.details.components.FactorBreakdownCard
 import com.aira.health.presentation.dashboard.details.components.MetricTrendWindow
 import com.aira.health.presentation.theme.Theme
@@ -68,6 +69,14 @@ fun SleepDetailScreen(
         }
 
         item { MetricTrendWindow(dataPoints = state.trendDataPoints) }
+
+        item {
+            DataProvenanceCard(
+                dataSources = state.dataSources,
+                consideredData = state.consideredData,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         item {
             FactorBreakdownCard(

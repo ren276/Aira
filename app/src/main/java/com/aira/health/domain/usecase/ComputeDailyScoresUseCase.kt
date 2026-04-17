@@ -61,6 +61,7 @@ class ComputeDailyScoresUseCase @Inject constructor(
         zone5Min: Float?,
         totalActiveMin: Float?,
         totalSteps: Int? = null,
+        totalDistanceMeters: Float? = null,
         activeCalories: Int? = null,
         spo2: Float? = null,
         skinTemperature: Float? = null
@@ -176,6 +177,7 @@ class ComputeDailyScoresUseCase @Inject constructor(
             sleepDurationMin      = sleepDurationMin,
             sleepEfficiency       = sleepEfficiency,
             totalSteps            = totalSteps,
+            totalDistanceMeters   = totalDistanceMeters,
             activeCalories        = activeCalories,
             spo2                  = spo2,
             skinTemperature       = skinTemperature,

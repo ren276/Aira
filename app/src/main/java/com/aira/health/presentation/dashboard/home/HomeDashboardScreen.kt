@@ -14,12 +14,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,21 +39,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
-import com.aira.health.presentation.common.components.ConfidenceMetaRow
 import com.aira.health.presentation.dashboard.home.components.ConcentricArcHero
 import com.aira.health.presentation.dashboard.home.components.CausalAnomalyCard
 import com.aira.health.presentation.dashboard.home.components.EnergyBankChart
 import com.aira.health.presentation.dashboard.home.components.MetricGridCard
 import com.aira.health.presentation.theme.Theme
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +60,28 @@ fun HomeDashboardScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val successListState = rememberLazyListState()
+
+    val isHeaderCollapsed = (uiState is HomeUiState.Success) && (
+        successListState.firstVisibleItemIndex > 0 || successListState.firstVisibleItemScrollOffset > 24
+    )
+
+    val headerAvatarSize by animateDpAsState(
+        targetValue = if (isHeaderCollapsed) 32.dp else 40.dp,
+        animationSpec = spring(stiffness = 500f),
+        label = "headerAvatarSize"
+    )
+    val headerVerticalPadding by animateDpAsState(
+        targetValue = if (isHeaderCollapsed) 8.dp else 12.dp,
+        animationSpec = spring(stiffness = 500f),
+        label = "headerVerticalPadding"
+    )
+    val headerTopPadding by animateDpAsState(
+        targetValue = if (isHeaderCollapsed) 6.dp else 12.dp,
+        animationSpec = spring(stiffness = 500f),
+        label = "headerTopPadding"
+    )
+
     val headerName = when (val state = uiState) {
         is HomeUiState.Success -> state.userName
         is HomeUiState.Empty -> state.userName
@@ -68,20 +92,19 @@ fun HomeDashboardScreen(
         is HomeUiState.Empty -> state.greeting
         else -> "Morning"
     }
+    val headerAvatarUrl = when (val state = uiState) {
+        is HomeUiState.Success -> state.profileImageUrl
+        is HomeUiState.Empty -> state.profileImageUrl
+        else -> null
+    }
     val headerHeadline = when (val state = uiState) {
         is HomeUiState.Success -> state.statusHeadline
         is HomeUiState.Empty -> state.statusHeadline
         else -> "Loading..."
     }
-    val headerConfidence = (uiState as? HomeUiState.Success)
-        ?.confidence
-        ?.times(100f)
-        ?.toInt()
-        ?.coerceIn(0, 100)
-        ?.let { "$it% Confidence" }
     val headerLastUpdated = (uiState as? HomeUiState.Success)
         ?.lastUpdated
-        ?.let(::formatLastUpdatedLabel)
+    val headerMetaText = headerLastUpdated?.let(::formatFreshnessLabel)
 
     Column(
         modifier = modifier
@@ -92,44 +115,60 @@ fun HomeDashboardScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .padding(top = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = headerVerticalPadding)
+                .padding(top = headerTopPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val headerState = uiState as? HomeUiState.Success
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar placeholder
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(headerAvatarSize)
                         .clip(CircleShape)
                         .background(Theme.colors.surfaceContainerHighest)
                 ) {
-                    // Place coil image here later
+                    if (!headerAvatarUrl.isNullOrBlank()) {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = headerAvatarUrl),
+                            contentDescription = "Profile image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "$headerGreeting, $headerName",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = if (isHeaderCollapsed) {
+                            MaterialTheme.typography.labelSmall
+                        } else {
+                            MaterialTheme.typography.labelMedium
+                        },
                         color = Theme.colors.onSurfaceVariant
                     )
-                    Text(
-                        text = headerHeadline,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                }
-            }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = headerHeadline,
+                            style = if (isHeaderCollapsed) {
+                                MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            } else {
+                                MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                            },
+                            color = Color.White
+                        )
 
-            if (headerConfidence != null && headerLastUpdated != null) {
-                Column(horizontalAlignment = Alignment.End) {
-                    ConfidenceMetaRow(
-                        confidence = headerConfidence,
-                        lastUpdated = headerLastUpdated
-                    )
+                        if (headerMetaText != null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = headerMetaText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Theme.colors.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -173,7 +212,8 @@ fun HomeDashboardScreen(
                 HomeSuccessContent(
                     state = state,
                     onMetricTap = onMetricTap,
-                    onRefresh = viewModel::requestRefresh
+                    onRefresh = viewModel::requestRefresh,
+                    listState = successListState
                 )
             }
         }
@@ -198,14 +238,18 @@ internal fun _HomeSuccessContentForTest(
 private fun HomeSuccessContent(
     state: HomeUiState.Success,
     onMetricTap: (String) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    listState: LazyListState? = null
 ) {
+    val effectiveListState = listState ?: rememberLazyListState()
+
     PullToRefreshBox(
         isRefreshing = state.isSyncing,
         onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize()
     ) {
         LazyColumn(
+            state = effectiveListState,
             contentPadding = PaddingValues(bottom = 120.dp), // Space for floating nav
             modifier = Modifier.fillMaxSize()
         ) {
@@ -399,8 +443,8 @@ private fun MovementTextRow(label: String, value: String) {
     }
 }
 
-private fun formatLastUpdatedLabel(epochMillis: Long): String {
-    val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a", Locale.US)
-    val instant = Instant.ofEpochMilli(epochMillis)
-    return "Updated ${formatter.format(instant.atZone(ZoneId.systemDefault()))}"
+private fun formatFreshnessLabel(epochMillis: Long): String {
+    val minutes = ((System.currentTimeMillis() - epochMillis) / 60_000L).coerceAtLeast(0L)
+    if (minutes <= 1L) return "Data is up to date right now"
+    return "Data updated $minutes mins ago"
 }

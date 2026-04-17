@@ -17,6 +17,10 @@ sealed interface MetricDetailUiState {
         // D-11: 3-part Explanation Sheet Contract fields
         val whatChanged: String,
         val whyItMatters: String,
-        val whatToDoNext: String
+        val whatToDoNext: String,
+
+        // Explainability contract: source provenance + concrete values considered for this score.
+        val dataSources: List<String> = emptyList(),
+        val consideredData: List<String> = emptyList()
     ) : MetricDetailUiState
 }

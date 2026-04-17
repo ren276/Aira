@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
 import com.aira.health.presentation.theme.Theme
 
 @Composable
@@ -76,6 +77,17 @@ fun StressDetailScreen(
         item {
             StressRadarHero(score = stressScore, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        item {
+            DataProvenanceCard(
+                dataSources = state.dataSources,
+                consideredData = state.consideredData,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Zones

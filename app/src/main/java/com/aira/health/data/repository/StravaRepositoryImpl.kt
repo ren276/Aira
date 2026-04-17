@@ -2,7 +2,9 @@ package com.aira.health.data.repository
 
 import android.net.Uri
 import com.aira.health.BuildConfig
+import com.aira.health.data.local.dao.StravaActivityRawDao
 import com.aira.health.data.local.dao.WorkoutSessionDao
+import com.aira.health.data.local.model.StravaActivityRaw
 import com.aira.health.data.local.model.WorkoutSession
 import com.aira.health.data.model.ConfidenceRouter
 import com.aira.health.data.remote.strava.StravaActivityDto
@@ -29,7 +31,8 @@ class StravaRepositoryImpl @Inject constructor(
     private val stravaApiClient: StravaApiClient,
     private val tokenStore: StravaTokenStore,
     private val connectionStore: StravaConnectionStore,
-    private val workoutSessionDao: WorkoutSessionDao
+    private val workoutSessionDao: WorkoutSessionDao,
+    private val stravaActivityRawDao: StravaActivityRawDao
 ) : StravaRepository {
 
     private companion object {
@@ -91,7 +94,10 @@ class StravaRepositoryImpl @Inject constructor(
             code = code
         )
 
-        if (!hasRequiredScopes(tokenResponse.scope)) {
+        val grantedScope = tokenResponse.scope
+            .ifBlank { callbackUri.getQueryParameter("scope").orEmpty() }
+
+        if (!hasRequiredScopes(grantedScope)) {
             throw IllegalStateException(
                 "Strava authorization missing required scope. Please allow activity permissions and retry."
             )
@@ -102,7 +108,7 @@ class StravaRepositoryImpl @Inject constructor(
                 accessToken = tokenResponse.accessToken,
                 refreshToken = tokenResponse.refreshToken,
                 expiresAtEpochSec = tokenResponse.expiresAt,
-                scope = tokenResponse.scope,
+                scope = grantedScope,
                 athleteId = tokenResponse.athlete.id
             )
         )
@@ -340,18 +346,26 @@ class StravaRepositoryImpl @Inject constructor(
             val mappedExerciseType = mapExerciseType(activity)
             val stravaConfidence = ConfidenceRouter.getConfidenceFloat(STRAVA_SOURCE_PACKAGE)
 
-            val bestExisting = workoutSessionDao.findBestMatchByTimeAndType(
-                startTime = startEpochMs,
-                endTime = startEpochMs + safeDurationSec * 1000L,
-                exerciseType = mappedExerciseType,
-                toleranceMs = DUPLICATE_TOLERANCE_MS
+            val endEpochMs = startEpochMs + safeDurationSec * 1000L
+
+            stravaActivityRawDao.upsert(
+                StravaActivityRaw(
+                    activityId = activity.id,
+                    startTime = startEpochMs,
+                    endTime = endEpochMs,
+                    sportType = activity.sportType ?: activity.type,
+                    distanceMeters = activity.distanceMeters,
+                    movingTimeSec = activity.movingTimeSec,
+                    elapsedTimeSec = activity.elapsedTimeSec,
+                    steps = activity.steps,
+                    averageHeartRate = activity.averageHeartRate,
+                    maxHeartRate = activity.maxHeartRate,
+                    calories = activity.calories,
+                    kiloJoules = activity.kiloJoules,
+                    sourcePackage = STRAVA_SOURCE_PACKAGE,
+                    rawJson = activity.rawPayload.ifBlank { "{}" }
+                )
             )
-            if (bestExisting != null && bestExisting.sourcePackage != STRAVA_SOURCE_PACKAGE) {
-                if (bestExisting.confidence >= stravaConfidence) {
-                    skippedCount += 1
-                    return@forEach
-                }
-            }
 
             val calculatedCalories = activity.calories?.toInt()
                 ?: activity.kiloJoules?.times(0.239_005_74f)?.toInt()
@@ -360,12 +374,14 @@ class StravaRepositoryImpl @Inject constructor(
             val rowId = workoutSessionDao.insertOrIgnore(
                 WorkoutSession(
                     startTime = startEpochMs,
-                    endTime = startEpochMs + safeDurationSec * 1000L,
+                    endTime = endEpochMs,
                     exerciseType = mappedExerciseType,
                     durationMin = durationMin,
                     activeCalories = max(0, calculatedCalories),
                     avgHr = max(0, (activity.averageHeartRate ?: 0f).toInt()),
                     maxHr = max(0, (activity.maxHeartRate ?: 0f).toInt()),
+                    distanceMeters = activity.distanceMeters?.coerceAtLeast(0f),
+                    steps = activity.steps?.coerceAtLeast(0),
                     sourcePackage = STRAVA_SOURCE_PACKAGE,
                     externalId = activity.id.toString(),
                     confidence = stravaConfidence
@@ -401,12 +417,13 @@ class StravaRepositoryImpl @Inject constructor(
                 clientSecret = BuildConfig.STRAVA_CLIENT_SECRET,
                 refreshToken = current.refreshToken
             )
+            val refreshedScope = refreshed.scope.ifBlank { current.scope }
             tokenStore.save(
                 StravaTokenSession(
                     accessToken = refreshed.accessToken,
                     refreshToken = refreshed.refreshToken,
                     expiresAtEpochSec = refreshed.expiresAt,
-                    scope = refreshed.scope,
+                    scope = refreshedScope,
                     athleteId = refreshed.athlete.id
                 )
             )

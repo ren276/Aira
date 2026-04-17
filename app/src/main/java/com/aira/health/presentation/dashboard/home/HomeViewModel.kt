@@ -127,6 +127,10 @@ class HomeViewModel @Inject constructor(
             else -> "Athlete"
         }
 
+        val profileImageUrl = (authState as? AuthState.Authenticated)
+            ?.session
+            ?.avatarUrl
+
         val metrics = todayMetrics ?: recentMetrics
             ?: run {
                 if (!initialSyncTriggered) {
@@ -141,6 +145,7 @@ class HomeViewModel @Inject constructor(
                         "No synced health records yet. Open Health Connect and verify your data sources are connected, then pull to refresh."
                     },
                     userName = userName,
+                    profileImageUrl = profileImageUrl,
                     greeting = greeting,
                     statusHeadline = "Sync required",
                     isSyncing = syncing
@@ -188,6 +193,7 @@ class HomeViewModel @Inject constructor(
             lastUpdated    = metrics.calculatedAt,
             isSyncing      = syncing,
             userName       = userName,
+            profileImageUrl = profileImageUrl,
             greeting       = greeting,
             statusHeadline = statusHeadline,
             energyBankPct  = metrics.energyBankScore.coerceIn(0, 100),
