@@ -78,9 +78,9 @@ blocked: 0
     issue: "Added: verifies reconnect-required destination precedence."
   - path: "app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt"
     issue: "Covered by instrumentation test for disconnect control discoverability and click action."
-  missing: []
-  verification:
+    missing: []
+    verification:
   - "./gradlew.bat :app:testDevDebugUnitTest --tests \"com.aira.health.presentation.supplementary.AccountViewModelTest\""
   - "./gradlew.bat :app:testDevDebugUnitTest --tests \"com.aira.health.presentation.navigation.AppEntryRouteTest\""
   - "./gradlew.bat :app:connectedDevDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.presentation.supplementary.AccountScreenTest'"
-  debug_session: ".planning/debug/p06-t4-disconnect-strava.md"
+    debug_session: ".planning/debug/p06-t4-disconnect-strava.md"
