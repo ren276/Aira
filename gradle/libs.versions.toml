@@ -13,13 +13,13 @@ kotlinx-serialization = "1.7.3"
 health-connect = "1.1.0"
 play-services-fitness = "21.1.0"
 play-services-auth = "21.2.0"
-mediapipe-genai = "0.10.22"
+# generativeai removed due to Ktor 2 clash
 tensorflow-lite = "2.17.0"
 tensorflow-lite-support = "0.4.4"
 revenuecat = "7.10.1"
 firebase-bom = "33.6.0"
-sqlcipher = "4.14.1"
-androidx-sqlite = "2.6.2"
+sqlcipher = "4.5.4"
+androidx-sqlite = "2.4.0"
 security-crypto = "1.1.0-alpha06"
 biometric = "1.2.0-alpha05"
 navigation-compose = "2.8.4"
@@ -71,6 +71,10 @@ supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgre
 supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt" }
 supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version = "3.0.1" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version = "3.0.1" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version = "3.0.1" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version = "3.0.1" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version = "3.0.1" }
 
 # Health & Fitness
 health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "health-connect" }
@@ -78,12 +82,12 @@ play-services-fitness = { group = "com.google.android.gms", name = "play-service
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
 
 # Media & AI
-mediapipe-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipe-genai" }
+# generativeai removed
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflow-lite" }
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflow-lite-support" }
 
 # Security & Encryption
-sqlcipher = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlcipher" }
+sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "androidx-sqlite" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }

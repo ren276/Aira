@@ -1,7 +1,7 @@
 package com.aira.health.di
 
 import com.aira.health.ai.runtime.AiRuntimeGateway
-import com.aira.health.ai.runtime.MediapipeRuntimeGateway
+import com.aira.health.ai.runtime.GeminiCloudRuntimeGateway
 import com.aira.health.ai.runtime.RuntimeConfig
 import dagger.Binds
 import dagger.Module
@@ -15,20 +15,18 @@ import javax.inject.Singleton
  *
  * All bindings are singleton-scoped — one engine, one config for the app lifetime.
  * Consumers inject [AiRuntimeGateway]; they never depend on the concrete
- * [MediapipeRuntimeGateway] type directly (AIM-01 adapter isolation).
+ * [GeminiCloudRuntimeGateway] type directly (AIM-01 adapter isolation).
  */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AiRuntimeModule {
 
     /**
-     * Binds the concrete [MediapipeRuntimeGateway] to the [AiRuntimeGateway] interface.
-     * A future phase can swap the binding to a LiteRT-LM implementation here without
-     * touching consumers.
+     * Binds the concrete [GeminiCloudRuntimeGateway] to the [AiRuntimeGateway] interface.
      */
     @Binds
     @Singleton
-    abstract fun bindAiRuntimeGateway(impl: MediapipeRuntimeGateway): AiRuntimeGateway
+    abstract fun bindAiRuntimeGateway(impl: GeminiCloudRuntimeGateway): AiRuntimeGateway
 
     companion object {
 

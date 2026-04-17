@@ -46,7 +46,7 @@ data class RuntimeConfig(
         const val DEFAULT_TOP_P: Float = 0.9f
         const val DEFAULT_TEMPERATURE: Float = 0.2f
         const val DEFAULT_RANDOM_SEED: Int = 7
-        const val DEFAULT_TIMEOUT_MS: Long = 2_500L
+        const val DEFAULT_TIMEOUT_MS: Long = 30_000L
     }
 
     enum class HardwareBackend { CPU, GPU }

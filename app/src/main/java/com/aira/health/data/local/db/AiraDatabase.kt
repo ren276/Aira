@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.aira.health.data.local.dao.*
 import com.aira.health.data.local.model.*
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [
@@ -91,9 +91,9 @@ abstract class AiraDatabase : RoomDatabase() {
         }
 
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
-            // sqlcipher-android requires explicitly loading the native library once.
-            System.loadLibrary("sqlcipher")
-            val factory = SupportOpenHelperFactory(passphrase.copyOf())
+            // Load SQLCipher native libraries
+            net.sqlcipher.database.SQLiteDatabase.loadLibs(context.applicationContext)
+            val factory = SupportFactory(passphrase.copyOf())
 
             return Room.databaseBuilder(
                 context.applicationContext,

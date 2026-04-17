@@ -62,6 +62,7 @@ android {
             versionNameSuffix = "-dev"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "false")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "false")
         }
@@ -71,6 +72,7 @@ android {
             versionNameSuffix = "-staging"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
         }
@@ -78,6 +80,7 @@ android {
             dimension = "environment"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_PROD_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_PROD_ANON_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
         }
@@ -197,9 +200,11 @@ dependencies {
     implementation(libs.lifecycle.process)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // ML & AI (declared now, model loaded at runtime)
-    implementation(libs.mediapipe.genai)
-    implementation(libs.tensorflow.lite)
+    // ML & AI (Direct REST calls via Ktor 3 stack)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     // Camera & Scanner (Phase 04 baseline)
     implementation(libs.androidx.camera.core)
