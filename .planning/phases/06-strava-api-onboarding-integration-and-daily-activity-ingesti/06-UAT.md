@@ -1,10 +1,10 @@
 ---
-status: diagnosed
+status: complete
 phase: 06-strava-api-onboarding-integration-and-daily-activity-ingesti
 source:
   - 06-01-SUMMARY.md
 started: 2026-04-17T12:40:05.2269748Z
-updated: 2026-04-17T13:08:04.6133340Z
+updated: 2026-04-17T14:05:00.0000000Z
 ---
 
 ## Current Test
@@ -31,9 +31,7 @@ result: pass
 ### 4. Disconnect clears local Strava session
 
 expected: Disconnecting Strava resets connection state and the app shows reconnect-required state.
-result: issue
-reported: "where to disconnect it"
-severity: major
+result: pass
 
 ### 5. Initial backfill sync populates activity data
 
@@ -53,8 +51,8 @@ result: pass
 ## Summary
 
 total: 7
-passed: 6
-issues: 1
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -62,22 +60,27 @@ blocked: 0
 ## Gaps
 
 - truth: "Disconnecting Strava resets connection state and app shows reconnect-required state."
-  status: failed
-  reason: "User reported: where to disconnect it"
-  severity: major
+  status: resolved
+  reason: "Disconnect control added to Account, wired to repository disconnect, and reconnect-required routing precedence enforced."
+  severity: none
   test: 4
-  root_cause: "Strava disconnect is implemented in data/domain layers but no UI surface invokes it, so users cannot find or trigger disconnect."
+  root_cause: "Previously missing UI invocation path is now closed via AccountViewModel and AccountScreen action wiring."
   artifacts:
-    - path: "app/src/main/java/com/aira/health/domain/repository/StravaRepository.kt"
-      issue: "Disconnect contract exists but is not consumed by presentation actions."
-    - path: "app/src/main/java/com/aira/health/data/repository/StravaRepositoryImpl.kt"
-      issue: "Disconnect behavior exists but has no call path from UI."
-    - path: "app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt"
-      issue: "No Strava management/disconnect control is exposed."
-    - path: "app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt"
-      issue: "Account screen has sign out only, no Strava disconnect action."
-  missing:
-    - "Add a discoverable Strava disconnect control in settings/account surface."
-    - "Wire presentation action to StravaRepository.disconnect()."
-    - "After disconnect, surface reconnect-required state in onboarding flow."
+  - path: "app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt"
+    issue: "Resolved: Account UI now shows Strava status and Disconnect Strava action with error/progress state."
+  - path: "app/src/main/java/com/aira/health/data/strava/StravaConnectionStore.kt"
+    issue: "Resolved: disconnect now marks reconnectRequired=true while clearing connection metadata."
+  - path: "app/src/main/java/com/aira/health/presentation/navigation/AppEntryRoute.kt"
+    issue: "Resolved: reconnect-required route is prioritized before onboardingCompleted shortcut."
+  - path: "app/src/test/java/com/aira/health/presentation/supplementary/AccountViewModelTest.kt"
+    issue: "Added: verifies disconnect success/failure UI state and repository invocation."
+  - path: "app/src/test/java/com/aira/health/presentation/navigation/AppEntryRouteTest.kt"
+    issue: "Added: verifies reconnect-required destination precedence."
+  - path: "app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt"
+    issue: "Covered by instrumentation test for disconnect control discoverability and click action."
+  missing: []
+  verification:
+  - "./gradlew.bat :app:testDevDebugUnitTest --tests \"com.aira.health.presentation.supplementary.AccountViewModelTest\""
+  - "./gradlew.bat :app:testDevDebugUnitTest --tests \"com.aira.health.presentation.navigation.AppEntryRouteTest\""
+  - "./gradlew.bat :app:connectedDevDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.presentation.supplementary.AccountScreenTest'"
   debug_session: ".planning/debug/p06-t4-disconnect-strava.md"
