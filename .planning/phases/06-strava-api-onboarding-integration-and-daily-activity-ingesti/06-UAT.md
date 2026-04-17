@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 06-strava-api-onboarding-integration-and-daily-activity-ingesti
 source:
   - 06-01-SUMMARY.md
@@ -66,7 +66,18 @@ blocked: 0
   reason: "User reported: where to disconnect it"
   severity: major
   test: 4
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Strava disconnect is implemented in data/domain layers but no UI surface invokes it, so users cannot find or trigger disconnect."
+  artifacts:
+    - path: "app/src/main/java/com/aira/health/domain/repository/StravaRepository.kt"
+      issue: "Disconnect contract exists but is not consumed by presentation actions."
+    - path: "app/src/main/java/com/aira/health/data/repository/StravaRepositoryImpl.kt"
+      issue: "Disconnect behavior exists but has no call path from UI."
+    - path: "app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt"
+      issue: "No Strava management/disconnect control is exposed."
+    - path: "app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt"
+      issue: "Account screen has sign out only, no Strava disconnect action."
+  missing:
+    - "Add a discoverable Strava disconnect control in settings/account surface."
+    - "Wire presentation action to StravaRepository.disconnect()."
+    - "After disconnect, surface reconnect-required state in onboarding flow."
+  debug_session: ".planning/debug/p06-t4-disconnect-strava.md"
