@@ -1,108 +1,91 @@
-# Requirements: Aira
+﻿# Requirements: Aira
 
-**Defined:** 2026-04-15
-**Core Value:** Empower Android users with true on-device, explainable health intelligence that learns their unique physiology safely without cloud biometric processing.
+**Defined:** 2026-04-17
+**Core Value:** Empower Android users with true on-device, explainable health intelligence that learns their unique physiology without compromising privacy.
 
 ## v1 Requirements
 
-### Environment & Permissions
-- [ ] **ENV-01**: Setup project for minSdk 29, targetSdk 35 with Kotlin 2.0+
-- [ ] **ENV-02**: Implement multi-batch permission request flow (Core, Body, Advanced)
-- [ ] **ENV-03**: Prompt Android 10-13 users without Health Connect to install from Play Store
-- [ ] **ENV-04**: Secure app using Biometric Prompt App Lock and map FLAG_SECURE to sensitive screens
+### AI Runtime and Privacy
+- [ ] **AIM-01**: App can load and run a compact on-device text model (TFLite class) for inference on supported Android devices.
+- [ ] **AIM-02**: All AI inference runs fully on-device for core coaching features.
+- [ ] **AIM-03**: Raw biometric records never leave local storage during AI processing and syncing.
+- [ ] **AIM-04**: App falls back to deterministic non-AI summaries when model is unavailable.
 
-### Persistence & Auth
-- [ ] **DB-01**: Configure Room Database schemas annotated for 10 entities
-- [ ] **DB-02**: Apply SQLCipher encryption to Room Database initialized from Android Keystore keys
-- [ ] **AUTH-01**: Implement Supabase Auth (Google SignIn, Email/Pass, Anonymous Guest)
-- [ ] **SYNC-01**: Configure secure HTTPS + Certificate Pinning for Supabase telemetry endpoints
+### Causal Insight Engine
+- [ ] **CAUS-01**: User can see ranked contributing factors for major metric changes (for example sleep, strain, caffeine/stress notes).
+- [ ] **CAUS-02**: Each causal insight references real recent user data windows and not static template values.
+- [ ] **CAUS-03**: Insight cards display confidence level and recency metadata.
 
-### Data Extraction
-- [x] **DATA-01**: Implement HealthConnect Repository extracting Sleep, HR, HRV, SpO2, Calories
-- [x] **DATA-02**: Implement GoogleFit Fallback Repository matching HealthConnect fields
-- [x] **DATA-03**: Implement wearable source detection mapping `packageName` to confidence weights
-- [x] **DATA-04**: Configure WorkManager periodic sync (15m charging, 30m idle limit)
+### Prediction and What-If
+- [ ] **PRED-01**: User can simulate sleep/training changes and view predicted next-day recovery and energy impact.
+- [ ] **PRED-02**: App provides short-horizon burnout risk projection from recent workload patterns.
+- [ ] **PRED-03**: App tracks prediction error against observed outcomes for ongoing calibration.
 
-### Math & Scoring Engine
-- [ ] **SCORE-01**: Recovery Engine (40% HRV, 25% RHR, 25% Sleep, 10% Prior Strain)
-- [ ] **SCORE-02**: Sleep Engine (30% Duration, 30% Stage, 20% Continuity, 20% Consistency)
-- [ ] **SCORE-03**: Hourly Stress Engine (real-time rolling calculation) & Energy Bank 
-- [ ] **SCORE-04**: Strain Engine aggregating HR time-in-zones (1-5 scaled weights)
-- [ ] **SCORE-05**: EMA Baseline Engine (handles 7-day cold start flat averages)
+### Personal Physiology Adaptation
+- [ ] **PPM-01**: App adapts baseline sleep need per user over time using observed outcomes.
+- [ ] **PPM-02**: App adapts recovery-speed and stress-sensitivity weights from historical response patterns.
+- [ ] **PPM-03**: User corrections can influence future personalization behavior.
 
-### UI / Presentation
-- [x] **UI-01**: Light/Dark/OLED Themes with Custom Canvas Score Arcs
-- [x] **UI-02**: Home Dashboard with 2x2 Score Grid + Causal Insight Card
-- [x] **UI-03**: Detail Screens for Recovery, Strain, Sleep, Stress with explanation bottom sheets
-- [x] **UI-04**: Health Monitor real-time vitals strip component
-- [x] **UI-05**: Basic Strength Builder (manual sets/reps logging)
-- [x] **UI-06**: Basic Nutrition Logger (barcode scanner integration + manual fields)
+### Athlete Guidance Generation
+- [ ] **COCH-01**: App generates daily metric summary text on-device.
+- [ ] **COCH-02**: App generates practical training/recovery/nutrition coaching guidance on-device.
+- [ ] **COCH-03**: App generates a weekly athlete planning draft using current state and upcoming load.
+
+### Performance and Reliability
+- [ ] **PERF-01**: AI inference executes off the UI thread and is cancellable.
+- [ ] **PERF-02**: AI feature latency remains within acceptable interactive budget on target devices.
+- [ ] **PERF-03**: AI memory usage remains within defined mobile safety budget without app instability.
+
+### Cloud Continuity Snapshot
+- [ ] **BACK-01**: App maintains compact computed-summary snapshots in Supabase so users can restore insights after reinstall.
+- [ ] **BACK-02**: App can upload a final compact summary snapshot before explicit local-account reset flows.
 
 ## v2 Requirements
 
-### Intelligence & Adapting
-- **AI-01**: Load Gemma 4 2B (e2b) model locally via MediaPipe GenAI Tasks
-- **AI-02**: Aira AI Conversational Coach UI with context generation prompts
-- **AI-03**: Generate weekly Longitudinal Body Narrative
-- **ML-01**: TFLite PersonalisedScoreAdjuster processing User Corrections
-
-### Features & Billing
-- **FEAT-01**: Biological / Trends Charting (3/7/14/30/90 days)
-- **FEAT-02**: Cardio Load (ATL/CTL/TSB tracking)
-- **FEAT-03**: Sleep Debt ledger and target payoff generator
-- **NOTF-01**: Adaptive Smart Notifications tracking open/dismiss times
-- **BILL-01**: Integrate RevenueCat via Google Play Billing for Aira Pro paywall isolation
+### Advanced Intelligence
+- **AIM-05**: Multi-turn long-context conversation memory grounded in long-term athlete history.
+- **COCH-04**: Fully personalized meal plan generation with pantry/preferences/allergy constraints.
+- **PRED-04**: Multi-day training block optimization with objective trade-off controls.
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Medical Diagnosis | Explicitly a wellness tool, uncertified for medical interpretation |
-| Cloud Inference | Raw biometric data cannot exit the device to ensure "zero-trust" physiological privacy |
-| iOS Platform | Completely divergent API requirements (HealthKit) against Health Connect core focus |
+| Cloud LLM for primary coaching | Conflicts with on-device privacy-first mandate |
+| Uploading raw biometric timeseries to Supabase | Violates product trust boundary |
+| Full uninstall event interception guarantees | Android platform does not provide a reliable uninstall callback |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 | Phase 1 | Pending |
-| ENV-02 | Phase 1 | Pending |
-| ENV-03 | Phase 1 | Pending |
-| ENV-04 | Phase 1 | Pending |
-| DB-01 | Phase 1 | Pending |
-| DB-02 | Phase 1 | Pending |
-| AUTH-01 | Phase 1 | Pending |
-| SYNC-01 | Phase 1 | Pending |
-| DATA-01 | Phase 1 | Complete |
-| DATA-02 | Phase 1 | Complete |
-| DATA-03 | Phase 1 | Complete |
-| DATA-04 | Phase 1 | Complete |
-| SCORE-01 | Phase 1 | Pending |
-| SCORE-02 | Phase 1 | Pending |
-| SCORE-03 | Phase 1 | Pending |
-| SCORE-04 | Phase 1 | Pending |
-| SCORE-05 | Phase 1 | Pending |
-| UI-01 | Phase 1 | Complete |
-| UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 1 | Complete |
-| UI-04 | Phase 1 | Complete |
-| UI-05 | Phase 1 | Complete |
-| UI-06 | Phase 1 | Complete |
-| AI-01 | Phase 2 | Pending |
-| AI-02 | Phase 2 | Pending |
-| AI-03 | Phase 2 | Pending |
-| ML-01 | Phase 2 | Pending |
-| FEAT-01 | Phase 2 | Pending |
-| FEAT-02 | Phase 2 | Pending |
-| FEAT-03 | Phase 2 | Pending |
-| NOTF-01 | Phase 2 | Pending |
-| BILL-01 | Phase 2 | Pending |
+| AIM-01 | Phase 7 | Pending |
+| AIM-02 | Phase 7 | Pending |
+| AIM-03 | Phase 7 | Pending |
+| AIM-04 | Phase 7 | Pending |
+| PERF-01 | Phase 7 | Pending |
+| PERF-02 | Phase 7 | Pending |
+| PERF-03 | Phase 7 | Pending |
+| CAUS-01 | Phase 8 | Pending |
+| CAUS-02 | Phase 8 | Pending |
+| CAUS-03 | Phase 8 | Pending |
+| PPM-01 | Phase 8 | Pending |
+| PPM-02 | Phase 8 | Pending |
+| PPM-03 | Phase 8 | Pending |
+| PRED-01 | Phase 9 | Pending |
+| PRED-02 | Phase 9 | Pending |
+| PRED-03 | Phase 9 | Pending |
+| COCH-01 | Phase 9 | Pending |
+| COCH-02 | Phase 9 | Pending |
+| COCH-03 | Phase 9 | Pending |
+| BACK-01 | Phase 10 | Pending |
+| BACK-02 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 23 total
-- Mapped to phases: 32 total
+- v1 requirements: 21 total
+- Mapped to phases: 21
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-04-15*
-*Last updated: 2026-04-15 after initial definition*
+*Requirements defined: 2026-04-17*
+*Last updated: 2026-04-17 after v1.1 scope definition*
