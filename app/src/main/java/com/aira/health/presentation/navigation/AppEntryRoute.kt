@@ -38,6 +38,7 @@ internal enum class AppEntryDestination {
 internal fun resolveAppEntryDestination(uiState: AppEntryUiState): AppEntryDestination {
     return when {
         uiState.loading -> AppEntryDestination.LOADING
+        uiState.stravaReconnectRequired -> AppEntryDestination.STRAVA_ONBOARDING
         uiState.onboardingCompleted -> AppEntryDestination.MAIN_NAV
         !uiState.authStepCompleted -> AppEntryDestination.AUTH_ONBOARDING
         !uiState.stravaConnected -> AppEntryDestination.STRAVA_ONBOARDING

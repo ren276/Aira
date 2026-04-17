@@ -92,7 +92,7 @@ class StravaConnectionStore @Inject constructor(
     suspend fun markDisconnected() {
         dataStore.edit { prefs ->
             prefs[STRAVA_CONNECTED] = false
-            prefs[STRAVA_RECONNECT_REQUIRED] = false
+            prefs[STRAVA_RECONNECT_REQUIRED] = true
             prefs.remove(STRAVA_ATHLETE_ID)
             prefs.remove(STRAVA_PENDING_STATE)
             prefs.remove(STRAVA_LAST_SYNC_EPOCH_MS)
