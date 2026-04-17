@@ -325,22 +325,19 @@ class AiInferenceBenchmark {
 | A3 | Initial timeout target around 2500 ms is suitable for interactive budget | Pattern 2 / Validation | Could fail UX expectations on lower-end devices or be too strict on first-token latency |
 | A4 | Adapter seam is sufficient for future LiteRT-LM migration without data-model changes | Summary / SOTA | Migration may still require broader prompt/session contract changes |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **What exact latency and RAM pass thresholds should gate `PERF-02` and `PERF-03`?**
-   - What we know: AI-SPEC gives target budgets (`p95 <= 2500 ms`, peak additional RAM `<= 1.2 GB`). [VERIFIED: 07-AI-SPEC.md]
-   - What's unclear: Whether these are hard release gates or initial targets by device tier.
-   - Recommendation: Lock numeric SLOs in plan acceptance criteria and add per-tier overrides if needed.
+1. **Latency/RAM gate strictness for `PERF-02` and `PERF-03`**
+    - **Resolution:** Treat AI-SPEC thresholds as hard Phase 7 release gates for the benchmarked path: p95 <= 2500 ms and peak additional RAM <= 1200 MB. Add device metadata to evidence so tier-specific tuning can be introduced in later phases without weakening current gate criteria.
+    - **Planning impact:** Plan 07-03 must include parser-enforced thresholds and physical-device evidence before phase completion.
 
-2. **Is `tasks-genai` locked to 0.10.22 for compatibility or just historical pinning?**
-   - What we know: Repo and AI-SPEC pin `0.10.22`; upstream latest is `0.10.33`. [VERIFIED: version catalog + Google Maven metadata]
-   - What's unclear: Whether upgrading in this phase is desired or explicitly deferred.
-   - Recommendation: Keep `0.10.22` in Phase 7 unless blocker appears; add investigation task for Phase 7.5/8 migration readiness.
+2. **`tasks-genai` version strategy in this phase**
+    - **Resolution:** Keep `com.google.mediapipe:tasks-genai:0.10.22` locked for Phase 7 execution. Do not perform runtime migration in this phase; enforce adapter isolation so migration to newer stack can be planned in Phase 8+.
+    - **Planning impact:** Plans must avoid leaking MediaPipe-specific types beyond runtime adapter boundaries.
 
-3. **How should model artifacts be distributed in production (server download, first-run bundle, staged rollout)?**
-   - What we know: Official docs state models are too large to bundle in APK and show adb push only for development. [CITED: MediaPipe Android guide]
-   - What's unclear: Product-approved distribution and rollback strategy.
-   - Recommendation: Add a planning task to select provisioning strategy and integrity verification flow.
+3. **Model artifact distribution approach**
+    - **Resolution:** For Phase 7 foundation work, use a development-compatible local provisioning path with integrity verification hooks (checksum/signature contract), and defer production rollout channel selection (staged/server policy) to later milestone planning.
+    - **Planning impact:** Include explicit task acceptance criteria for artifact integrity checks and deterministic unavailable-model fallback behavior.
 
 ## Environment Availability
 
