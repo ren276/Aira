@@ -32,6 +32,17 @@ fun getLocalPropertyOrDefault(key: String, defaultValue: String): String {
     return if (value.isBlank()) defaultValue else value
 }
 
+val geminiApiKey = getLocalProperty("GEMINI_API_KEY")
+val isProdTaskRequested = gradle.startParameter.taskNames.any { task ->
+    task.contains("prod", ignoreCase = true)
+}
+
+if (isProdTaskRequested && geminiApiKey.isNotBlank()) {
+    throw GradleException(
+        "Prod builds must not embed GEMINI_API_KEY in BuildConfig. Route Gemini through a backend/proxy for prod."
+    )
+}
+
 android {
     namespace = "com.aira.health"
     compileSdk = 36
@@ -62,7 +73,7 @@ android {
             versionNameSuffix = "-dev"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
-            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "false")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "false")
         }
@@ -72,7 +83,7 @@ android {
             versionNameSuffix = "-staging"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
-            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
         }
@@ -80,7 +91,7 @@ android {
             dimension = "environment"
             buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_PROD_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_PROD_ANON_KEY")}\"")
-            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
         }
@@ -204,6 +215,7 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.sse)
     implementation(libs.ktor.serialization.kotlinx.json)
 
     // Camera & Scanner (Phase 04 baseline)

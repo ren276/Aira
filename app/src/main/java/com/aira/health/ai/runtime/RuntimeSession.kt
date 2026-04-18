@@ -1,9 +1,11 @@
 package com.aira.health.ai.runtime
 
+import android.os.SystemClock
+
 /**
  * Per-request lifecycle bookkeeping value type.
  *
- * Carries the correlation id, start timestamp, and final outcome once the session
+ * Carries the correlation id, monotonic start timestamp, and final outcome once the session
  * completes or fails. Consumers use [latencyMs] for telemetry and [failureReason]
  * to route deterministic fallback output.
  *
@@ -14,13 +16,13 @@ data class RuntimeSession(
     /** Opaque id matching [AiRuntimeRequest.requestId]. */
     val requestId: String,
 
-    /** Wall-clock time the session was created (epoch millis). */
-    val startedAtMs: Long = System.currentTimeMillis(),
+    /** Monotonic elapsed timestamp when the session was created. */
+    val startedAtElapsedMs: Long = SystemClock.elapsedRealtime(),
 
     /** Terminal failure reason when the session did not complete successfully. Null on success. */
     val failureReason: RuntimeFailureReason? = null,
 
-    /** Wall-clock duration from [startedAtMs] to completion. Null until session ends. */
+    /** Elapsed duration from [startedAtElapsedMs] to completion. Null until session ends. */
     val latencyMs: Long? = null,
 ) {
 
@@ -28,10 +30,10 @@ data class RuntimeSession(
     val isSuccess: Boolean get() = failureReason == null && latencyMs != null
 
     /**
-     * Returns a copy marked as successfully completed with the elapsed wall-clock duration.
+     * Returns a copy marked as successfully completed with elapsed duration.
      */
     fun complete(): RuntimeSession = copy(
-        latencyMs = System.currentTimeMillis() - startedAtMs,
+        latencyMs = SystemClock.elapsedRealtime() - startedAtElapsedMs,
     )
 
     /**
@@ -39,6 +41,6 @@ data class RuntimeSession(
      */
     fun fail(reason: RuntimeFailureReason): RuntimeSession = copy(
         failureReason = reason,
-        latencyMs = System.currentTimeMillis() - startedAtMs,
+        latencyMs = SystemClock.elapsedRealtime() - startedAtElapsedMs,
     )
 }

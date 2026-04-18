@@ -11,9 +11,9 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Hilt module providing the on-device AI runtime dependencies.
+ * Hilt module providing AI runtime dependencies.
  *
- * All bindings are singleton-scoped — one engine, one config for the app lifetime.
+ * All bindings are singleton-scoped — one gateway, one config for the app lifetime.
  * Consumers inject [AiRuntimeGateway]; they never depend on the concrete
  * [GeminiCloudRuntimeGateway] type directly (AIM-01 adapter isolation).
  */
@@ -31,7 +31,7 @@ abstract class AiRuntimeModule {
     companion object {
 
         /**
-         * Provides an immutable [RuntimeConfig] with phase-locked defaults from AI-SPEC.
+         * Provides immutable [RuntimeConfig] defaults for the active runtime backend.
          * Override in tests via [dagger.hilt.android.testing.BindValue] or a test module.
          */
         @Provides

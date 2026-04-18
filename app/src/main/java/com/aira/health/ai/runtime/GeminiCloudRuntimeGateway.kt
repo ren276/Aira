@@ -1,11 +1,12 @@
 package com.aira.health.ai.runtime
 
+import android.os.SystemClock
 import android.util.Log
 import com.aira.health.BuildConfig
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.plugins.sse.*
@@ -14,7 +15,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.serialization.json.Json
@@ -47,15 +48,28 @@ class GeminiCloudRuntimeGateway @Inject constructor(
             socketTimeoutMillis = config.timeoutMillis
         }
         install(Logging) {
-            level = LogLevel.INFO
+            level = if (BuildConfig.DEBUG) LogLevel.INFO else LogLevel.NONE
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Log.d("GeminiGatewayHttp", message.redactSensitiveTokens())
+                }
+            }
         }
         install(SSE)
     }
 
     override fun generate(request: AiRuntimeRequest): Flow<AiRuntimeResponse> =
-        callbackFlow {
-            val startMs = System.currentTimeMillis()
+        channelFlow {
+            val startMs = SystemClock.elapsedRealtime()
             val fullPrompt = request.promptChunks.joinToString("\n")
+            val apiKey = BuildConfig.GEMINI_API_KEY
+
+            if (apiKey.isBlank()) {
+                throw AiRuntimeException(
+                    RuntimeFailureReason.MODEL_UNAVAILABLE,
+                    "Gemini API key is unavailable for the active build variant"
+                )
+            }
 
             val geminiRequest = GeminiRequest(
                 contents = listOf(
@@ -70,28 +84,26 @@ class GeminiCloudRuntimeGateway @Inject constructor(
             )
 
             try {
-                Log.i("GeminiGateway", "Starting SSE request to: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
-                
-                // Correct Ktor 3 SSE signature
+                Log.i("GeminiGateway", "Starting SSE request to Gemini stream endpoint")
+
                 client.sse(
                     request = {
                         method = HttpMethod.Post
                         url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
                         parameter("alt", "sse")
-                        parameter("key", BuildConfig.GEMINI_API_KEY)
+                        header("x-goog-api-key", apiKey)
                         contentType(ContentType.Application.Json)
                         setBody(geminiRequest)
                     }
                 ) {
                     this.incoming.collect { event ->
                         val data = event.data ?: return@collect
-                        Log.v("GeminiGateway", "Received chunk: $data")
+                        Log.v("GeminiGateway", "Received SSE chunk (${data.length} chars)")
                         
                         try {
-                            // Gemini SSE sends JSON chunks in the 'data' field
                             val response = json.decodeFromString<GeminiResponse>(data)
                             val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
-                            
+
                             if (text.isNotEmpty()) {
                                 trySend(AiRuntimeResponse(text = text, isDone = false))
                             }
@@ -101,24 +113,31 @@ class GeminiCloudRuntimeGateway @Inject constructor(
                     }
                 }
 
-                // Signal completion
-                val latency = System.currentTimeMillis() - startMs
+                val latency = SystemClock.elapsedRealtime() - startMs
                 Log.i("GeminiGateway", "SSE stream completed in ${latency}ms")
                 trySend(AiRuntimeResponse(text = "", isDone = true, latencyMs = latency))
-                close()
 
             } catch (e: Exception) {
-                if (e is CancellationException) {
-                    Log.i("GeminiGateway", "SSE stream cancelled by caller")
-                    throw AiRuntimeException(RuntimeFailureReason.CANCELLED, "Generation cancelled", e)
-                }
-                
-                Log.e("GeminiGateway", "SSE stream error: ${e.message}", e)
                 val reason = when (e) {
+                    is TimeoutCancellationException,
                     is HttpRequestTimeoutException -> RuntimeFailureReason.TIMEOUT
-                    else -> RuntimeFailureReason.INTERNAL_ERROR
+                    is CancellationException       -> RuntimeFailureReason.CANCELLED
+                    else                           -> RuntimeFailureReason.INTERNAL_ERROR
                 }
-                throw AiRuntimeException(reason, "Gemini REST error: ${e.message}", e)
+
+                when (reason) {
+                    RuntimeFailureReason.CANCELLED -> Log.i("GeminiGateway", "SSE stream cancelled by caller")
+                    RuntimeFailureReason.TIMEOUT   -> Log.w("GeminiGateway", "SSE stream timed out")
+                    else                           -> Log.e("GeminiGateway", "SSE stream error: ${e.message}", e)
+                }
+
+                val message = when (reason) {
+                    RuntimeFailureReason.CANCELLED -> "Generation cancelled"
+                    RuntimeFailureReason.TIMEOUT   -> "Generation timed out"
+                    RuntimeFailureReason.MODEL_UNAVAILABLE -> "Model unavailable"
+                    RuntimeFailureReason.INTERNAL_ERROR -> "Gemini REST error: ${e.message}"
+                }
+                throw AiRuntimeException(reason, message, e)
             }
         }.flowOn(Dispatchers.IO)
 
@@ -126,3 +145,8 @@ class GeminiCloudRuntimeGateway @Inject constructor(
         client.close()
     }
 }
+
+private fun String.redactSensitiveTokens(): String =
+    this
+        .replace(Regex("([?&]key=)[^&\\s]+", RegexOption.IGNORE_CASE), "$1REDACTED")
+        .replace(Regex("(x-goog-api-key:)\\s*[^\\s]+", RegexOption.IGNORE_CASE), "$1 REDACTED")

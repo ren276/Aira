@@ -1,5 +1,6 @@
 package com.aira.health.ai.orchestration
 
+import android.os.SystemClock
 import com.aira.health.ai.fallback.DeterministicSummaryService
 import com.aira.health.ai.fallback.FallbackReason
 import com.aira.health.ai.fallback.FallbackSummary
@@ -13,6 +14,7 @@ import com.aira.health.ai.runtime.RuntimeConfig
 import com.aira.health.ai.runtime.RuntimeFailureReason
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -60,8 +62,10 @@ class InferenceOrchestrator @Inject constructor(
     fun run(
         snapshot: MetricSnapshot,
         userNotes: String? = null,
-    ): Flow<InferenceOutcome> = flow {
-        val startMs = System.currentTimeMillis()
+    ): Flow<InferenceOutcome> {
+        val startMs = SystemClock.elapsedRealtime()
+
+        return flow {
 
         // 1. Assemble privacy-safe prompt (AIM-03)
         val contract = promptAssembler.assemble(snapshot, userNotes)
@@ -81,6 +85,7 @@ class InferenceOrchestrator @Inject constructor(
                 .catch { throwable ->
                     // 3a. Map runtime failures to deterministic fallback (AIM-04)
                     val fallbackReason = when {
+                        throwable is TimeoutCancellationException -> FallbackReason.TIMEOUT
                         throwable is AiRuntimeException -> throwable.reason.toFallbackReason()
                         throwable is CancellationException -> FallbackReason.CANCELLED
                         else -> FallbackReason.RUNTIME_ERROR
@@ -89,7 +94,7 @@ class InferenceOrchestrator @Inject constructor(
                     emit(
                         InferenceOutcome.Fallback(
                             summary = summary,
-                            latencyMs = System.currentTimeMillis() - startMs,
+                            latencyMs = SystemClock.elapsedRealtime() - startMs,
                         )
                     )
                 }
@@ -99,7 +104,7 @@ class InferenceOrchestrator @Inject constructor(
                         emit(
                             InferenceOutcome.Complete(
                                 text = response.text,
-                                latencyMs = response.latencyMs ?: (System.currentTimeMillis() - startMs),
+                                latencyMs = response.latencyMs ?: (SystemClock.elapsedRealtime() - startMs),
                                 usedFallback = false,
                             )
                         )
@@ -111,19 +116,20 @@ class InferenceOrchestrator @Inject constructor(
         }
     }.catch { throwable ->
         // Top-level catch for timeout or unexpected errors escaping the inner flow
-        val reason = if (throwable is CancellationException) {
-            FallbackReason.CANCELLED
-        } else {
-            FallbackReason.TIMEOUT
+        val reason = when (throwable) {
+            is TimeoutCancellationException -> FallbackReason.TIMEOUT
+            is CancellationException        -> FallbackReason.CANCELLED
+            else                            -> FallbackReason.RUNTIME_ERROR
         }
         val summary = fallbackService.buildSummary(snapshot, reason)
         emit(
             InferenceOutcome.Fallback(
                 summary = summary,
-                latencyMs = config.timeoutMillis,
+                latencyMs = SystemClock.elapsedRealtime() - startMs,
             )
         )
     }.flowOn(Dispatchers.Default)
+    }
 
     companion object {
         /** Grace period above request timeout before the outer coroutine also times out. */

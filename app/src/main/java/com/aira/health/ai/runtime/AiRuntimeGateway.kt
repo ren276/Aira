@@ -3,14 +3,17 @@ package com.aira.health.ai.runtime
 import kotlinx.coroutines.flow.Flow
 
 /**
- * App-facing contract for on-device AI inference.
+ * App-facing contract for AI inference.
  *
  * **Thread safety:** All suspend functions MUST be called from a background dispatcher.
  * Never invoke from the main thread — see PERF-01.
  *
- * **Privacy (AIM-02/AIM-03):** Implementations must not transmit any data off-device.
- * Raw biometric records must never appear in prompt payloads; only aggregated derived
- * features (scores, confidence, recency) are permitted.
+ * **Privacy (AIM-03):** Implementations may be local or network-backed, but raw biometric
+ * records must never appear in prompt payloads. Only aggregated derived features
+ * (scores, confidence, recency) are permitted.
+ *
+ * The current production binding [GeminiCloudRuntimeGateway] transmits aggregated prompt
+ * content to a remote Gemini endpoint over HTTPS.
  */
 interface AiRuntimeGateway {
 
@@ -67,6 +70,7 @@ data class AiRuntimeRequest(
 data class AiRuntimeResponse(
     val text: String,
     val isDone: Boolean = false,
+    /** Monotonic elapsed milliseconds since request start. */
     val latencyMs: Long? = null,
 )
 
