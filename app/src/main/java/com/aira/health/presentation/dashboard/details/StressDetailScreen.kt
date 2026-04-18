@@ -36,7 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aira.health.presentation.common.components.ConfidenceMetaRow
 import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
+import com.aira.health.presentation.dashboard.details.components.FactorBreakdownCard
 import com.aira.health.presentation.theme.Theme
 
 @Composable
@@ -76,6 +78,11 @@ fun StressDetailScreen(
         // Stress Radar Hero
         item {
             StressRadarHero(score = stressScore, modifier = Modifier.fillMaxWidth())
+            ConfidenceMetaRow(
+                confidence = state.confidenceTierLabel,
+                lastUpdated = state.recencyWindowText,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
             Spacer(modifier = Modifier.height(32.dp))
         }
 
@@ -83,6 +90,16 @@ fun StressDetailScreen(
             DataProvenanceCard(
                 dataSources = state.dataSources,
                 consideredData = state.consideredData,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        item {
+            FactorBreakdownCard(
+                factors = state.rankedFactors,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)

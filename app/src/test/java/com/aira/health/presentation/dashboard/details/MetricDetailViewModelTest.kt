@@ -2,12 +2,16 @@ package com.aira.health.presentation.dashboard.details
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.aira.health.data.local.dao.CausalInsightDao
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.dao.HrSampleDao
 import com.aira.health.data.local.dao.HrvSampleDao
 import com.aira.health.data.local.dao.SleepSessionDao
 import com.aira.health.data.local.dao.WorkoutSessionDao
+import com.aira.health.data.local.model.CausalInsight
 import com.aira.health.data.local.model.DailyMetrics
+import com.aira.health.domain.model.CausalDirection
+import com.aira.health.domain.model.CausalFactor
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +35,7 @@ class MetricDetailViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var mockDao: DailyMetricsDao
+    private lateinit var mockCausalInsightDao: CausalInsightDao
     private lateinit var mockHrSampleDao: HrSampleDao
     private lateinit var mockHrvSampleDao: HrvSampleDao
     private lateinit var mockSleepSessionDao: SleepSessionDao
@@ -40,6 +45,7 @@ class MetricDetailViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         mockDao = mockk(relaxed = true)
+        mockCausalInsightDao = mockk(relaxed = true)
         mockHrSampleDao = mockk(relaxed = true)
         mockHrvSampleDao = mockk(relaxed = true)
         mockSleepSessionDao = mockk(relaxed = true)
@@ -56,6 +62,7 @@ class MetricDetailViewModelTest {
         val savedStateHandle = SavedStateHandle(mapOf("metricId" to "unknown_metric"))
         val viewModel = MetricDetailViewModel(
             dailyMetricsDao = mockDao,
+            causalInsightDao = mockCausalInsightDao,
             hrSampleDao = mockHrSampleDao,
             hrvSampleDao = mockHrvSampleDao,
             sleepSessionDao = mockSleepSessionDao,
@@ -87,6 +94,7 @@ class MetricDetailViewModelTest {
         val savedStateHandle = SavedStateHandle(mapOf("metricId" to "recovery"))
         val viewModel = MetricDetailViewModel(
             dailyMetricsDao = mockDao,
+            causalInsightDao = mockCausalInsightDao,
             hrSampleDao = mockHrSampleDao,
             hrvSampleDao = mockHrvSampleDao,
             sleepSessionDao = mockSleepSessionDao,
@@ -114,6 +122,141 @@ class MetricDetailViewModelTest {
             assertTrue("whatToDoNext must not be empty", successState.whatToDoNext.isNotBlank())
             assertTrue("dataSources must be present", successState.dataSources.isNotEmpty())
             assertTrue("consideredData must be present", successState.consideredData.isNotEmpty())
+        }
+    }
+
+    @Test
+    fun `confidence thresholds map to fixed labels`() = runTest(testDispatcher) {
+        val levels = listOf(
+            0.75f to "High",
+            0.40f to "Medium",
+            0.39f to "Low"
+        )
+
+        levels.forEach { (confidence, expectedLabel) ->
+            coEvery { mockDao.getRange(any(), any()) } returns emptyList()
+            coEvery { mockDao.getLast14Days() } returns listOf(
+                DailyMetrics(date = "2025-01-01", recoveryScore = 76, dataConfidence = confidence)
+            )
+            coEvery { mockCausalInsightDao.getLatestByMetric(any()) } returns null
+
+            val savedStateHandle = SavedStateHandle(mapOf("metricId" to "recovery"))
+            val viewModel = MetricDetailViewModel(
+                dailyMetricsDao = mockDao,
+                causalInsightDao = mockCausalInsightDao,
+                hrSampleDao = mockHrSampleDao,
+                hrvSampleDao = mockHrvSampleDao,
+                sleepSessionDao = mockSleepSessionDao,
+                workoutSessionDao = mockWorkoutSessionDao,
+                savedStateHandle = savedStateHandle
+            )
+
+            viewModel.uiState.test {
+                advanceUntilIdle()
+                val success = cancelAndConsumeRemainingEvents()
+                    .filterIsInstance<app.cash.turbine.Event.Item<MetricDetailUiState>>()
+                    .map { it.value }
+                    .filterIsInstance<MetricDetailUiState.Success>()
+                    .lastOrNull()
+
+                requireNotNull(success)
+                assertEquals(expectedLabel, success.confidenceTierLabel)
+            }
+        }
+    }
+
+    @Test
+    fun `recency label is explicit window text`() = runTest(testDispatcher) {
+        val factors = listOf(
+            CausalFactor(
+                key = "sleep_debt",
+                direction = CausalDirection.DECREASED,
+                weight = 0.34f,
+                windowLabel = "7d",
+                windowTimestamp = 1L
+            )
+        )
+        val insight = CausalInsight.fromFactors(
+            date = "2025-01-01",
+            metricKey = "recovery",
+            confidence = 0.8f,
+            factors = factors,
+            calculatedAt = 123L
+        )
+
+        coEvery { mockDao.getRange(any(), any()) } returns emptyList()
+        coEvery { mockDao.getLast14Days() } returns listOf(
+            DailyMetrics(date = "2025-01-01", recoveryScore = 70, dataConfidence = 0.8f)
+        )
+        coEvery { mockCausalInsightDao.getLatestByMetric(any()) } returns insight
+
+        val viewModel = MetricDetailViewModel(
+            dailyMetricsDao = mockDao,
+            causalInsightDao = mockCausalInsightDao,
+            hrSampleDao = mockHrSampleDao,
+            hrvSampleDao = mockHrvSampleDao,
+            sleepSessionDao = mockSleepSessionDao,
+            workoutSessionDao = mockWorkoutSessionDao,
+            savedStateHandle = SavedStateHandle(mapOf("metricId" to "recovery"))
+        )
+
+        viewModel.uiState.test {
+            advanceUntilIdle()
+            val success = cancelAndConsumeRemainingEvents()
+                .filterIsInstance<app.cash.turbine.Event.Item<MetricDetailUiState>>()
+                .map { it.value }
+                .filterIsInstance<MetricDetailUiState.Success>()
+                .lastOrNull()
+
+            requireNotNull(success)
+            assertEquals("last 7d", success.recencyWindowText)
+            assertTrue(success.recencyWindowText.startsWith("last "))
+        }
+    }
+
+    @Test
+    fun `ranked factors expose top three with direction and weight`() = runTest(testDispatcher) {
+        val factors = listOf(
+            CausalFactor("sleep_debt", CausalDirection.DECREASED, 0.41f, "last 7d", 3L),
+            CausalFactor("hrv_trend", CausalDirection.INCREASED, 0.32f, "last 14d", 2L),
+            CausalFactor("strain_carryover", CausalDirection.NEUTRAL, 0.21f, "last 3d", 1L)
+        )
+        val insight = CausalInsight.fromFactors(
+            date = "2025-01-01",
+            metricKey = "recovery",
+            confidence = 0.9f,
+            factors = factors,
+            calculatedAt = 456L
+        )
+
+        coEvery { mockDao.getRange(any(), any()) } returns emptyList()
+        coEvery { mockDao.getLast14Days() } returns listOf(
+            DailyMetrics(date = "2025-01-01", recoveryScore = 81, dataConfidence = 0.9f)
+        )
+        coEvery { mockCausalInsightDao.getLatestByMetric(any()) } returns insight
+
+        val viewModel = MetricDetailViewModel(
+            dailyMetricsDao = mockDao,
+            causalInsightDao = mockCausalInsightDao,
+            hrSampleDao = mockHrSampleDao,
+            hrvSampleDao = mockHrvSampleDao,
+            sleepSessionDao = mockSleepSessionDao,
+            workoutSessionDao = mockWorkoutSessionDao,
+            savedStateHandle = SavedStateHandle(mapOf("metricId" to "recovery"))
+        )
+
+        viewModel.uiState.test {
+            advanceUntilIdle()
+            val success = cancelAndConsumeRemainingEvents()
+                .filterIsInstance<app.cash.turbine.Event.Item<MetricDetailUiState>>()
+                .map { it.value }
+                .filterIsInstance<MetricDetailUiState.Success>()
+                .lastOrNull()
+
+            requireNotNull(success)
+            assertEquals(3, success.rankedFactors.size)
+            assertEquals(MetricDetailUiState.FactorDirection.DECREASED, success.rankedFactors[0].direction)
+            assertTrue(success.rankedFactors[0].weight > 0f)
         }
     }
 }

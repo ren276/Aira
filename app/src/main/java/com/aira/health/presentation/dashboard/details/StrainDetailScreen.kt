@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aira.health.presentation.common.components.ConfidenceMetaRow
+import com.aira.health.presentation.dashboard.details.components.FactorBreakdownCard
 import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
 import com.aira.health.presentation.theme.Theme
 import kotlin.math.cos
@@ -81,6 +83,11 @@ fun StrainDetailScreen(
         // Strain Dial Hero
         item {
             StrainDialHero(score = strainScore, modifier = Modifier.fillMaxWidth())
+            ConfidenceMetaRow(
+                confidence = state.confidenceTierLabel,
+                lastUpdated = state.recencyWindowText,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
             Spacer(modifier = Modifier.height(32.dp))
         }
 
@@ -97,6 +104,16 @@ fun StrainDetailScreen(
             DataProvenanceCard(
                 dataSources = state.dataSources,
                 consideredData = state.consideredData,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        item {
+            FactorBreakdownCard(
+                factors = state.rankedFactors,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
