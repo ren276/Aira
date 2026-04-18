@@ -24,10 +24,11 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         DataSource::class,
         UserCorrection::class,
         CardioLoadHistory::class,
+        CausalInsight::class,
         AiConversationMessage::class,
         StravaActivityRaw::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -39,6 +40,7 @@ abstract class AiraDatabase : RoomDatabase() {
     abstract fun baselineDao(): BaselineDao
     abstract fun dataSourceDao(): DataSourceDao
     abstract fun userCorrectionDao(): UserCorrectionDao
+    abstract fun causalInsightDao(): CausalInsightDao
     abstract fun aiConversationDao(): AiConversationDao
     abstract fun nutritionLogDao(): NutritionLogDao
     abstract fun workoutSessionDao(): WorkoutSessionDao
@@ -90,6 +92,39 @@ abstract class AiraDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS causal_insights (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "date TEXT NOT NULL, " +
+                        "metricKey TEXT NOT NULL, " +
+                        "confidence REAL NOT NULL, " +
+                        "factor1Key TEXT, " +
+                        "factor1Direction TEXT, " +
+                        "factor1Weight REAL, " +
+                        "factor1WindowLabel TEXT, " +
+                        "factor1WindowTimestamp INTEGER, " +
+                        "factor2Key TEXT, " +
+                        "factor2Direction TEXT, " +
+                        "factor2Weight REAL, " +
+                        "factor2WindowLabel TEXT, " +
+                        "factor2WindowTimestamp INTEGER, " +
+                        "factor3Key TEXT, " +
+                        "factor3Direction TEXT, " +
+                        "factor3Weight REAL, " +
+                        "factor3WindowLabel TEXT, " +
+                        "factor3WindowTimestamp INTEGER, " +
+                        "calculatedAt INTEGER NOT NULL" +
+                        ")"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_causal_insights_metricKey_date " +
+                        "ON causal_insights(metricKey, date)"
+                )
+            }
+        }
+
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
             System.loadLibrary("sqlcipher")
             val factory = SupportOpenHelperFactory(passphrase.copyOf())
@@ -103,6 +138,7 @@ abstract class AiraDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_4_5)
                 .fallbackToDestructiveMigration() // Replace with explicit migrations before v1 release
                 .build()
         }

@@ -48,6 +48,9 @@ object DatabaseModule {
     fun provideUserCorrectionDao(db: AiraDatabase): UserCorrectionDao = db.userCorrectionDao()
 
     @Provides
+    fun provideCausalInsightDao(db: AiraDatabase): CausalInsightDao = db.causalInsightDao()
+
+    @Provides
     fun provideAiConversationDao(db: AiraDatabase): AiConversationDao = db.aiConversationDao()
 
     @Provides
