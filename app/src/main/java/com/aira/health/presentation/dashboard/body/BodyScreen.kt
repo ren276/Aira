@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,7 +57,8 @@ import kotlin.math.sqrt
 @Composable
 fun BodyScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    onOpenCoach: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     val success = state as? HomeUiState.Success
@@ -86,10 +88,26 @@ fun BodyScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Body",
+                    text = "Insights",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color.White
                 )
+                Row(
+                    modifier = Modifier.clickable(onClick = onOpenCoach),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = "Coach",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = Theme.colors.accent,
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Open coach screen",
+                        tint = Theme.colors.accent,
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(32.dp))
         }

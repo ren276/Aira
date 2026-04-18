@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,10 +68,8 @@ fun CoachReadyContent(
             .fillMaxSize()
             .background(Theme.colors.dominant),
     ) {
-        Text(
-            text = "Coach Weekly Planning",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = Color.White,
+        CoachSectionHeader(
+            title = "Coach Weekly Planning",
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
         )
 
@@ -80,33 +79,142 @@ fun CoachReadyContent(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
-                WhatIfScenarioCard(
-                    scenario = state.scenario,
+                CoachCardsSection(
+                    state = state,
                     onSleepDeltaChanged = onSleepDeltaChanged,
                     onTrainingLoadDeltaChanged = onTrainingLoadDeltaChanged,
                     onRecalculate = onRecalculate,
                 )
             }
-            item {
-                PredictionProjectionCard(model = state.projection)
+        }
+    }
+}
+
+@Composable
+fun CoachInlineSection(
+    state: CoachUiState,
+    onSleepDeltaChanged: (Float) -> Unit,
+    onTrainingLoadDeltaChanged: (Float) -> Unit,
+    onRecalculate: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Theme.colors.dominant),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        CoachSectionHeader(
+            title = "Coach",
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+
+        when (state) {
+            CoachUiState.Loading -> CoachInlineLoadingState()
+
+            is CoachUiState.Error -> {
+                Text(
+                    text = state.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Theme.colors.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                WhatIfScenarioCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    scenario = state.scenario,
+                    onSleepDeltaChanged = onSleepDeltaChanged,
+                    onTrainingLoadDeltaChanged = onTrainingLoadDeltaChanged,
+                    onRecalculate = onRecalculate,
+                    isRefreshing = false,
+                )
             }
-            item {
-                GuidanceNarrativeCard(model = state.guidance)
-            }
-            item {
-                WeeklyPlanDraftCard(model = state.weeklyDraft)
-            }
-            item {
-                if (state.isRefreshing) {
-                    Text(
-                        text = "Recomputing projections...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Theme.colors.onSurfaceVariant,
-                    )
-                }
+
+            is CoachUiState.Ready -> CoachCardsSection(
+                state = state,
+                onSleepDeltaChanged = onSleepDeltaChanged,
+                onTrainingLoadDeltaChanged = onTrainingLoadDeltaChanged,
+                onRecalculate = onRecalculate,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CoachInlineLoadingState() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Theme.colors.surfaceContainerLow,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                )
+                .padding(20.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(color = Theme.colors.accent, strokeWidth = 2.dp)
+                Text(
+                    text = "Loading coach planning...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White,
+                    modifier = Modifier.padding(start = 12.dp),
+                )
             }
         }
     }
+}
+
+@Composable
+private fun CoachCardsSection(
+    state: CoachUiState.Ready,
+    onSleepDeltaChanged: (Float) -> Unit,
+    onTrainingLoadDeltaChanged: (Float) -> Unit,
+    onRecalculate: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        WhatIfScenarioCard(
+            scenario = state.scenario,
+            onSleepDeltaChanged = onSleepDeltaChanged,
+            onTrainingLoadDeltaChanged = onTrainingLoadDeltaChanged,
+            onRecalculate = onRecalculate,
+            isRefreshing = state.isRefreshing,
+        )
+        PredictionProjectionCard(model = state.projection)
+        GuidanceNarrativeCard(model = state.guidance)
+        WeeklyPlanDraftCard(model = state.weeklyDraft)
+
+        if (state.isRefreshing) {
+            Text(
+                text = "Recomputing projections...",
+                style = MaterialTheme.typography.bodySmall,
+                color = Theme.colors.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CoachSectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+        color = Color.White,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -152,6 +260,7 @@ private fun CoachErrorState(
             onSleepDeltaChanged = onSleepDeltaChanged,
             onTrainingLoadDeltaChanged = onTrainingLoadDeltaChanged,
             onRecalculate = onRecalculate,
+            isRefreshing = false,
         )
     }
 }

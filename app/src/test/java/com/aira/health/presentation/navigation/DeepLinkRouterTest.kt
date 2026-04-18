@@ -21,7 +21,7 @@ class DeepLinkRouterTest {
     fun resolveLegacyAliasesToLockedRoutes() {
         assertEquals(AiraRoutes.INSIGHTS, DeepLinkRouter.resolve(AiraRoutes.BODY))
         assertEquals(AiraRoutes.NUTRITION, DeepLinkRouter.resolve(AiraRoutes.EAT))
-        assertEquals(AiraRoutes.INSIGHTS, DeepLinkRouter.resolve(AiraRoutes.COACH))
+        assertEquals(AiraRoutes.COACH, DeepLinkRouter.resolve(AiraRoutes.COACH))
     }
 
     @Test

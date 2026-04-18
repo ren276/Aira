@@ -80,6 +80,7 @@ class CoachViewModel @Inject constructor(
     private suspend fun recomputeCurrentScenario() {
         val scenario = _scenario.value
         setRefreshingState(scenario)
+        val startedAtMs = System.currentTimeMillis()
 
         val result = runCatching {
             buildWeeklyAthletePlanUseCase.build(
@@ -89,6 +90,12 @@ class CoachViewModel @Inject constructor(
                     trainingLoadDeltaPercent = scenario.trainingLoadDeltaPercent,
                 )
             )
+        }
+
+        val elapsedMs = System.currentTimeMillis() - startedAtMs
+        val remainingFeedbackMs = MIN_REFRESH_VISIBILITY_MS - elapsedMs
+        if (remainingFeedbackMs > 0L) {
+            delay(remainingFeedbackMs)
         }
 
         _uiState.value = result.fold(
@@ -171,6 +178,7 @@ class CoachViewModel @Inject constructor(
 
     companion object {
         private const val RECOMPUTE_DEBOUNCE_MS: Long = 350
+        private const val MIN_REFRESH_VISIBILITY_MS: Long = 450
         private const val LOW_CONFIDENCE_LABEL: String =
             "Confidence is limited; treat this as directional and non-clinical guidance."
 

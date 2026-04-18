@@ -10,7 +10,7 @@ object AiraRoutes {
     // Legacy aliases preserved for compatibility with older deep links.
     const val BODY = INSIGHTS
     const val EAT = NUTRITION
-    const val COACH = INSIGHTS
+    const val COACH = "coach"
     
     // Detailed routes
     const val INSIGHTS_DETAIL = "insights/{metricId}"

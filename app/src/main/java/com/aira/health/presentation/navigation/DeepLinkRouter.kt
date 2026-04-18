@@ -20,7 +20,7 @@ object DeepLinkRouter {
             // Legacy aliases from earlier IA versions.
             routeKey == AiraRoutes.BODY -> AiraRoutes.INSIGHTS
             routeKey == AiraRoutes.EAT -> AiraRoutes.NUTRITION
-            routeKey == AiraRoutes.COACH -> AiraRoutes.INSIGHTS
+            routeKey == AiraRoutes.COACH -> AiraRoutes.COACH
 
             else -> AiraRoutes.HOME
         }

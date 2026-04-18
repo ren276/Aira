@@ -28,6 +28,7 @@ fun WhatIfScenarioCard(
     onSleepDeltaChanged: (Float) -> Unit,
     onTrainingLoadDeltaChanged: (Float) -> Unit,
     onRecalculate: () -> Unit,
+    isRefreshing: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -78,9 +79,10 @@ fun WhatIfScenarioCard(
         ) {
             Button(
                 modifier = Modifier.testTag("coach-recalculate-button"),
+                enabled = !isRefreshing,
                 onClick = onRecalculate,
             ) {
-                Text("Recalculate plan")
+                Text(if (isRefreshing) "Recalculating..." else "Recalculate plan")
             }
         }
     }
