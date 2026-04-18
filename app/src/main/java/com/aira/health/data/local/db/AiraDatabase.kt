@@ -25,10 +25,12 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         UserCorrection::class,
         CardioLoadHistory::class,
         CausalInsight::class,
+        PersonalizationState::class,
+        CorrectionInfluenceState::class,
         AiConversationMessage::class,
         StravaActivityRaw::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -41,6 +43,8 @@ abstract class AiraDatabase : RoomDatabase() {
     abstract fun dataSourceDao(): DataSourceDao
     abstract fun userCorrectionDao(): UserCorrectionDao
     abstract fun causalInsightDao(): CausalInsightDao
+    abstract fun personalizationStateDao(): PersonalizationStateDao
+    abstract fun correctionInfluenceDao(): CorrectionInfluenceDao
     abstract fun aiConversationDao(): AiConversationDao
     abstract fun nutritionLogDao(): NutritionLogDao
     abstract fun workoutSessionDao(): WorkoutSessionDao
@@ -125,6 +129,44 @@ abstract class AiraDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS personalization_state (" +
+                        "date TEXT NOT NULL, " +
+                        "sleepNeedMinutes REAL NOT NULL, " +
+                        "recoverySpeed REAL NOT NULL, " +
+                        "stressSensitivity REAL NOT NULL, " +
+                        "usableDays INTEGER NOT NULL, " +
+                        "applied INTEGER NOT NULL, " +
+                        "skipReason TEXT, " +
+                        "correctionInfluenceApplied REAL NOT NULL, " +
+                        "updatedAt INTEGER NOT NULL, " +
+                        "PRIMARY KEY(date)" +
+                        ")"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS correction_influence_state (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "date TEXT NOT NULL, " +
+                        "parameterKey TEXT NOT NULL, " +
+                        "sourceCorrectionId INTEGER NOT NULL, " +
+                        "sourceFieldName TEXT NOT NULL, " +
+                        "ageDays INTEGER NOT NULL, " +
+                        "decayWeight REAL NOT NULL, " +
+                        "rawInfluence REAL NOT NULL, " +
+                        "decayedInfluence REAL NOT NULL, " +
+                        "cappedInfluence REAL NOT NULL, " +
+                        "createdAt INTEGER NOT NULL" +
+                        ")"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_correction_influence_state_date " +
+                        "ON correction_influence_state(date)"
+                )
+            }
+        }
+
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
             System.loadLibrary("sqlcipher")
             val factory = SupportOpenHelperFactory(passphrase.copyOf())
@@ -139,6 +181,7 @@ abstract class AiraDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_5_6)
                 .fallbackToDestructiveMigration() // Replace with explicit migrations before v1 release
                 .build()
         }
