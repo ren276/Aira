@@ -12,10 +12,14 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CloudApiTest {
 
+    private val testTokenProvider = object : GeminiAuthTokenProvider {
+        override suspend fun getToken(): String = "test-ephemeral-token"
+    }
+
     @Test
     fun testGeminiCloudGeneration() = runBlocking {
         val config = RuntimeConfig() // Uses 30s timeout now
-        val gateway = GeminiCloudRuntimeGateway(config)
+        val gateway = GeminiCloudRuntimeGateway(config, testTokenProvider)
 
         val request = AiRuntimeRequest(
             promptChunks = listOf("Say exactly: 'Aira Cloud API is working!'")
@@ -35,7 +39,7 @@ class CloudApiTest {
     fun testGeminiCloudTimeout() = runBlocking {
         // 1. Force a 1ms timeout
         val config = RuntimeConfig(timeoutMillis = 1L)
-        val gateway = GeminiCloudRuntimeGateway(config)
+        val gateway = GeminiCloudRuntimeGateway(config, testTokenProvider)
 
         val request = AiRuntimeRequest(
             promptChunks = listOf("Write a 500 word essay about health.")
@@ -52,7 +56,7 @@ class CloudApiTest {
 
     @Test
     fun testGeminiCloudCancellation() = runBlocking {
-        val gateway = GeminiCloudRuntimeGateway(RuntimeConfig())
+        val gateway = GeminiCloudRuntimeGateway(RuntimeConfig(), testTokenProvider)
         val request = AiRuntimeRequest(promptChunks = listOf("Write a long story."))
 
         val job = launch {

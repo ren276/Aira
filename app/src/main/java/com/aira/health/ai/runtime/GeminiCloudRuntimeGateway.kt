@@ -7,6 +7,7 @@ import io.ktor.client.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.plugins.sse.*
@@ -31,6 +32,7 @@ import javax.inject.Singleton
 @Singleton
 class GeminiCloudRuntimeGateway @Inject constructor(
     private val config: RuntimeConfig,
+    private val tokenProvider: GeminiAuthTokenProvider,
 ) : AiRuntimeGateway {
 
     private val json = Json {
@@ -62,12 +64,12 @@ class GeminiCloudRuntimeGateway @Inject constructor(
         channelFlow {
             val startMs = SystemClock.elapsedRealtime()
             val fullPrompt = request.promptChunks.joinToString("\n")
-            val apiKey = BuildConfig.GEMINI_API_KEY
+            val bearerToken = tokenProvider.getToken().trim()
 
-            if (apiKey.isBlank()) {
+            if (bearerToken.isBlank()) {
                 throw AiRuntimeException(
                     RuntimeFailureReason.MODEL_UNAVAILABLE,
-                    "Gemini API key is unavailable for the active build variant"
+                    "Gemini access token is unavailable"
                 )
             }
 
@@ -86,29 +88,31 @@ class GeminiCloudRuntimeGateway @Inject constructor(
             try {
                 Log.i("GeminiGateway", "Starting SSE request to Gemini stream endpoint")
 
-                client.sse(
-                    request = {
-                        method = HttpMethod.Post
-                        url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
-                        parameter("alt", "sse")
-                        header("x-goog-api-key", apiKey)
-                        contentType(ContentType.Application.Json)
-                        setBody(geminiRequest)
-                    }
-                ) {
-                    this.incoming.collect { event ->
-                        val data = event.data ?: return@collect
-                        Log.v("GeminiGateway", "Received SSE chunk (${data.length} chars)")
-                        
-                        try {
-                            val response = json.decodeFromString<GeminiResponse>(data)
-                            val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
+                withTimeout(request.timeoutMillis.coerceAtLeast(1L)) {
+                    client.sse(
+                        request = {
+                            method = HttpMethod.Post
+                            url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
+                            parameter("alt", "sse")
+                            header(HttpHeaders.Authorization, "Bearer $bearerToken")
+                            contentType(ContentType.Application.Json)
+                            setBody(geminiRequest)
+                        }
+                    ) {
+                        this.incoming.collect { event ->
+                            val data = event.data ?: return@collect
+                            Log.v("GeminiGateway", "Received SSE chunk (${data.length} chars)")
 
-                            if (text.isNotEmpty()) {
-                                trySend(AiRuntimeResponse(text = text, isDone = false))
+                            try {
+                                val response = json.decodeFromString<GeminiResponse>(data)
+                                val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
+
+                                if (text.isNotEmpty()) {
+                                    trySend(AiRuntimeResponse(text = text, isDone = false))
+                                }
+                            } catch (e: Exception) {
+                                Log.w("GeminiGateway", "Failed to parse chunk: ${e.message}")
                             }
-                        } catch (e: Exception) {
-                            Log.w("GeminiGateway", "Failed to parse chunk: ${e.message}")
                         }
                     }
                 }
@@ -149,4 +153,5 @@ class GeminiCloudRuntimeGateway @Inject constructor(
 private fun String.redactSensitiveTokens(): String =
     this
         .replace(Regex("([?&]key=)[^&\\s]+", RegexOption.IGNORE_CASE), "$1REDACTED")
+        .replace(Regex("(authorization:)\\s*bearer\\s+[^\\s]+", RegexOption.IGNORE_CASE), "$1 Bearer REDACTED")
         .replace(Regex("(x-goog-api-key:)\\s*[^\\s]+", RegexOption.IGNORE_CASE), "$1 REDACTED")
