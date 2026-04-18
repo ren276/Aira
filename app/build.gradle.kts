@@ -197,9 +197,12 @@ dependencies {
     implementation(libs.lifecycle.process)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // ML & AI (declared now, model loaded at runtime)
-    implementation(libs.mediapipe.genai)
-    implementation(libs.tensorflow.lite)
+    // ML & AI (Direct REST calls via Ktor 3 stack)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.sse)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     // Camera & Scanner (Phase 04 baseline)
     implementation(libs.androidx.camera.core)
@@ -223,6 +226,11 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.test.manifest)
+    
+    // Macrobenchmark & Performance testing (Phase 07)
+    implementation(libs.profileinstaller)
+    androidTestImplementation(libs.benchmark.macro.junit4)
+    androidTestImplementation(libs.uiautomator)
 }
 
 kotlin {

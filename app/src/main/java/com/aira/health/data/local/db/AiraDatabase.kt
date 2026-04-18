@@ -91,7 +91,6 @@ abstract class AiraDatabase : RoomDatabase() {
         }
 
         fun create(context: Context, passphrase: ByteArray): AiraDatabase {
-            // sqlcipher-android requires explicitly loading the native library once.
             System.loadLibrary("sqlcipher")
             val factory = SupportOpenHelperFactory(passphrase.copyOf())
 
