@@ -32,19 +32,22 @@ Integrated Phase 09 prediction and guidance outputs into the Coach experience us
 
 ## Requirements Covered
 
-| Req | Coverage |
-|-----|----------|
+| Req     | Coverage                                                                                                                                                       |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | COCH-03 | Coach screen now supports what-if controls, prediction projection display, guidance narrative, and weekly plan draft rendering within existing dashboard flow. |
 
 ## Verification
 
 1. ./gradlew.bat :app:testDevDebugUnitTest --tests "*BuildWeeklyAthletePlanUseCaseTest" --tests "*CoachViewModelTest"
+
 - Result: PASS
 
 2. ./gradlew.bat :app:compileDevDebugKotlin
+
 - Result: PASS
 
 3. ./gradlew.bat :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.presentation.dashboard.coach.CoachWeeklyPlanningUiTest
+
 - Result: BLOCKED (adb unavailable in current environment)
 
 ## Notes

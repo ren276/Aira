@@ -34,12 +34,15 @@ Implemented deterministic causal ranking and local persistence so daily scoring 
 Commands executed:
 
 1. `./gradlew.bat :app:testDevDebugUnitTest --tests "*CausalRankingEngineTest" --tests "*ComputeCausalInsightsUseCaseTest"`
+
 - Result: PASS
 
 2. `./gradlew.bat :app:testDevDebugUnitTest --tests "*ComputeDailyScoresUseCaseTest"`
+
 - Result: PASS
 
 3. `./gradlew.bat :app:compileDevDebugKotlin`
+
 - Result: PASS
 
 ## Tests Added/Updated

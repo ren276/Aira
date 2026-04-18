@@ -36,23 +36,27 @@ Implemented the coaching guidance runtime policy gate, on-device guidance contra
 
 ## Requirements Covered
 
-| Req | Coverage |
-|-----|----------|
-| COCH-01 | Daily guidance summary generation is available through local runtime orchestration with deterministic fallback behavior. |
+| Req     | Coverage                                                                                                                                  |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| COCH-01 | Daily guidance summary generation is available through local runtime orchestration with deterministic fallback behavior.                  |
 | COCH-02 | Practical action guidance generation is grounded in local signals, confidence-aware, and safety-constrained for low-confidence scenarios. |
 
 ## Verification
 
-1. ./gradlew.bat :app:testDevDebugUnitTest --tests "*AiRuntimePolicyGuardTest"
+1. ./gradlew.bat :app:testDevDebugUnitTest --tests "\*AiRuntimePolicyGuardTest"
+
 - Result: PASS
 
-2. ./gradlew.bat :app:testDevDebugUnitTest --tests "*AthleteGuidancePromptAssemblerTest" --tests "*GenerateAthleteGuidanceUseCaseTest" --tests "*DeterministicGuidanceServiceTest"
+2. ./gradlew.bat :app:testDevDebugUnitTest --tests "*AthleteGuidancePromptAssemblerTest" --tests "*GenerateAthleteGuidanceUseCaseTest" --tests "\*DeterministicGuidanceServiceTest"
+
 - Result: PASS
 
 3. ./gradlew.bat :app:compileDevDebugKotlin
+
 - Result: PASS
 
 4. ./gradlew.bat :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.presentation.dashboard.coach.CoachWeeklyPlanningUiTest
+
 - Result: BLOCKED (adb unavailable in current environment)
 
 ## Notes
