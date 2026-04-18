@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.aira.health.data.local.dao.*
 import com.aira.health.data.local.model.*
+import com.aira.health.data.local.db.migrations.MIGRATION_09_X
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
@@ -29,8 +30,10 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         CorrectionInfluenceState::class,
         AiConversationMessage::class,
         StravaActivityRaw::class,
+        WhatIfSimulationResult::class,
+        PredictionCalibrationRecord::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -49,6 +52,8 @@ abstract class AiraDatabase : RoomDatabase() {
     abstract fun nutritionLogDao(): NutritionLogDao
     abstract fun workoutSessionDao(): WorkoutSessionDao
     abstract fun stravaActivityRawDao(): StravaActivityRawDao
+    abstract fun whatIfSimulationDao(): WhatIfSimulationDao
+    abstract fun predictionCalibrationDao(): PredictionCalibrationDao
 
     companion object {
         const val DATABASE_NAME = "aira_db"
@@ -182,7 +187,7 @@ abstract class AiraDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
-                .fallbackToDestructiveMigration() // Replace with explicit migrations before v1 release
+                .addMigrations(MIGRATION_09_X)
                 .build()
         }
     }

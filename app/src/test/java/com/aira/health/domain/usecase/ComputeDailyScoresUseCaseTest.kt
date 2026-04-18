@@ -4,6 +4,7 @@ import com.aira.health.data.local.dao.BaselineDao
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.model.Baseline
 import com.aira.health.data.local.model.DailyMetrics
+import com.aira.health.data.local.model.PredictionCalibrationRecord
 import com.aira.health.domain.engine.*
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
@@ -28,6 +29,7 @@ class ComputeDailyScoresUseCaseTest {
     private lateinit var dailyMetricsDao: DailyMetricsDao
     private lateinit var baselineDao: BaselineDao
     private lateinit var computeCausalInsightsUseCase: ComputeCausalInsightsUseCase
+    private lateinit var recordPredictionCalibrationUseCase: RecordPredictionCalibrationUseCase
     private lateinit var useCase: ComputeDailyScoresUseCase
 
     @Before
@@ -35,6 +37,7 @@ class ComputeDailyScoresUseCaseTest {
         dailyMetricsDao = mockk(relaxed = true)
         baselineDao = mockk(relaxed = true)
         computeCausalInsightsUseCase = mockk(relaxed = true)
+        recordPredictionCalibrationUseCase = mockk(relaxed = true)
         useCase = ComputeDailyScoresUseCase(
             dailyMetricsDao = dailyMetricsDao,
             baselineDao = baselineDao,
@@ -43,9 +46,13 @@ class ComputeDailyScoresUseCaseTest {
             strainEngine = StrainEngine(),
             stressEngine = StressEngine(),
             energyBankEngine = EnergyBankEngine(),
-            computeCausalInsightsUseCase = computeCausalInsightsUseCase
+            computeCausalInsightsUseCase = computeCausalInsightsUseCase,
+            recordPredictionCalibrationUseCase = recordPredictionCalibrationUseCase
         )
         coEvery { computeCausalInsightsUseCase.computeForDate(any(), any()) } returns emptyList()
+        coEvery {
+            recordPredictionCalibrationUseCase.recordCalibration(any(), any(), any(), any())
+        } returns null
     }
 
     // ── Full shape persistence (D-09, D-10) ───────────────────────────────────
@@ -195,7 +202,71 @@ class ComputeDailyScoresUseCaseTest {
 
         coVerifyOrder {
             dailyMetricsDao.upsert(any())
+            recordPredictionCalibrationUseCase.recordCalibration(today, any(), any(), 7)
             computeCausalInsightsUseCase.computeForDate(today, any())
+        }
+    }
+
+    @Test
+    fun `daily score run records calibration when a matching prediction exists`() = runTest {
+        val today = "2026-04-15"
+        stubBaselines(hrv = 55f, rhr = 62f)
+        stubPreviousDay(today)
+
+        coEvery {
+            recordPredictionCalibrationUseCase.recordCalibration(today, any(), any(), 7)
+        } returns PredictionCalibrationRecord(
+            targetDate = today,
+            predictedRecoveryDelta = 5,
+            observedRecoveryDelta = 4,
+            recoveryAbsoluteError = 1,
+            predictedEnergyDelta = 3,
+            observedEnergyDelta = 2,
+            energyAbsoluteError = 1,
+            rollingMeanAbsoluteError = 1f
+        )
+
+        useCase.computeForDate(
+            date = today,
+            hrvMorning = 60f,
+            rhrMorning = 58f,
+            sleepDurationMin = 440,
+            sleepEfficiency = 0.88f,
+            sleepDeepFraction = 0.22f,
+            hourlyStressScores = List(24) { 30f },
+            zone1Min = 5f, zone2Min = 25f, zone3Min = 15f, zone4Min = 8f, zone5Min = 2f,
+            totalActiveMin = 55f
+        )
+
+        coVerify(exactly = 1) {
+            recordPredictionCalibrationUseCase.recordCalibration(today, any(), any(), 7)
+        }
+    }
+
+    @Test
+    fun `missing prior prediction does not break daily score computation`() = runTest {
+        val today = "2026-04-15"
+        stubBaselines(hrv = 55f, rhr = 62f)
+        stubPreviousDay(today)
+        coEvery {
+            recordPredictionCalibrationUseCase.recordCalibration(today, any(), any(), 7)
+        } returns null
+
+        useCase.computeForDate(
+            date = today,
+            hrvMorning = 60f,
+            rhrMorning = 58f,
+            sleepDurationMin = 440,
+            sleepEfficiency = 0.88f,
+            sleepDeepFraction = 0.22f,
+            hourlyStressScores = List(24) { 30f },
+            zone1Min = 5f, zone2Min = 25f, zone3Min = 15f, zone4Min = 8f, zone5Min = 2f,
+            totalActiveMin = 55f
+        )
+
+        coVerify(exactly = 1) { dailyMetricsDao.upsert(any()) }
+        coVerify(exactly = 1) {
+            recordPredictionCalibrationUseCase.recordCalibration(today, any(), any(), 7)
         }
     }
 
