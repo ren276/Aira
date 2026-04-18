@@ -18,6 +18,14 @@ import kotlinx.coroutines.flow.Flow
 interface AiRuntimeGateway {
 
     /**
+     * Declares whether this gateway runs locally on-device or relies on remote transport.
+     *
+     * Default is network-backed to fail closed for coaching privacy policy checks.
+     */
+    val executionMode: AiRuntimeExecutionMode
+        get() = AiRuntimeExecutionMode.NETWORK_BACKED
+
+    /**
      * Execute a generation request and emit partial/final response tokens as a [Flow].
      *
      * The returned flow emits [AiRuntimeResponse] values as the model streams output.
@@ -35,6 +43,14 @@ interface AiRuntimeGateway {
      * (e.g., in ViewModel.onCleared or app process teardown).
      */
     suspend fun close()
+}
+
+/**
+ * Runtime execution capability used by policy gates for privacy-bound coaching paths.
+ */
+enum class AiRuntimeExecutionMode {
+    LOCAL_ONLY,
+    NETWORK_BACKED,
 }
 
 // ---------------------------------------------------------------------------
