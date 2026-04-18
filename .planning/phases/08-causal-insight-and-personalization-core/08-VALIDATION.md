@@ -19,16 +19,16 @@ created: 2026-04-18
 |----------|-------|
 | **Framework** | JUnit 4/5 via Gradle Android test tasks |
 | **Config file** | app/build.gradle.kts |
-| **Quick run command** | `./gradlew :app:testDevDebugUnitTest --tests "*Causal*" --tests "*Personalization*"` |
-| **Full suite command** | `./gradlew :app:testDevDebugUnitTest :app:compileDevDebugKotlin :app:connectedDevDebugAndroidTest` |
+| **Quick run command** | `.\gradlew.bat :app:testDevDebugUnitTest --tests "*Causal*" --tests "*Personalization*"` |
+| **Full suite command** | `.\gradlew.bat :app:testDevDebugUnitTest :app:compileDevDebugKotlin :app:connectedDevDebugAndroidTest` |
 | **Estimated runtime** | ~240 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `./gradlew :app:testDevDebugUnitTest --tests "*Causal*" --tests "*Personalization*"`
-- **After every plan wave:** Run `./gradlew :app:testDevDebugUnitTest :app:compileDevDebugKotlin`
+- **After every task commit:** Run `.\gradlew.bat :app:testDevDebugUnitTest --tests "*Causal*" --tests "*Personalization*"`
+- **After every plan wave:** Run `.\gradlew.bat :app:testDevDebugUnitTest :app:compileDevDebugKotlin`
 - **Before `/gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 300 seconds
 
@@ -38,11 +38,11 @@ created: 2026-04-18
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 08-01-01 | 01 | 1 | CAUS-01, CAUS-02 | T-08-01 | Ranking uses real recent data windows and deterministic ordering | unit | `./gradlew :app:testDevDebugUnitTest --tests "*CausalRanking*"` | ❌ W0 | pending |
-| 08-01-02 | 01 | 1 | CAUS-03 | T-08-02 | Confidence tiers and recency metadata map correctly and safely | unit | `./gradlew :app:testDevDebugUnitTest --tests "*InsightConfidence*"` | ❌ W0 | pending |
-| 08-02-01 | 02 | 2 | PPM-01, PPM-02 | T-08-03 | Adaptation uses bounded EMA and 7-day minimum data gate | unit | `./gradlew :app:testDevDebugUnitTest --tests "*PersonalizationUpdate*"` | ❌ W0 | pending |
-| 08-02-02 | 02 | 2 | PPM-03 | T-08-04 | Correction influence decays over 14 days and is capped at 20% | unit | `./gradlew :app:testDevDebugUnitTest --tests "*CorrectionInfluence*"` | ❌ W0 | pending |
-| 08-03-01 | 03 | 3 | CAUS-03, PPM-03 | T-08-05 | UI exposes confidence/recency and safe correction loops without leaking internals | androidTest | `./gradlew :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.ai.explainability.ExplainabilityUiTest` | ❌ W0 | pending |
+| 08-01-01 | 01 | 1 | CAUS-01, CAUS-02 | T-08-01 | Ranking uses real recent data windows and deterministic ordering | unit | `.\gradlew.bat :app:testDevDebugUnitTest --tests "*CausalRanking*"` | ❌ W0 | pending |
+| 08-01-02 | 01 | 1 | CAUS-03 | T-08-02 | Confidence tiers and recency metadata map correctly and safely | unit | `.\gradlew.bat :app:testDevDebugUnitTest --tests "*InsightConfidence*"` | ❌ W0 | pending |
+| 08-02-01 | 02 | 2 | PPM-01, PPM-02 | T-08-03 | Adaptation uses bounded EMA and 7-day minimum data gate | unit | `.\gradlew.bat :app:testDevDebugUnitTest --tests "*PersonalizationUpdate*"` | ❌ W0 | pending |
+| 08-02-02 | 02 | 2 | PPM-03 | T-08-04 | Correction influence decays over 14 days and is capped at 20% | unit | `.\gradlew.bat :app:testDevDebugUnitTest --tests "*CorrectionInfluence*"` | ❌ W0 | pending |
+| 08-03-01 | 03 | 3 | CAUS-03, PPM-03 | T-08-05 | UI exposes confidence/recency and safe correction loops without leaking internals | androidTest | `.\gradlew.bat :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.aira.health.presentation.dashboard.details.ExplainabilityUiTest` | ❌ W0 | pending |
 
 *Status: pending, green, red, flaky*
 
@@ -54,7 +54,7 @@ created: 2026-04-18
 - [ ] `app/src/test/java/com/aira/health/ai/causal/InsightConfidenceMapperTest.kt` - confidence and recency mapping tests
 - [ ] `app/src/test/java/com/aira/health/ai/personalization/PersonalizationUpdateEngineTest.kt` - bounded EMA and guardrail tests
 - [ ] `app/src/test/java/com/aira/health/ai/personalization/CorrectionInfluenceEngineTest.kt` - decay and cap tests
-- [ ] `app/src/androidTest/java/com/aira/health/ai/explainability/ExplainabilityUiTest.kt` - UI confidence/recency/correction flow coverage
+- [ ] `app/src/androidTest/java/com/aira/health/presentation/dashboard/details/ExplainabilityUiTest.kt` - UI confidence/recency/correction flow coverage
 
 ---
 
