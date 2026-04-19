@@ -26,10 +26,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -93,7 +95,13 @@ fun BodyScreen(
                     color = Color.White
                 )
                 Row(
-                    modifier = Modifier.clickable(onClick = onOpenCoach),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(
+                            onClick = onOpenCoach,
+                            role = Role.Button
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -104,7 +112,7 @@ fun BodyScreen(
                     )
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "Open coach screen",
+                        contentDescription = null, // Hidden from screen readers as the Row handles it
                         tint = Theme.colors.accent,
                     )
                 }
