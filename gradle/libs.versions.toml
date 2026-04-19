@@ -7,7 +7,7 @@ compose-bom = "2024.10.01"
 hilt = "2.52"
 room = "2.6.1"
 work = "2.9.1"
-supabase = "3.0.0"
+# supabase removed
 coil = "2.7.0"
 kotlinx-serialization = "1.7.3"
 health-connect = "1.1.0"
@@ -64,12 +64,7 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 # WorkManager
 work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
-# Supabase
-supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
-supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
-supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt" }
-supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
+# Supabase removed
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version = "3.0.1" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version = "3.0.1" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version = "3.0.1" }
@@ -106,6 +101,7 @@ revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.r
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf-ktx" }
@@ -144,3 +140,4 @@ ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.28" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
 firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
 firebase-perf-plugin = { id = "com.google.firebase.firebase-perf", version = "1.4.2" }
+room = { id = "androidx.room", version.ref = "room" }

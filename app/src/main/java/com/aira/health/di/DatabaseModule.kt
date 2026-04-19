@@ -67,4 +67,7 @@ object DatabaseModule {
 
     @Provides
     fun provideStravaActivityRawDao(db: AiraDatabase): StravaActivityRawDao = db.stravaActivityRawDao()
+
+    @Provides
+    fun provideContinuitySyncStateDao(db: AiraDatabase): ContinuitySyncStateDao = db.continuitySyncStateDao()
 }

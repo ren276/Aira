@@ -7,6 +7,8 @@ import com.aira.health.domain.model.StravaSyncSummary
 import com.aira.health.domain.model.UserSession
 import com.aira.health.domain.repository.StravaRepository
 import com.aira.health.domain.repository.UserRepository
+import com.aira.health.domain.usecase.ExecuteLocalResetUseCase
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -47,8 +49,9 @@ class AccountViewModelTest {
             initialConnectionState = StravaConnectionState(isConnected = true)
         )
         stravaRepository.disconnectResult = Result.success(Unit)
+        val executeLocalResetUseCase = mockk<ExecuteLocalResetUseCase>(relaxed = true)
 
-        val viewModel = AccountViewModel(userRepository, stravaRepository)
+        val viewModel = AccountViewModel(userRepository, stravaRepository, executeLocalResetUseCase)
         val collector = backgroundScope.launch { viewModel.uiState.collect { } }
 
         viewModel.disconnectStrava()
@@ -70,8 +73,9 @@ class AccountViewModelTest {
             initialConnectionState = StravaConnectionState(isConnected = true)
         )
         stravaRepository.disconnectResult = Result.failure(IllegalStateException("disconnect failed"))
+        val executeLocalResetUseCase = mockk<ExecuteLocalResetUseCase>(relaxed = true)
 
-        val viewModel = AccountViewModel(userRepository, stravaRepository)
+        val viewModel = AccountViewModel(userRepository, stravaRepository, executeLocalResetUseCase)
         val collector = backgroundScope.launch { viewModel.uiState.collect { } }
 
         viewModel.disconnectStrava()

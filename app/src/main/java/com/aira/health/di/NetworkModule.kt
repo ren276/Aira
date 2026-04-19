@@ -1,14 +1,13 @@
 package com.aira.health.di
 
-import com.aira.health.data.remote.supabase.SupabaseClientProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.github.jan.supabase.SupabaseClient
 import javax.inject.Singleton
 
 @Module
@@ -21,5 +20,5 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideSupabaseClient(): SupabaseClient = SupabaseClientProvider.client
+    fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
 }

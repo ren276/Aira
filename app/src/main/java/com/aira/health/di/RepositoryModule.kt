@@ -1,9 +1,11 @@
 package com.aira.health.di
 
+import com.aira.health.data.repository.ContinuitySnapshotRepositoryImpl
 import com.aira.health.data.repository.NutritionRepositoryImpl
 import com.aira.health.data.repository.StravaRepositoryImpl
 import com.aira.health.data.repository.UserRepositoryImpl
 import com.aira.health.data.repository.WorkoutRepositoryImpl
+import com.aira.health.domain.repository.ContinuitySnapshotRepository
 import com.aira.health.domain.repository.NutritionRepository
 import com.aira.health.domain.repository.StravaRepository
 import com.aira.health.domain.repository.UserRepository
@@ -19,6 +21,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindContinuitySnapshotRepository(
+        impl: ContinuitySnapshotRepositoryImpl
+    ): ContinuitySnapshotRepository
 
     @Binds
     @Singleton
