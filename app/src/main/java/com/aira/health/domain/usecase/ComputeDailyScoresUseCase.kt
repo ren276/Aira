@@ -28,8 +28,13 @@ class ComputeDailyScoresUseCase @Inject constructor(
     private val sleepEngine: SleepEngine,
     private val strainEngine: StrainEngine,
     private val stressEngine: StressEngine,
-    private val energyBankEngine: EnergyBankEngine
+    private val energyBankEngine: EnergyBankEngine,
+    private val computeCausalInsightsUseCase: ComputeCausalInsightsUseCase,
+    private val recordPredictionCalibrationUseCase: RecordPredictionCalibrationUseCase
 ) {
+
+    internal var lastCausalFailureMessage: String? = null
+    internal var lastCalibrationFailureMessage: String? = null
 
     /**
      * Compute all health scores for [date] and upsert the result into [DailyMetrics].
@@ -185,6 +190,25 @@ class ComputeDailyScoresUseCase @Inject constructor(
         )
 
         dailyMetricsDao.upsert(metrics)
+
+        // Calibration is best-effort: daily score persistence must not fail if this step errors.
+        runCatching {
+            recordPredictionCalibrationUseCase.recordCalibration(
+                targetDate = date,
+                observedRecoveryScore = recoveryResult.score,
+                observedEnergyScore = energyResult.energyBankScore,
+                rollingWindowSize = 7
+            )
+        }.onFailure { error ->
+            lastCalibrationFailureMessage = error.message ?: "Calibration update failed"
+        }
+
+        // Causal computation is best-effort: score persistence must not fail if this step errors.
+        runCatching {
+            computeCausalInsightsUseCase.computeForDate(date = date, dailyMetrics = metrics)
+        }.onFailure { error ->
+            lastCausalFailureMessage = error.message ?: "Causal insight computation failed"
+        }
     }
 
     // ── Composite formula helpers ─────────────────────────────────────────────

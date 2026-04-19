@@ -25,13 +25,20 @@ class BaselineRecalculatorUseCaseTest {
 
     private lateinit var baselineDao: BaselineDao
     private lateinit var dailyMetricsDao: DailyMetricsDao
+    private lateinit var updatePersonalizationStateUseCase: UpdatePersonalizationStateUseCase
     private lateinit var useCase: BaselineRecalculatorUseCase
 
     @Before
     fun setUp() {
         baselineDao = mockk(relaxed = true)
         dailyMetricsDao = mockk(relaxed = true)
-        useCase = BaselineRecalculatorUseCase(baselineDao, dailyMetricsDao, EmaEngine())
+        updatePersonalizationStateUseCase = mockk(relaxed = true)
+        useCase = BaselineRecalculatorUseCase(
+            baselineDao = baselineDao,
+            dailyMetricsDao = dailyMetricsDao,
+            emaEngine = EmaEngine(),
+            updatePersonalizationStateUseCase = updatePersonalizationStateUseCase
+        )
     }
 
     // ── Cold-start behaviour ──────────────────────────────────────────────────
@@ -103,6 +110,19 @@ class BaselineRecalculatorUseCaseTest {
         // Must include score baselines (D-07)
         assertTrue("Should update recovery_score baseline", "recovery_score" in updatedMetrics)
         assertTrue("Should update sleep_score baseline", "sleep_score" in updatedMetrics)
+    }
+
+    @Test
+    fun `daily recomputation invokes personalization update once per processed day`() = runTest {
+        val days = buildMetricsSeries("2026-01-01", count = 4, hrv = 55f, rhr = 62f)
+        coEvery { dailyMetricsDao.getRange(any<String>(), any<String>()) } returns days
+        coEvery { baselineDao.get(any<String>()) } returns null
+
+        useCase.recomputeFrom("2026-01-01", "2026-01-04")
+
+        coVerify(exactly = 4) {
+            updatePersonalizationStateUseCase.updateForDate(any(), any(), any())
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

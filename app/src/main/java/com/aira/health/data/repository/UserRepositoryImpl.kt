@@ -88,7 +88,7 @@ class UserRepositoryImpl @Inject constructor(
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
         }
 
-        // TODO Phase 4: trigger Room → Supabase data migration job
+        // TODO Phase 4: trigger Room → Firebase Realtime Database data sync job
         getCurrentSession() ?: throw IllegalStateException("No session after account upgrade")
     }
 

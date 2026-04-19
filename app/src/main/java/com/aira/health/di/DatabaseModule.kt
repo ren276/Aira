@@ -48,6 +48,15 @@ object DatabaseModule {
     fun provideUserCorrectionDao(db: AiraDatabase): UserCorrectionDao = db.userCorrectionDao()
 
     @Provides
+    fun provideCausalInsightDao(db: AiraDatabase): CausalInsightDao = db.causalInsightDao()
+
+    @Provides
+    fun providePersonalizationStateDao(db: AiraDatabase): PersonalizationStateDao = db.personalizationStateDao()
+
+    @Provides
+    fun provideCorrectionInfluenceDao(db: AiraDatabase): CorrectionInfluenceDao = db.correctionInfluenceDao()
+
+    @Provides
     fun provideAiConversationDao(db: AiraDatabase): AiConversationDao = db.aiConversationDao()
 
     @Provides
@@ -58,4 +67,7 @@ object DatabaseModule {
 
     @Provides
     fun provideStravaActivityRawDao(db: AiraDatabase): StravaActivityRawDao = db.stravaActivityRawDao()
+
+    @Provides
+    fun provideContinuitySyncStateDao(db: AiraDatabase): ContinuitySyncStateDao = db.continuitySyncStateDao()
 }

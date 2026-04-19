@@ -1,69 +1,65 @@
-﻿# Aira
+# Aira
 
 ## What This Is
 
-A privacy-first, on-device health intelligence app for Android that turns wearable and phone signals into explainable daily guidance. v1.0 shipped the data, scoring, UI, and Strava foundations. v1.1 focuses on private on-device AI that explains, predicts, and adapts for athletes without sending raw biometrics to the cloud.
+A privacy-first, on-device health intelligence app for Android that turns wearable and phone signals into explainable daily guidance. v1.1 delivered the on-device AI Intelligence Expansion (inference, reasoning, and continuity). v1.2 focuses on Athlete Context & Wearable Deep-Dive, enriching the data landscape with nutrition, gear, and advanced telemetry.
 
 ## Core Value
 
 Empower Android users with true on-device, explainable health intelligence that learns their unique physiology without compromising privacy.
 
-## Current Milestone: v1.1 AI Intelligence Expansion
+## Current Milestone: v1.2 Athlete Context & Wearable Deep-Dive
 
-**Goal:** Deliver a lightweight private AI layer that can explain metric changes, simulate outcomes, and generate practical athlete guidance inside the app.
+**Goal:** Expand the athlete intelligence horizon by integrating richer environmental and behavioral context while deepening second-party wearable support.
 
 **Target features:**
-- Causal insight engine that explains why metrics changed.
-- Prediction and what-if simulator for recovery, energy, and burnout risk.
-- Personal physiology adaptation model with feedback loop.
-- On-device generated athlete outputs (daily summary, coach guidance, meal/recovery/training planning).
-- Compact Supabase cloud continuity snapshot for reinstall recovery without raw biome upload.
+- **Nutrition Intelligence**: Advanced meal logging and personalized nutrient-timing guidance mapped to training load.
+- **Gear & Injury Tracking**: Correlating specialized gear (shoes, bikes) and injury states with physiological response patterns.
+- **Enhanced Wearables**: Deepening Health Connect mappings for Oura, Whoop, and Garmin high-resolution telemetry.
+- **Contextual Anchoring**: Allowing the AI to anchor reasoning in non-biometric signals like weather, travel, and altitude.
 
 ## Requirements
 
 ### Validated
 
-- [x] Android local-first health data ingestion and persistence shipped in v1.0.
-- [x] Core scoring and baseline pipeline shipped in v1.0.
-- [x] Production app shell and major UI surfaces shipped in v1.0.
-- [x] Strava onboarding plus ingestion pipeline shipped in v1.0.
+- [x] Android local-first health data ingestion and persistence (v1.0)
+- [x] Production app shell and Strava integration (v1.0)
+- [x] On-device AI Intelligence Expansion: Private inference, causal reasoning, and scenarios (v1.1)
+- [x] Privacy-first cloud continuity snapshots via Firebase (v1.1)
 
 ### Active
 
-- [ ] Integrate a small on-device text generation model (TFLite class) with predictable latency and memory bounds.
-- [ ] Generate causal metric explanations from real user telemetry and journal context.
-- [ ] Add what-if simulation for sleep/training scenarios and next-day impact.
-- [ ] Add adaptive physiology personalization for sleep need, recovery speed, and stress sensitivity.
-- [ ] Generate athlete-facing summaries and actionable coach plans fully on-device.
-- [ ] Keep cloud persistence limited to compact computed summaries and settings only.
+- [ ] Build a flexible athlete-context schema for gear, injuries, and environmental signals.
+- [ ] Implement nutrition-first data layer with barcode scanning and macro-tracking logic.
+- [ ] Expand Health Connect reading to prioritize high-resolution proprietary fields from top-tier wearables.
+- [ ] Add altitude and weather context ingestion to baseline scoring loops.
+- [ ] Integrate gear usage triggers and injury recovery phase logic into the athlete coach guidance.
 
 ### Out of Scope
 
 - Cloud-hosted LLM inference for core coaching features - violates privacy-first product promise.
-- Exporting raw health biometrics to Supabase - explicitly disallowed.
-- iOS parity milestone work - deferred until Android AI milestone stabilizes.
+- Exporting raw health biometrics off-device - explicitly disallowed.
+- Apple Health integration - deferred until Android contextual depth is finalized.
 
 ## Context
 
-- v1.0 was archived on 2026-04-17 and tagged as v1.0.
-- Next milestone is AI-product depth, not platform rewrite.
-- User priority is free/private local AI first, with small models and no app-performance regression.
-- Existing stack already supports local-first pipelines (Room, WorkManager, Health Connect, Compose).
+- v1.1 was archived on 2026-04-19 and tagged as v1.1.
+- Project has successfully migrated from Supabase to Firebase for all cloud continuity requirements.
+- Core on-device AI runtime is stable and provides the foundation for the upcoming contextual expansion.
 
 ## Constraints
 
-- **Privacy/Security**: Raw health data must remain on-device; only compact computed summaries may sync.
-- **Performance**: AI inference must not block UI thread or degrade baseline app responsiveness.
-- **Model Footprint**: Prefer compact quantized models that fit realistic Android memory budgets.
-- **Tech Stack**: Stay in Kotlin/Android native stack with current project architecture.
+- **Privacy/Security**: Raw health data MUST remain on-device; only compact computed summaries may sync.
+- **Performance**: High-resolution ingestion must not impact background sync or battery shelf life.
+- **Data Fidelity**: Prioritize Health Connect as the primary source of truth while handling provider-specific quirks gracefully.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| On-device small TFLite model for text generation | Keeps AI private and free to use while fitting mobile constraints | - Pending |
-| Causal/prediction/personalization over generic chatbot scope | Matches athlete value and retention goals | - Pending |
-| Compact Supabase continuity snapshots only | Enables reinstall recovery without raw biometrics upload | - Pending |
+| Total Firebase migration | Replaces Supabase for unified NoSQL and RLS continuity support | Decided (v1.1) |
+| On-device small TFLite model | Keeps AI private and free while fitting mobile constraints | Validated (v1.1) |
+| Nutrition as athlete context | Critical for accurate energy/recovery modeling beyond just biometrics | Decided (v1.2) |
 
 ## Evolution
 

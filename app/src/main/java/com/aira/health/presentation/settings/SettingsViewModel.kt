@@ -29,6 +29,7 @@ data class SettingsUiState(
     val planStatus: String = "Plan status unavailable",
     val healthConnectSyncEnabled: Boolean = false,
     val cloudBackupEnabled: Boolean = false,
+    val continuityResetPolicyLabel: String = "Local reset requires final continuity upload before wipe",
     val localModelStatus: String = "Local model status unavailable",
     val confidencePercent: Int? = null
 )
@@ -108,6 +109,11 @@ class SettingsViewModel @Inject constructor(
             planStatus = planStatus,
             healthConnectSyncEnabled = syncEnabled,
             cloudBackupEnabled = prefs[CLOUD_BACKUP_ENABLED] ?: false,
+            continuityResetPolicyLabel = if ((prefs[CLOUD_BACKUP_ENABLED] ?: false)) {
+                "Reset is blocked if final upload fails unless you confirm irreversible override"
+            } else {
+                "Enable cloud backup to preserve continuity snapshots before local reset"
+            },
             localModelStatus = localModelStatus,
             confidencePercent = confidence
         )

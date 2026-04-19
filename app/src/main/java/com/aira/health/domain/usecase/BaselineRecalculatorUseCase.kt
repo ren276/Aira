@@ -5,6 +5,7 @@ import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.model.Baseline
 import com.aira.health.data.local.model.DailyMetrics
 import com.aira.health.domain.engine.EmaEngine
+import com.aira.health.domain.model.PersonalizationParameters
 import javax.inject.Inject
 
 /**
@@ -30,7 +31,8 @@ import javax.inject.Inject
 class BaselineRecalculatorUseCase @Inject constructor(
     private val baselineDao: BaselineDao,
     private val dailyMetricsDao: DailyMetricsDao,
-    private val emaEngine: EmaEngine
+    private val emaEngine: EmaEngine,
+    private val updatePersonalizationStateUseCase: UpdatePersonalizationStateUseCase
 ) {
 
     companion object {
@@ -81,7 +83,7 @@ class BaselineRecalculatorUseCase @Inject constructor(
         }.toMutableMap()
 
         // Sequential per-day EMA update (order is critical — each day feeds the next)
-        for (day in days) {
+        for ((index, day) in days.withIndex()) {
             val measurements = extractMeasurements(day)
 
             for ((metric, measurement) in measurements) {
@@ -112,6 +114,12 @@ class BaselineRecalculatorUseCase @Inject constructor(
                     )
                 )
             }
+
+            updatePersonalizationStateUseCase.updateForDate(
+                date = day.date,
+                observed = observedParameters(day),
+                usableDays = index + 1
+            )
         }
     }
 
@@ -131,6 +139,14 @@ class BaselineRecalculatorUseCase @Inject constructor(
         "burnout_risk_index"     to day.burnoutRiskIndex,
         "composite_readiness"    to day.compositeReadiness.toFloat()
     )
+
+    private fun observedParameters(day: DailyMetrics): PersonalizationParameters {
+        return PersonalizationParameters(
+            sleepNeedMinutes = day.sleepDurationMin?.toFloat() ?: 420f,
+            recoverySpeed = (day.recoveryScore.toFloat() / 100f).coerceIn(0.1f, 2f),
+            stressSensitivity = (day.stressScore.toFloat() / 100f).coerceIn(0.1f, 2f)
+        )
+    }
 
     private data class BaselineState(
         val value: Float,

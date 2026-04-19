@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aira.health.presentation.common.components.ConfidenceMetaRow
 import com.aira.health.presentation.dashboard.details.components.ActionGuidanceCard
 import com.aira.health.presentation.dashboard.details.components.DataProvenanceCard
 import com.aira.health.presentation.dashboard.details.components.FactorBreakdownCard
@@ -61,10 +62,10 @@ fun SleepDetailScreen(
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color.White
             )
-            Text(
-                text = "Confidence ${(state.confidence * 100).toInt()}%",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Theme.colors.onSurfaceVariant
+            ConfidenceMetaRow(
+                confidence = state.confidenceTierLabel,
+                lastUpdated = state.recencyWindowText,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
 
@@ -80,11 +81,7 @@ fun SleepDetailScreen(
 
         item {
             FactorBreakdownCard(
-                factors = listOf(
-                    "Sleep score trajectory",
-                    "Recovery linkage",
-                    "Stress carryover"
-                ),
+                factors = state.rankedFactors,
                 modifier = Modifier.fillMaxWidth()
             )
         }

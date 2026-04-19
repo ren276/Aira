@@ -14,6 +14,9 @@ interface UserCorrectionDao {
     @Query("SELECT COUNT(*) FROM user_corrections WHERE recordType = :type")
     suspend fun getCountByType(type: String): Int
 
+    @Query("SELECT * FROM user_corrections WHERE recordDate BETWEEN :startDate AND :endDate ORDER BY createdAt DESC")
+    suspend fun getByDateRange(startDate: String, endDate: String): List<UserCorrection>
+
     @Query("UPDATE user_corrections SET synced = 1 WHERE id = :id")
     suspend fun markSynced(id: Long)
 }

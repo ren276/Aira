@@ -7,19 +7,19 @@ compose-bom = "2024.10.01"
 hilt = "2.52"
 room = "2.6.1"
 work = "2.9.1"
-supabase = "3.0.0"
+# supabase removed
 coil = "2.7.0"
 kotlinx-serialization = "1.7.3"
 health-connect = "1.1.0"
 play-services-fitness = "21.1.0"
 play-services-auth = "21.2.0"
-mediapipe-genai = "0.10.22"
+# generativeai removed due to Ktor 2 clash
 tensorflow-lite = "2.17.0"
 tensorflow-lite-support = "0.4.4"
 revenuecat = "7.10.1"
 firebase-bom = "33.6.0"
-sqlcipher = "4.14.1"
-androidx-sqlite = "2.6.2"
+sqlcipher = "4.14.0"
+androidx-sqlite = "2.4.0"
 security-crypto = "1.1.0-alpha06"
 biometric = "1.2.0-alpha05"
 navigation-compose = "2.8.4"
@@ -31,6 +31,9 @@ junit-platform = "1.11.3"
 mockk = "1.13.13"
 turbine = "1.2.0"
 material = "1.12.0"
+benchmark-macro = "1.3.3"
+profileinstaller = "1.4.1"
+uiautomator = "2.3.0"
 
 [libraries]
 # Compose
@@ -61,13 +64,13 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 # WorkManager
 work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
-# Supabase
-supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
-supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
-supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt" }
-supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
+# Supabase removed
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version = "3.0.1" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version = "3.0.1" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version = "3.0.1" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version = "3.0.1" }
+ktor-sse = { group = "io.ktor", name = "ktor-sse", version = "3.0.1" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version = "3.0.1" }
 
 # Health & Fitness
 health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "health-connect" }
@@ -75,7 +78,7 @@ play-services-fitness = { group = "com.google.android.gms", name = "play-service
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
 
 # Media & AI
-mediapipe-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipe-genai" }
+# generativeai removed
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflow-lite" }
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflow-lite-support" }
 
@@ -98,6 +101,7 @@ revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.r
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf-ktx" }
@@ -122,6 +126,9 @@ coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro" }
+profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -133,3 +140,4 @@ ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.28" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
 firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
 firebase-perf-plugin = { id = "com.google.firebase.firebase-perf", version = "1.4.2" }
+room = { id = "androidx.room", version.ref = "room" }

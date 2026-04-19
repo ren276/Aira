@@ -9,8 +9,8 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 
 ### Constraints
 
-- **Tech Stack**: 100% Kotlin, Jetpack Compose, Room, WorkManager, Hilt, Supabase, Coil, kotlinx.serialization — Native Android approach for long-term maintainability.
-- **Privacy/Security**: Must ensure complete raw data isolation locally on the device (SQLCipher). Only computed metrics, scores, and AI narratives sync to Supabase (if opted-in).
+- **Tech Stack**: 100% Kotlin, Jetpack Compose, Room, WorkManager, Hilt, Firebase, Coil, kotlinx.serialization — Native Android approach for long-term maintainability.
+- **Privacy/Security**: Must ensure complete raw data isolation locally on the device (SQLCipher). Only computed metrics, scores, and AI narratives sync to Firebase (if opted-in).
 - **Target OS**: minSdk 29 to support Android 10 users, but pushing them towards Health Connect via Play Store.
 <!-- GSD:project-end -->
 
@@ -24,7 +24,7 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 | Kotlin | 2.0.0+ | Primary App Language | Fully native Android language, heavily supported by Google |
 | Jetpack Compose | BOM 2024.10.x | UI Framework | Declarative UI, great for complex dynamic charting and dashboards |
 | Health Connect | 1.1.0-alpha07+ | Health Data Reading | Single source of truth for all Android health data, replaces Google Fit |
-| Supabase KT | 3.x | Backend / DB Sync | Native Kotlin SDK, PostgreSQL RLS for strict privacy |
+| Firebase Realtime DB | 33.6.0 | Cloud Storage | Cloud sync for metrics and scores with RLS |
 | Room DB | 2.6.x | Local Storage | Encrypted (SQLCipher) on-device persistence of metrics and health data |
 | TensorFlow Lite | 2.16.x | Custom ML | Minimal footprint for executing the PersonalisedScoreAdjuster and AnomalyDetector |
 | MediaPipe Tasks GenAI | 0.10.14+ | LLM Inference | Best optimized runtime for Gemma 4 2B directly on Android devices |
@@ -34,13 +34,13 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 | Hilt | 2.51.x | Dependency Injection | Standard for scalable Clean Architecture Android projects |
 | Coil | 2.6.x | Image Loading | Loading avatars, food images efficiently in Compose |
 | kotlinx.serialization | 1.6.x | JSON Parsing | Parsing complex schema objects like workout sets |
-| GoogleSignIn | 21.2.x | Auth | Seamless integration with Supabase Auth for Android |
+| Firebase Auth | 21.2.0 | Auth | Secure authentication and identifier management |
 | YCharts / Vico | 2.x | Charting | Drawing biological trends, cardio loads, area charts quickly |
 | RevenueCat | 7.x | Subscription Billing | Handling Aira Pro gating natively and easily |
 ## Alternatives Considered
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| Supabase | Firebase / Convex | Firebase operates primarily as a NoSQL datastore Document DB (less ideal for heavy relational physiological time-series metrics). Convex is great but has a less robust Kotlin native SDK compared to Supabase's fully typed support. |
+| Firebase | Supabase / Convex | Firebase operates primarily as a NoSQL datastore Document DB (ideal for heavy relational physiological time-series metrics via Realtime Database and RLS). |
 | Jetpack Compose | Flutter / React Native | When cross-platform iOS is required immediately (Aira explicitly targets Android ecosystem first). |
 ## What NOT to Use
 | Avoid | Why | Use Instead |
@@ -50,7 +50,7 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 ## Version Compatibility
 | Package A | Compatible With | Notes |
 |-----------|-----------------|-------|
-| Supabase Auth | Android Keystore | Ensure the SDK uses `EncryptedSharedPreferences` for token storage. |
+| Firebase Auth | Android Keystore | Ensure the SDK uses `EncryptedSharedPreferences` for token storage. |
 | MediaPipe LLM | Gemma 4 2B (e2b) | Ensure appropriate `.task` / `.bin` weights are correctly converted and downloaded dynamically instead of packaging directly in the APK to avoid 2GB+ app sizes. |
 <!-- GSD:stack-end -->
 

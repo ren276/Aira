@@ -161,9 +161,15 @@ fun SettingsScreen(
                         icon = Icons.Default.CloudDone,
                         iconColor = Theme.colors.secondaryColor,
                         title = "Cloud Backup Preference",
-                        subtitle = "Stored on-device until cloud sync is wired",
+                        subtitle = "Controls continuity snapshot backup and reset safety gate",
                         checked = uiState.cloudBackupEnabled,
                         onCheckedChange = viewModel::setCloudBackupEnabled
+                    )
+                    SettingsActionRow(
+                        icon = Icons.Default.Security,
+                        iconColor = Theme.colors.secondaryColor,
+                        title = "Local Reset Safety",
+                        subtitle = uiState.continuityResetPolicyLabel
                     )
                     SettingsActionRow(
                         icon = Icons.Default.Security,

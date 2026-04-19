@@ -3,6 +3,7 @@ package com.aira.health.presentation.dashboard.details
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aira.health.data.local.dao.CausalInsightDao
 import com.aira.health.data.local.dao.DailyMetricsDao
 import com.aira.health.data.local.dao.HrSampleDao
 import com.aira.health.data.local.dao.HrvSampleDao
@@ -10,8 +11,9 @@ import com.aira.health.data.local.dao.SleepSessionDao
 import com.aira.health.data.local.dao.WorkoutSessionDao
 import com.aira.health.data.local.model.DailyMetrics
 import com.aira.health.data.local.model.HrSample
-import com.aira.health.data.local.model.SleepSession
 import com.aira.health.data.local.model.WorkoutSession
+import com.aira.health.domain.model.CausalDirection
+import com.aira.health.domain.model.CausalFactor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +25,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -33,6 +36,7 @@ import kotlin.math.roundToInt
 @HiltViewModel
 class MetricDetailViewModel @Inject constructor(
     private val dailyMetricsDao: DailyMetricsDao,
+    private val causalInsightDao: CausalInsightDao,
     private val hrSampleDao: HrSampleDao,
     private val hrvSampleDao: HrvSampleDao,
     private val sleepSessionDao: SleepSessionDao,
@@ -62,10 +66,20 @@ class MetricDetailViewModel @Inject constructor(
         emit(metrics)
     }
 
+    private val latestInsightFlow = flow {
+        val activeType = metricType
+        if (activeType == null) {
+            emit(null)
+        } else {
+            emit(causalInsightDao.getLatestByMetric(activeType.id))
+        }
+    }
+
     val uiState: StateFlow<MetricDetailUiState> = combine(
         trendFlow,
-        todayFlow
-    ) { trendMetrics, todayMetrics ->
+        todayFlow,
+        latestInsightFlow
+    ) { trendMetrics, todayMetrics, latestInsight ->
         if (metricType == null) {
             return@combine MetricDetailUiState.Error("Invalid or unknown metric type: $metricId")
         }
@@ -88,12 +102,17 @@ class MetricDetailViewModel @Inject constructor(
         val delta = previousScore?.let { currentScore - it } ?: 0
         val vsAverage = currentScore - trendAverage
         val evidence = buildMetricEvidence(metricType, activeMetrics, trendMetrics)
+        val persistedFactors = latestInsight?.toFactors().orEmpty()
+        val recencyWindowText = buildRecencyWindow(persistedFactors, trendMetrics.size)
 
         MetricDetailUiState.Success(
             metricType = metricType,
             currentScore = currentScore,
             trendDataPoints = dataPoints,
             confidence = activeMetrics.dataConfidence, // T-04-08 preserved provenance
+            confidenceTierLabel = mapConfidenceTierLabel(activeMetrics.dataConfidence),
+            recencyWindowText = recencyWindowText,
+            rankedFactors = buildRankedFactors(persistedFactors, recencyWindowText),
             whatChanged = buildWhatChanged(metricType, currentScore, delta, vsAverage),
             whyItMatters = buildWhyItMatters(metricType, activeMetrics.dataConfidence),
             whatToDoNext = buildWhatToDoNext(metricType, currentScore),
@@ -408,6 +427,107 @@ class MetricDetailViewModel @Inject constructor(
     private fun formatZone(value: Float?): String {
         if (value == null || value <= 0f) return "0.0m"
         return "${String.format(Locale.US, "%.1f", value)}m"
+    }
+
+    private fun mapConfidenceTierLabel(confidence: Float): String = when {
+        confidence >= 0.75f -> "High"
+        confidence >= 0.40f -> "Medium"
+        else -> "Low"
+    }
+
+    private fun buildRecencyWindow(factors: List<CausalFactor>, trendDays: Int): String {
+        val explicit = factors
+            .mapNotNull { toExplicitWindowText(it.windowLabel) }
+            .maxByOrNull { parseWindowToHours(it) ?: 0 }
+        if (explicit != null) return explicit
+
+        return when {
+            trendDays >= 14 -> "last 14d"
+            trendDays >= 7 -> "last 7d"
+            else -> "last 3d"
+        }
+    }
+
+    private fun buildRankedFactors(
+        factors: List<CausalFactor>,
+        fallbackWindow: String
+    ): List<MetricDetailUiState.RankedFactor> {
+        return factors
+            .sortedWith { a, b ->
+                val weightDelta = b.weight - a.weight
+                if (abs(weightDelta) >= 0.03f) {
+                    when {
+                        weightDelta > 0f -> 1
+                        weightDelta < 0f -> -1
+                        else -> 0
+                    }
+                } else {
+                    val recencyDelta = (parseWindowToHours(toExplicitWindowText(b.windowLabel) ?: fallbackWindow) ?: 0) -
+                        (parseWindowToHours(toExplicitWindowText(a.windowLabel) ?: fallbackWindow) ?: 0)
+                    if (recencyDelta != 0) {
+                        recencyDelta
+                    } else {
+                        a.key.compareTo(b.key)
+                    }
+                }
+            }
+            .take(3)
+            .mapIndexed { index, factor ->
+                MetricDetailUiState.RankedFactor(
+                    rank = index + 1,
+                    name = formatFactorName(factor.key),
+                    direction = factor.direction.toUiDirection(),
+                    weight = factor.weight.coerceIn(0f, 1f),
+                    windowTag = toExplicitWindowText(factor.windowLabel) ?: fallbackWindow
+                )
+            }
+    }
+
+    private fun toExplicitWindowText(rawLabel: String?): String? {
+        val value = rawLabel?.trim()?.lowercase(Locale.US).orEmpty()
+        if (value.isBlank()) return null
+        
+        // Handle case where it already has "last " prefix
+        if (value.startsWith("last ")) {
+             val suffix = value.removePrefix("last ").trim()
+             if (suffix.endsWith("d") || suffix.endsWith("h")) return value
+        }
+
+        // Parse numeric value and unit
+        val match = Regex("(\\d+)([hd]?)").find(value) ?: return null
+        val num = match.groupValues.getOrNull(1) ?: return null
+        val unit = match.groupValues.getOrNull(2).takeIf { it?.isNotEmpty() == true } ?: "d"
+        
+        return "last $num$unit"
+    }
+
+    private fun parseWindowToHours(text: String): Int? {
+        val match = Regex("(\\d+)([hd]?)").find(text.lowercase(Locale.US)) ?: return null
+        val value = match.groupValues.getOrNull(1)?.toIntOrNull() ?: return null
+        val unit = match.groupValues.getOrNull(2)
+        return when (unit) {
+            "h" -> value
+            "d" -> value * 24
+            else -> value * 24 // Assume days if no unit provided
+        }
+    }
+
+    private fun formatFactorName(rawKey: String): String {
+        return rawKey
+            .replace('_', ' ')
+            .split(' ')
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { token ->
+                token.replaceFirstChar { char ->
+                    if (char.isLowerCase()) char.titlecase(Locale.US) else char.toString()
+                }
+            }
+    }
+
+    private fun CausalDirection.toUiDirection(): MetricDetailUiState.FactorDirection = when (this) {
+        CausalDirection.INCREASED -> MetricDetailUiState.FactorDirection.INCREASED
+        CausalDirection.DECREASED -> MetricDetailUiState.FactorDirection.DECREASED
+        CausalDirection.NEUTRAL -> MetricDetailUiState.FactorDirection.NEUTRAL
     }
 
     private data class MetricEvidence(

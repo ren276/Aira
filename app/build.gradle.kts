@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics.plugin)
     alias(libs.plugins.firebase.perf.plugin)
+    alias(libs.plugins.room)
 }
 
 val localProperties = Properties()
@@ -60,26 +61,23 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
-            buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "false")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "false")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
         }
         create("staging") {
             dimension = "environment"
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
-            buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_STAGING_URL")}\"")
-            buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_STAGING_ANON_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("SUPABASE_PROD_URL")}\"")
-            buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("SUPABASE_PROD_ANON_KEY")}\"")
             buildConfigField("Boolean", "ENABLE_FLAG_SECURE", "true")
             buildConfigField("Boolean", "ENABLE_CRASH_REPORTING", "true")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("GEMINI_API_KEY")}\"")
         }
     }
 
@@ -121,6 +119,10 @@ android {
             it.useJUnitPlatform()
         }
     }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
@@ -157,14 +159,6 @@ dependencies {
     // WorkManager
     implementation(libs.work.runtime)
 
-    // Supabase
-    val supabaseBom = platform(libs.supabase.bom)
-    implementation(supabaseBom)
-    implementation(libs.supabase.auth)
-    implementation(libs.supabase.postgrest)
-    implementation(libs.supabase.realtime)
-    implementation(libs.supabase.storage)
-    implementation(libs.ktor.client.android)
 
     // Health & Fitness
     implementation(libs.health.connect)
@@ -185,6 +179,7 @@ dependencies {
     val firebaseBom = platform(libs.firebase.bom)
     implementation(firebaseBom)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.perf)
@@ -197,9 +192,12 @@ dependencies {
     implementation(libs.lifecycle.process)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // ML & AI (declared now, model loaded at runtime)
-    implementation(libs.mediapipe.genai)
-    implementation(libs.tensorflow.lite)
+    // ML & AI (Direct REST calls via Ktor 3 stack)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.sse)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     // Camera & Scanner (Phase 04 baseline)
     implementation(libs.androidx.camera.core)
@@ -223,6 +221,11 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.test.manifest)
+    
+    // Macrobenchmark & Performance testing (Phase 07)
+    implementation(libs.profileinstaller)
+    androidTestImplementation(libs.benchmark.macro.junit4)
+    androidTestImplementation(libs.uiautomator)
 }
 
 kotlin {
