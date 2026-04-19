@@ -21,6 +21,7 @@ import com.aira.health.data.local.model.WorkoutSession
 import com.aira.health.domain.repository.HealthDataRepository
 import com.aira.health.domain.usecase.ComputeDailyScoresUseCase
 import com.aira.health.domain.usecase.IngestHealthDataUseCase
+import com.aira.health.domain.usecase.UploadContinuitySnapshotUseCase
 import com.aira.health.domain.usecase.SyncStravaActivitiesUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -53,6 +54,7 @@ class HealthSyncWorker @AssistedInject constructor(
     private val ingestHealthData: IngestHealthDataUseCase,
     private val syncStravaActivities: SyncStravaActivitiesUseCase,
     private val computeDailyScores: ComputeDailyScoresUseCase,
+    private val uploadContinuitySnapshot: UploadContinuitySnapshotUseCase,
     private val hrSampleDao: HrSampleDao,
     private val hrvSampleDao: HrvSampleDao,
     private val sleepSessionDao: SleepSessionDao,
@@ -203,6 +205,9 @@ class HealthSyncWorker @AssistedInject constructor(
             if (BuildConfig.DEBUG) {
                 Log.i(TAG, "Score computation finished for $today; Home should read the persisted DailyMetrics row next.")
             }
+
+            // Best-effort continuity upload; failures are tracked in continuity state.
+            runCatching { uploadContinuitySnapshot() }
 
             Result.success()
         }.getOrElse { _ ->

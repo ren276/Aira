@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
-status: "Phase 09 shipped - PR #9"
-last_updated: "2026-04-18T17:44:25.670Z"
+status: "Milestone v1.1 complete — PR #10"
+last_updated: "2026-04-19T08:33:50.928Z"
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -19,7 +19,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Empower Android users with true on-device, explainable health intelligence that learns their unique physiology without compromising privacy.
-**Current focus:** Phase 08 — causal-insight-and-personalization-core
+**Current focus:** Phase 10 — cloud-continuity-snapshot-and-milestone-hardening
 
 ## Roadmap Evolution
 
@@ -30,3 +30,9 @@ See: `.planning/PROJECT.md` (updated 2026-04-17)
 ## Context Threads
 
 - (No threads yet)
+
+## Quick Tasks Completed
+
+| Slug | Date | Status |
+| :--- | :--- | :--- |
+| remove-supabase | 2024-04-19 | complete ✓ |

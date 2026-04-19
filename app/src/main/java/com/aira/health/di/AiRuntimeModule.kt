@@ -4,7 +4,7 @@ import com.aira.health.ai.runtime.AiRuntimeGateway
 import com.aira.health.ai.runtime.AiRuntimePolicy
 import com.aira.health.ai.runtime.AiRuntimePolicyGuard
 import com.aira.health.ai.runtime.AiRuntimeExecutionMode
-import com.aira.health.ai.runtime.BackendGeminiAuthTokenProvider
+import com.aira.health.ai.runtime.LocalGeminiAuthTokenProvider
 import com.aira.health.ai.runtime.GeminiAuthTokenProvider
 import com.aira.health.ai.runtime.GeminiCloudRuntimeGateway
 import com.aira.health.ai.runtime.RuntimeConfig
@@ -35,7 +35,7 @@ abstract class AiRuntimeModule {
 
     @Binds
     @Singleton
-    abstract fun bindGeminiAuthTokenProvider(impl: BackendGeminiAuthTokenProvider): GeminiAuthTokenProvider
+    abstract fun bindGeminiAuthTokenProvider(impl: LocalGeminiAuthTokenProvider): GeminiAuthTokenProvider
 
     companion object {
 

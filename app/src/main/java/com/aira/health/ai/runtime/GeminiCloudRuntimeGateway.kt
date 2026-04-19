@@ -64,12 +64,11 @@ class GeminiCloudRuntimeGateway @Inject constructor(
         channelFlow {
             val startMs = SystemClock.elapsedRealtime()
             val fullPrompt = request.promptChunks.joinToString("\n")
-            val bearerToken = tokenProvider.getToken().trim()
-
-            if (bearerToken.isBlank()) {
+            val apiKey = tokenProvider.getToken().trim()
+            if (apiKey.isBlank()) {
                 throw AiRuntimeException(
                     RuntimeFailureReason.MODEL_UNAVAILABLE,
-                    "Gemini access token is unavailable"
+                    "Gemini API key is unavailable"
                 )
             }
 
@@ -92,9 +91,9 @@ class GeminiCloudRuntimeGateway @Inject constructor(
                     client.sse(
                         request = {
                             method = HttpMethod.Post
-                            url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
+                            url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent")
                             parameter("alt", "sse")
-                            header(HttpHeaders.Authorization, "Bearer $bearerToken")
+                            header("x-goog-api-key", apiKey)
                             contentType(ContentType.Application.Json)
                             setBody(geminiRequest)
                         }

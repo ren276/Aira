@@ -13,5 +13,5 @@ data class HealthRecordRaw(
     val endTime: Long?,
     val valueJson: String,
     val confidence: Float,
-    val syncedToSupabase: Boolean = false
+    val syncedToRemote: Boolean = false
 )

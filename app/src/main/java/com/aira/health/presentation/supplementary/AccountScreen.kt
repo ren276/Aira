@@ -39,6 +39,8 @@ import com.aira.health.domain.model.AuthState
 import com.aira.health.domain.model.StravaConnectionState
 import com.aira.health.domain.repository.StravaRepository
 import com.aira.health.domain.repository.UserRepository
+import com.aira.health.domain.usecase.ExecuteLocalResetUseCase
+import com.aira.health.domain.usecase.LocalResetResult
 import com.aira.health.presentation.theme.Theme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -59,7 +61,11 @@ data class AccountUiState(
     val stravaReconnectRequired: Boolean = false,
     val stravaStatusLabel: String = "Not connected",
     val disconnectInProgress: Boolean = false,
-    val disconnectErrorMessage: String? = null
+    val disconnectErrorMessage: String? = null,
+    val resetInProgress: Boolean = false,
+    val resetBlocked: Boolean = false,
+    val resetStatusMessage: String? = null,
+    val overrideConfirmationRequired: Boolean = false
 )
 
 private data class DisconnectActionState(
@@ -67,19 +73,29 @@ private data class DisconnectActionState(
     val errorMessage: String? = null
 )
 
+private data class ResetActionState(
+    val inProgress: Boolean = false,
+    val blocked: Boolean = false,
+    val statusMessage: String? = null,
+    val overrideConfirmationRequired: Boolean = false
+)
+
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val stravaRepository: StravaRepository
+    private val stravaRepository: StravaRepository,
+    private val executeLocalResetUseCase: ExecuteLocalResetUseCase
 ) : ViewModel() {
 
     private val disconnectActionState = MutableStateFlow(DisconnectActionState())
+    private val resetActionState = MutableStateFlow(ResetActionState())
 
     val uiState: StateFlow<AccountUiState> = combine(
         userRepository.observeAuthState(),
         stravaRepository.observeConnectionState().catch { emit(StravaConnectionState()) },
-        disconnectActionState
-    ) { authState, stravaState, disconnectAction ->
+        disconnectActionState,
+        resetActionState
+    ) { authState, stravaState, disconnectAction, resetAction ->
         val base = when (authState) {
             is AuthState.Authenticated -> {
                 val name = authState.session.displayName
@@ -112,7 +128,11 @@ class AccountViewModel @Inject constructor(
             stravaReconnectRequired = stravaState.reconnectRequired,
             stravaStatusLabel = stravaStatusLabel,
             disconnectInProgress = disconnectAction.inProgress,
-            disconnectErrorMessage = disconnectAction.errorMessage
+            disconnectErrorMessage = disconnectAction.errorMessage,
+            resetInProgress = resetAction.inProgress,
+            resetBlocked = resetAction.blocked,
+            resetStatusMessage = resetAction.statusMessage,
+            overrideConfirmationRequired = resetAction.overrideConfirmationRequired
         )
     }
         .stateIn(
@@ -141,6 +161,74 @@ class AccountViewModel @Inject constructor(
                         inProgress = false,
                         errorMessage = result.exceptionOrNull()?.message
                             ?: "Unable to disconnect Strava"
+                    )
+                }
+            }
+        }
+    }
+
+    fun resetLocalData() {
+        if (resetActionState.value.inProgress) return
+        resetActionState.update {
+            it.copy(
+                inProgress = true,
+                blocked = false,
+                statusMessage = "Final continuity upload in progress...",
+                overrideConfirmationRequired = false
+            )
+        }
+
+        viewModelScope.launch {
+            when (val result = executeLocalResetUseCase(allowIrreversibleOverride = false)) {
+                LocalResetResult.Completed -> {
+                    resetActionState.value = ResetActionState(
+                        statusMessage = "Local data was reset after continuity upload."
+                    )
+                }
+
+                is LocalResetResult.Blocked -> {
+                    resetActionState.value = ResetActionState(
+                        blocked = true,
+                        statusMessage = "Reset blocked: ${result.reason}. Retry upload or explicitly confirm irreversible reset.",
+                        overrideConfirmationRequired = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun requestIrreversibleOverrideConfirmation() {
+        val current = resetActionState.value
+        if (!current.blocked || current.inProgress) return
+        resetActionState.update {
+            it.copy(
+                statusMessage = "Irreversible override armed. Confirm to wipe local data without continuity upload.",
+                overrideConfirmationRequired = true
+            )
+        }
+    }
+
+    fun confirmIrreversibleReset() {
+        val current = resetActionState.value
+        if (!current.overrideConfirmationRequired || current.inProgress) return
+
+        resetActionState.update {
+            it.copy(inProgress = true, statusMessage = "Executing irreversible local reset...")
+        }
+
+        viewModelScope.launch {
+            when (val result = executeLocalResetUseCase(allowIrreversibleOverride = true)) {
+                LocalResetResult.Completed -> {
+                    resetActionState.value = ResetActionState(
+                        statusMessage = "Irreversible local reset completed."
+                    )
+                }
+
+                is LocalResetResult.Blocked -> {
+                    resetActionState.value = ResetActionState(
+                        blocked = true,
+                        statusMessage = "Reset still blocked: ${result.reason}",
+                        overrideConfirmationRequired = false
                     )
                 }
             }
@@ -245,6 +333,53 @@ fun AccountScreen(
 
                     Button(onClick = viewModel::signOut) {
                         Text("Sign out")
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Local Reset",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = Color.White
+                    )
+
+                    Text(
+                        text = "A final continuity upload is required before wipe. If upload fails, reset stays blocked unless you explicitly confirm irreversible override.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Theme.colors.onSurfaceVariant
+                    )
+
+                    state.resetStatusMessage?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (state.resetBlocked) Color(0xFFFFB4AB) else Theme.colors.accent
+                        )
+                    }
+
+                    Button(
+                        onClick = viewModel::resetLocalData,
+                        enabled = !state.resetInProgress
+                    ) {
+                        Text(if (state.resetInProgress) "Processing..." else "Reset Local Data")
+                    }
+
+                    if (state.resetBlocked) {
+                        Button(
+                            onClick = viewModel::requestIrreversibleOverrideConfirmation,
+                            enabled = !state.overrideConfirmationRequired && !state.resetInProgress
+                        ) {
+                            Text("Proceed Without Upload")
+                        }
+                    }
+
+                    if (state.overrideConfirmationRequired) {
+                        Button(
+                            onClick = viewModel::confirmIrreversibleReset,
+                            enabled = !state.resetInProgress
+                        ) {
+                            Text("Confirm Irreversible Wipe")
+                        }
                     }
                 }
             }

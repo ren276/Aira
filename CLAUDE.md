@@ -9,8 +9,8 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 
 ### Constraints
 
-- **Tech Stack**: 100% Kotlin, Jetpack Compose, Room, WorkManager, Hilt, Supabase, Coil, kotlinx.serialization — Native Android approach for long-term maintainability.
-- **Privacy/Security**: Must ensure complete raw data isolation locally on the device (SQLCipher). Only computed metrics, scores, and AI narratives sync to Supabase (if opted-in).
+- **Tech Stack**: 100% Kotlin, Jetpack Compose, Room, WorkManager, Hilt, Firebase, Coil, kotlinx.serialization — Native Android approach for long-term maintainability.
+- **Privacy/Security**: Must ensure complete raw data isolation locally on the device (SQLCipher). Only computed metrics, scores, and AI narratives sync to Firebase (if opted-in).
 - **Target OS**: minSdk 29 to support Android 10 users, but pushing them towards Health Connect via Play Store.
 <!-- GSD:project-end -->
 
@@ -40,7 +40,7 @@ A privacy-first, on-device health intelligence OS for Android that aggregates we
 ## Alternatives Considered
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| Supabase | Firebase / Convex | Firebase operates primarily as a NoSQL datastore Document DB (less ideal for heavy relational physiological time-series metrics). Convex is great but has a less robust Kotlin native SDK compared to Supabase's fully typed support. |
+| Firebase | Supabase / Convex | Firebase operates primarily as a NoSQL datastore Document DB (ideal for heavy relational physiological time-series metrics via Realtime Database and RLS). |
 | Jetpack Compose | Flutter / React Native | When cross-platform iOS is required immediately (Aira explicitly targets Android ecosystem first). |
 ## What NOT to Use
 | Avoid | Why | Use Instead |

@@ -7,6 +7,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.aira.health.data.local.db.migrations.MIGRATION_09_X
+import com.aira.health.data.local.db.migrations.MIGRATION_10_CONTINUITY
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -93,6 +94,15 @@ class AiraDatabaseMigrationTest {
             assertEquals(72, cursor.getInt(0))
             assertEquals(63, cursor.getInt(1))
         }
+    }
+
+    @Test
+    fun `migration 10 creates continuity sync state table`() {
+        val db = helper.writableDatabase
+        MIGRATION_09_X.migrate(db)
+        MIGRATION_10_CONTINUITY.migrate(db)
+
+        assertTableExists(db, "continuity_sync_state")
     }
 
     private fun assertTableExists(db: SupportSQLiteDatabase, tableName: String) {
