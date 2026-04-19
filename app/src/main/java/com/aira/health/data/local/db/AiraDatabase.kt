@@ -8,7 +8,9 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.aira.health.data.local.dao.*
 import com.aira.health.data.local.model.*
+import com.aira.health.data.local.db.migrations.MIGRATION_08_09_REMOTE_SYNC
 import com.aira.health.data.local.db.migrations.MIGRATION_09_X
+import com.aira.health.data.local.db.migrations.MIGRATION_10_CONTINUITY
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
@@ -32,8 +34,9 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         StravaActivityRaw::class,
         WhatIfSimulationResult::class,
         PredictionCalibrationRecord::class,
+        ContinuitySyncState::class,
     ],
-    version = 7,
+    version = 9,
     exportSchema = true
 )
 abstract class AiraDatabase : RoomDatabase() {
@@ -54,6 +57,7 @@ abstract class AiraDatabase : RoomDatabase() {
     abstract fun stravaActivityRawDao(): StravaActivityRawDao
     abstract fun whatIfSimulationDao(): WhatIfSimulationDao
     abstract fun predictionCalibrationDao(): PredictionCalibrationDao
+    abstract fun continuitySyncStateDao(): ContinuitySyncStateDao
 
     companion object {
         const val DATABASE_NAME = "aira_db"
@@ -188,6 +192,8 @@ abstract class AiraDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
                 .addMigrations(MIGRATION_09_X)
+                .addMigrations(MIGRATION_10_CONTINUITY)
+                .addMigrations(MIGRATION_08_09_REMOTE_SYNC)
                 .build()
         }
     }
