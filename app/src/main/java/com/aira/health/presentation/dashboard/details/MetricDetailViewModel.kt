@@ -438,7 +438,7 @@ class MetricDetailViewModel @Inject constructor(
     private fun buildRecencyWindow(factors: List<CausalFactor>, trendDays: Int): String {
         val explicit = factors
             .mapNotNull { toExplicitWindowText(it.windowLabel) }
-            .maxByOrNull { parseWindowDays(it) ?: 0 }
+            .maxByOrNull { parseWindowToHours(it) ?: 0 }
         if (explicit != null) return explicit
 
         return when {
@@ -462,8 +462,8 @@ class MetricDetailViewModel @Inject constructor(
                         else -> 0
                     }
                 } else {
-                    val recencyDelta = (parseWindowDays(toExplicitWindowText(b.windowLabel) ?: fallbackWindow) ?: 0) -
-                        (parseWindowDays(toExplicitWindowText(a.windowLabel) ?: fallbackWindow) ?: 0)
+                    val recencyDelta = (parseWindowToHours(toExplicitWindowText(b.windowLabel) ?: fallbackWindow) ?: 0) -
+                        (parseWindowToHours(toExplicitWindowText(a.windowLabel) ?: fallbackWindow) ?: 0)
                     if (recencyDelta != 0) {
                         recencyDelta
                     } else {
@@ -486,15 +486,30 @@ class MetricDetailViewModel @Inject constructor(
     private fun toExplicitWindowText(rawLabel: String?): String? {
         val value = rawLabel?.trim()?.lowercase(Locale.US).orEmpty()
         if (value.isBlank()) return null
-        if (value.startsWith("last ") && value.endsWith("d")) return value
+        
+        // Handle case where it already has "last " prefix
+        if (value.startsWith("last ")) {
+             val suffix = value.removePrefix("last ").trim()
+             if (suffix.endsWith("d") || suffix.endsWith("h")) return value
+        }
 
-        val days = parseWindowDays(value) ?: return null
-        return "last ${days}d"
+        // Parse numeric value and unit
+        val match = Regex("(\\d+)([hd]?)").find(value) ?: return null
+        val num = match.groupValues.getOrNull(1) ?: return null
+        val unit = match.groupValues.getOrNull(2).takeIf { it?.isNotEmpty() == true } ?: "d"
+        
+        return "last $num$unit"
     }
 
-    private fun parseWindowDays(text: String): Int? {
-        val match = Regex("(\\d+)").find(text) ?: return null
-        return match.groupValues.getOrNull(1)?.toIntOrNull()
+    private fun parseWindowToHours(text: String): Int? {
+        val match = Regex("(\\d+)([hd]?)").find(text.lowercase(Locale.US)) ?: return null
+        val value = match.groupValues.getOrNull(1)?.toIntOrNull() ?: return null
+        val unit = match.groupValues.getOrNull(2)
+        return when (unit) {
+            "h" -> value
+            "d" -> value * 24
+            else -> value * 24 // Assume days if no unit provided
+        }
     }
 
     private fun formatFactorName(rawKey: String): String {
