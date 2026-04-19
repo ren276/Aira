@@ -8,13 +8,13 @@ Overall confidence: MEDIUM-HIGH
 
 Use existing project stack and patterns; do not add a new backend SDK or scheduler layer for this phase.
 
-| Area | Use | Why this is standard here | Confidence | Evidence |
-|---|---|---|---|---|
-| Remote continuity transport | Existing Supabase Kotlin client via DI | Supabase client is already provisioned in app DI and supports Postgrest/Auth setup used by existing account flows. | HIGH | [VERIFIED: app/src/main/java/com/aira/health/data/remote/supabase/SupabaseClientProvider.kt], [VERIFIED: app/src/main/java/com/aira/health/di/NetworkModule.kt] |
-| Local continuity persistence | Room entities + DAO + explicit migration | Existing app data model uses Room with explicit entities/DAO and phase-based migrations for new tables. | HIGH | [VERIFIED: app/src/main/java/com/aira/health/data/local/db/AiraDatabase.kt], [VERIFIED: app/src/main/java/com/aira/health/data/local/db/migrations/Migration09PredictionTables.kt], [CITED: https://developer.android.com/training/data-storage/room/migrating-db-versions] |
-| Background backstop sync | WorkManager periodic + immediate one-time work | Existing sync behavior already follows this pattern and survives process/app restarts. | HIGH | [VERIFIED: app/src/main/java/com/aira/health/data/worker/HealthSyncWorker.kt], [CITED: https://developer.android.com/topic/libraries/architecture/workmanager] |
-| User preference gating | DataStore-backed cloud backup preference in Settings | Cloud backup preference is already exposed and persisted; this phase should wire behavior to that gate. | HIGH | [VERIFIED: app/src/main/java/com/aira/health/presentation/settings/SettingsViewModel.kt], [VERIFIED: app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt] |
-| Reset and account actions | Existing Account screen + ViewModel action patterns | Sign-out and disconnect flows already use explicit user actions with ViewModel orchestration. | HIGH | [VERIFIED: app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt] |
+| Area                         | Use                                                  | Why this is standard here                                                                                          | Confidence | Evidence                                                                                                                                                                                                                                                                    |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Remote continuity transport  | Existing Supabase Kotlin client via DI               | Supabase client is already provisioned in app DI and supports Postgrest/Auth setup used by existing account flows. | HIGH       | [VERIFIED: app/src/main/java/com/aira/health/data/remote/supabase/SupabaseClientProvider.kt], [VERIFIED: app/src/main/java/com/aira/health/di/NetworkModule.kt]                                                                                                             |
+| Local continuity persistence | Room entities + DAO + explicit migration             | Existing app data model uses Room with explicit entities/DAO and phase-based migrations for new tables.            | HIGH       | [VERIFIED: app/src/main/java/com/aira/health/data/local/db/AiraDatabase.kt], [VERIFIED: app/src/main/java/com/aira/health/data/local/db/migrations/Migration09PredictionTables.kt], [CITED: https://developer.android.com/training/data-storage/room/migrating-db-versions] |
+| Background backstop sync     | WorkManager periodic + immediate one-time work       | Existing sync behavior already follows this pattern and survives process/app restarts.                             | HIGH       | [VERIFIED: app/src/main/java/com/aira/health/data/worker/HealthSyncWorker.kt], [CITED: https://developer.android.com/topic/libraries/architecture/workmanager]                                                                                                              |
+| User preference gating       | DataStore-backed cloud backup preference in Settings | Cloud backup preference is already exposed and persisted; this phase should wire behavior to that gate.            | HIGH       | [VERIFIED: app/src/main/java/com/aira/health/presentation/settings/SettingsViewModel.kt], [VERIFIED: app/src/main/java/com/aira/health/presentation/settings/SettingsScreen.kt]                                                                                             |
+| Reset and account actions    | Existing Account screen + ViewModel action patterns  | Sign-out and disconnect flows already use explicit user actions with ViewModel orchestration.                      | HIGH       | [VERIFIED: app/src/main/java/com/aira/health/presentation/supplementary/AccountScreen.kt]                                                                                                                                                                                   |
 
 Prescriptive decisions for Phase 10 implementation planning:
 
@@ -69,45 +69,51 @@ Why: Converts release-readiness from qualitative review to measurable criteria.
 
 ## Do Not Hand-Roll
 
-| Problem | Avoid | Use instead | Why |
-|---|---|---|---|
-| Reliable background retries | Custom timers/threads for retry loops | WorkManager retry/backoff and unique work policies | Existing app already uses WorkManager lifecycle semantics and avoids duplicate scheduling races. [CITED: https://developer.android.com/topic/libraries/architecture/workmanager] |
-| Data migration safety | Destructive fallback as default for new continuity tables | Explicit Room migration + migration tests | Required to preserve continuity history and settings across upgrades. [CITED: https://developer.android.com/training/data-storage/room/migrating-db-versions] |
-| Restore conflict behavior | Implicit silent overwrite | User prompt + deterministic apply contract | Locked decision requires explicit user mediation for restore. [VERIFIED: Phase 10 context D-07] |
-| Privacy enforcement | Ad hoc field filtering near network call | Continuity payload contract + mapper-level whitelist | Centralized contract prevents accidental raw field leakage in later refactors. |
+| Problem                     | Avoid                                                     | Use instead                                          | Why                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reliable background retries | Custom timers/threads for retry loops                     | WorkManager retry/backoff and unique work policies   | Existing app already uses WorkManager lifecycle semantics and avoids duplicate scheduling races. [CITED: https://developer.android.com/topic/libraries/architecture/workmanager] |
+| Data migration safety       | Destructive fallback as default for new continuity tables | Explicit Room migration + migration tests            | Required to preserve continuity history and settings across upgrades. [CITED: https://developer.android.com/training/data-storage/room/migrating-db-versions]                    |
+| Restore conflict behavior   | Implicit silent overwrite                                 | User prompt + deterministic apply contract           | Locked decision requires explicit user mediation for restore. [VERIFIED: Phase 10 context D-07]                                                                                  |
+| Privacy enforcement         | Ad hoc field filtering near network call                  | Continuity payload contract + mapper-level whitelist | Centralized contract prevents accidental raw field leakage in later refactors.                                                                                                   |
 
 ## Common Pitfalls
 
 1. Treating the existing cloud backup toggle as sufficient without wiring actual upload/restore paths.
+
 - Prevention: Add explicit use-case orchestration and sync state persistence behind the toggle.
 - Confidence: HIGH. [VERIFIED: settings currently says cloud sync not wired]
 
 2. Allowing reset wipe to proceed after failed final upload by default.
+
 - Prevention: Block wipe by default and require explicit irreversible override.
 - Confidence: HIGH. [VERIFIED: Phase 10 context D-10]
 
 3. Mixing raw and derived data in continuity payload over time.
+
 - Prevention: Keep a strict snapshot DTO with derived-only fields and tests asserting excluded raw fields.
 - Confidence: HIGH. [VERIFIED: prior privacy constraints in Phase 8/9 contexts]
 
 4. Assuming periodic sync alone covers freshness.
+
 - Prevention: Keep hybrid event-driven trigger plus periodic backstop.
 - Confidence: MEDIUM-HIGH. [VERIFIED: Phase 10 context D-04]
 
 5. Closing phase without measurable hardening gates.
+
 - Prevention: Define strict pass/fail checks and security/open-threat criteria in plan verification.
 - Confidence: HIGH. [VERIFIED: Phase 10 context D-12]
 
 ## Recommended Validation Checks
 
-| Requirement | Validation target | Command/check | Expected |
-|---|---|---|---|
-| BACK-01 | Snapshot upload/read/restore lifecycle | .\gradlew.bat :app:testDevDebugUnitTest --tests "*Continuity*" --tests "*Snapshot*" | Continuity payload writes/reads are deterministic and privacy-safe |
-| BACK-02 | Reset flow final-upload gate | .\gradlew.bat :app:testDevDebugUnitTest --tests "*Reset*" --tests "*Account*" | Failed final upload blocks destructive wipe by default |
-| Release hardening | Compile and core integration seam | .\gradlew.bat :app:compileDevDebugKotlin | No DI/signature breakages after continuity integration |
-| Migration safety | Continuity table migration path | Room migration test for Phase 10 tables | Existing local data remains intact with new continuity schema |
+| Requirement       | Validation target                      | Command/check                                                                       | Expected                                                           |
+| ----------------- | -------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| BACK-01           | Snapshot upload/read/restore lifecycle | .\gradlew.bat :app:testDevDebugUnitTest --tests "_Continuity_" --tests "_Snapshot_" | Continuity payload writes/reads are deterministic and privacy-safe |
+| BACK-02           | Reset flow final-upload gate           | .\gradlew.bat :app:testDevDebugUnitTest --tests "_Reset_" --tests "_Account_"       | Failed final upload blocks destructive wipe by default             |
+| Release hardening | Compile and core integration seam      | .\gradlew.bat :app:compileDevDebugKotlin                                            | No DI/signature breakages after continuity integration             |
+| Migration safety  | Continuity table migration path        | Room migration test for Phase 10 tables                                             | Existing local data remains intact with new continuity schema      |
 
 Environment caveat:
+
 - Connected Android instrumentation remains environment-gated where adb is unavailable, so phase gate should keep mandatory unit/compile checks plus conditional connected tests.
 
 ## Validation Architecture
@@ -124,6 +130,7 @@ Phase 10 validation architecture should use a two-tier feedback loop:
   - privacy payload contract assertions (no raw event fields)
 
 Sampling policy recommendation:
+
 - After each task: run targeted tests under 60s when possible.
 - After each wave: run broader suite and compile.
 - Before verify-work: all mandatory checks green and high-severity issues at zero.
