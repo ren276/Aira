@@ -1,4 +1,4 @@
-﻿# Roadmap: Aira
+# Roadmap: Aira
 
 ## Milestones
 
@@ -7,7 +7,7 @@
 
 ## v1.1 Phases
 
-### Phase 7: On-Device AI Runtime Foundation
+### Phase 7: On-Device AI Runtime Foundation [COMPLETED]
 
 **Goal**: Integrate a compact private local inference runtime that can safely generate text without impacting app responsiveness.
 **Depends on**: Phase 6
@@ -19,9 +19,9 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md - Runtime integration, model loading, and dependency wiring.
-- [ ] 07-02-PLAN.md - Inference service API, fallback pathway, and safety wrappers.
-- [ ] 07-03-PLAN.md - Performance benchmarking, tuning, and regression gates.
+- [x] 07-01-PLAN.md - Runtime integration, model loading, and dependency wiring.
+- [x] 07-02-PLAN.md - Inference service API, fallback pathway, and safety wrappers.
+- [x] 07-03-PLAN.md - Performance benchmarking, tuning, and regression gates.
 
 ### Phase 8: Causal Insight and Personalization Core
 
@@ -74,7 +74,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 7. On-Device AI Runtime Foundation | 0/3 | Not started | - |
+| 7. On-Device AI Runtime Foundation | 3/3 | Completed | 2026-04-18 |
 | 8. Causal Insight and Personalization Core | 0/3 | Not started | - |
 | 9. Prediction, What-If, and Athlete Guidance | 0/3 | Not started | - |
 | 10. Cloud Continuity Snapshot and Milestone Hardening | 0/2 | Not started | - |

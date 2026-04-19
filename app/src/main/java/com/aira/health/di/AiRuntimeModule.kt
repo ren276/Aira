@@ -1,6 +1,9 @@
 package com.aira.health.di
 
 import com.aira.health.ai.runtime.AiRuntimeGateway
+import com.aira.health.ai.runtime.AiRuntimePolicy
+import com.aira.health.ai.runtime.AiRuntimePolicyGuard
+import com.aira.health.ai.runtime.AiRuntimeExecutionMode
 import com.aira.health.ai.runtime.BackendGeminiAuthTokenProvider
 import com.aira.health.ai.runtime.GeminiAuthTokenProvider
 import com.aira.health.ai.runtime.GeminiCloudRuntimeGateway
@@ -43,5 +46,17 @@ abstract class AiRuntimeModule {
         @Provides
         @Singleton
         fun provideRuntimeConfig(): RuntimeConfig = RuntimeConfig()
+
+        @Provides
+        @Singleton
+        fun provideAiRuntimePolicy(): AiRuntimePolicy = AiRuntimePolicy(
+            coachingGenerationMode = AiRuntimeExecutionMode.LOCAL_ONLY,
+            allowNetworkFallback = false,
+        )
+
+        @Provides
+        @Singleton
+        fun provideAiRuntimePolicyGuard(policy: AiRuntimePolicy): AiRuntimePolicyGuard =
+            AiRuntimePolicyGuard(policy)
     }
 }

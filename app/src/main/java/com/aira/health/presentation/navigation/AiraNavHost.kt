@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aira.health.presentation.dashboard.body.BodyScreen
+import com.aira.health.presentation.dashboard.coach.CoachScreen
 import com.aira.health.presentation.dashboard.details.MetricDetailRoute
 import com.aira.health.presentation.dashboard.home.HomeDashboardScreen
 import com.aira.health.presentation.nutrition.NutritionEditScreen
@@ -46,7 +47,13 @@ fun AiraNavHost(modifier: Modifier = Modifier) {
             }
 
             composable(AiraRoutes.INSIGHTS) {
-                BodyScreen()
+                BodyScreen(
+                    onOpenCoach = { navController.navigate(AiraRoutes.COACH) }
+                )
+            }
+
+            composable(AiraRoutes.COACH) {
+                CoachScreen()
             }
 
             composable(

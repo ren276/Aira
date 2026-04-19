@@ -22,17 +22,17 @@ fun ConfidenceMetaRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = confidence,
+            text = "Confidence: $confidence",
             style = MaterialTheme.typography.labelLarge,
             color = Theme.colors.accent
         )
         Text(
-            text = "•",
+            text = "|",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         Text(
-            text = lastUpdated,
+            text = "Window: $lastUpdated",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
