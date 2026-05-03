@@ -138,14 +138,11 @@ class HealthSyncWorker @AssistedInject constructor(
                 .sumOf { it.second }
                 .coerceAtLeast(0L)
 
-            val stravaSteps = workouts
-                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
+            val workoutSteps = workouts
                 .sumOf { (it.steps ?: 0).toLong() }
                 .coerceAtLeast(0L)
 
-            val totalSteps = (healthSteps + stravaSteps)
-                .toInt()
-                .takeIf { it > 0 }
+            val totalSteps = (healthSteps + workoutSteps).toInt()
 
             val healthActiveCalories = runCatching {
                 healthDataRepository.readActiveCalories(dayStartInstant, now)
@@ -154,19 +151,15 @@ class HealthSyncWorker @AssistedInject constructor(
                 .toInt()
                 .coerceAtLeast(0)
 
-            val stravaActiveCalories = workouts
-                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
+            val workoutActiveCalories = workouts
                 .sumOf { it.activeCalories }
                 .coerceAtLeast(0)
 
-            val activeCalories = (healthActiveCalories + stravaActiveCalories)
-                .takeIf { it > 0 }
+            val activeCalories = (healthActiveCalories + workoutActiveCalories)
 
             val totalDistanceMeters = workouts
-                .filter { it.sourcePackage == STRAVA_SOURCE_PACKAGE }
                 .sumOf { (it.distanceMeters ?: 0f).toDouble() }
                 .toFloat()
-                .takeIf { it > 0f }
 
             val zoneMinutes = deriveHeartRateZoneMinutes(
                 hrSamples = hrSamples,
@@ -177,7 +170,7 @@ class HealthSyncWorker @AssistedInject constructor(
             if (BuildConfig.DEBUG) {
                 Log.i(
                     TAG,
-                    "Today=$today raw Room -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}, workouts=${workouts.size}; derived -> rhrMorning=$rhrMorning, hrvMorning=$hrvMorning, sleepDurationMin=$sleepDurationMin, sleepEfficiency=$sleepEfficiency, sleepDeepFraction=$sleepDeepFraction, totalActiveMin=$totalActiveMin, spo2Count=${spo2Values.size}, avgSpo2=$avgSpo2, steps=$totalSteps (hc=$healthSteps, strava=$stravaSteps), activeCalories=$activeCalories (hc=$healthActiveCalories, strava=$stravaActiveCalories), distanceMeters=$totalDistanceMeters, zones=[${zoneMinutes.zone1}, ${zoneMinutes.zone2}, ${zoneMinutes.zone3}, ${zoneMinutes.zone4}, ${zoneMinutes.zone5}]"
+                    "Today=$today raw Room -> hr=${hrSamples.size}, hrv=${hrvSamples.size}, sleep=${sleepSessions.size}, workouts=${workouts.size}; derived -> rhrMorning=$rhrMorning, hrvMorning=$hrvMorning, sleepDurationMin=$sleepDurationMin, sleepEfficiency=$sleepEfficiency, sleepDeepFraction=$sleepDeepFraction, totalActiveMin=$totalActiveMin, spo2Count=${spo2Values.size}, avgSpo2=$avgSpo2, steps=$totalSteps (hc=$healthSteps, workouts=$workoutSteps), activeCalories=$activeCalories (hc=$healthActiveCalories, workouts=$workoutActiveCalories), distanceMeters=$totalDistanceMeters, zones=[${zoneMinutes.zone1}, ${zoneMinutes.zone2}, ${zoneMinutes.zone3}, ${zoneMinutes.zone4}, ${zoneMinutes.zone5}]"
                 )
             }
 

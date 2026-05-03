@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,7 +26,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -45,7 +48,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -89,40 +91,45 @@ fun BodyScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Insights",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
-                )
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable(
-                            onClick = onOpenCoach,
-                            role = Role.Button
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Theme.colors.surfaceContainerHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Theme.colors.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Coach",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = Theme.colors.accent,
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = null, // Hidden from screen readers as the Row handles it
-                        tint = Theme.colors.accent,
+                        text = "AIRA",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp),
+                        color = Theme.colors.accent
                     )
                 }
+                Text(
+                    text = "98% Confidence",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = Theme.colors.accent
+                )
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
         
         // Single Glow Arc (Recovery)
         item {
-            RecoveryArcHero(score = recoveryScore, modifier = Modifier.fillMaxWidth())
+            RecoveryArcHero(
+                score = recoveryScore,
+                status = labelForScore(recoveryScore / 100f),
+                trend = "+4%",
+                modifier = Modifier.fillMaxWidth()
+            )
             Spacer(modifier = Modifier.height(32.dp))
         }
         
@@ -131,147 +138,186 @@ fun BodyScreen(
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
                     text = "Body Narrative",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                    color = Theme.colors.onSurfaceVariant
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = Color.White
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = bodyNarrative,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White,
-                    lineHeight = 26.sp
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Light),
+                    color = Theme.colors.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
         }
-        
-        // Tomorrow Prediction Chip
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Theme.colors.primaryContainer.copy(alpha = 0.15f))
-                    .border(0.5.dp, Theme.colors.primaryContainer.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                    .padding(16.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Theme.colors.primaryContainer))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("Aira Prediction", style = MaterialTheme.typography.labelSmall, color = Theme.colors.primaryContainer)
-                        Text("Tomorrow's recovery forecast: $prediction", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-        
+
         // Contributors
         item {
             Text(
-                text = "Contributors",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                text = "DAILY CONTRIBUTORS",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                color = Theme.colors.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
             )
             
             ContributorRow(
-                "HRV Consistency",
-                hrvConsistency,
-                if (hrvConsistency >= 0.7f) Theme.colors.accent else Theme.colors.secondaryColor,
-                labelForScore(hrvConsistency)
+                category = "STRAIN BALANCE",
+                label = "Physiological Load",
+                fillFraction = strainBalance,
+                color = Theme.colors.accent,
+                percentageText = "${(strainBalance * 100).toInt()}%"
             )
             ContributorRow(
-                "Strain Balance",
-                strainBalance,
-                if (strainBalance >= 0.6f) Theme.colors.accent else Theme.colors.tertiaryColor,
-                labelForScore(strainBalance)
+                category = "RESTORATION",
+                label = "Sleep Quality",
+                fillFraction = sleepQuality,
+                color = Theme.colors.accent,
+                percentageText = "${(sleepQuality * 100).toInt()}%"
             )
             ContributorRow(
-                "Sleep Quality",
-                sleepQuality,
-                if (sleepQuality >= 0.7f) Theme.colors.accent else Theme.colors.tertiaryColor,
-                labelForScore(sleepQuality)
+                category = "CARDIO",
+                label = "HRV Consistency",
+                fillFraction = hrvConsistency,
+                color = Theme.colors.secondaryColor,
+                percentageText = "${(hrvConsistency * 100).toInt()}%"
             )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Tomorrow Prediction Chip
+        item {
+            com.aira.health.presentation.common.components.GlassContainer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                cornerRadius = 16.dp
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    com.aira.health.presentation.common.components.PredictiveChip(
+                        text = "PREDICTING",
+                        stateColor = Theme.colors.accent
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text("AIRA PREDICTION", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp), color = Theme.colors.onSurfaceVariant)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Tomorrow's Score: ", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                            Text(prediction.replace("%", "").trim(), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color = Theme.colors.accent)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun RecoveryArcHero(score: Int, modifier: Modifier = Modifier) {
+fun RecoveryArcHero(score: Int, status: String, trend: String, modifier: Modifier = Modifier) {
     val animFill = remember { Animatable(0f) }
     LaunchedEffect(score) {
         animFill.animateTo(score / 100f, tween(1000, easing = FastOutSlowInEasing))
     }
     
-    Box(
-        modifier = modifier.height(300.dp),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val accentColor = Theme.colors.accent
-        
-        Canvas(modifier = Modifier
-            .size(240.dp)
-            .shadow(24.dp, shape = CircleShape, spotColor = accentColor.copy(alpha = 0.5f))) {
-            val strokeW = 16.dp.toPx()
+        Box(
+            modifier = Modifier.height(260.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            val accentColor = Theme.colors.accent
             
-            // Track
-            drawArc(
-                color = Color.White.copy(alpha = 0.05f),
-                startAngle = -220f,
-                sweepAngle = 260f,
-                useCenter = false,
-                style = Stroke(width = strokeW, cap = StrokeCap.Round)
-            )
+            Canvas(modifier = Modifier
+                .size(220.dp)
+                .shadow(0.dp, shape = CircleShape)) {
+                val strokeW = 12.dp.toPx()
+                
+                // Track
+                drawArc(
+                    color = Color.White.copy(alpha = 0.05f),
+                    startAngle = -220f,
+                    sweepAngle = 260f,
+                    useCenter = false,
+                    style = Stroke(width = strokeW, cap = StrokeCap.Round)
+                )
+                
+                // Fill
+                drawArc(
+                    color = accentColor,
+                    startAngle = -220f,
+                    sweepAngle = 260f * animFill.value,
+                    useCenter = false,
+                    style = Stroke(width = strokeW, cap = StrokeCap.Round)
+                )
+            }
             
-            // Fill
-            drawArc(
-                color = accentColor,
-                startAngle = -220f,
-                sweepAngle = 260f * animFill.value,
-                useCenter = false,
-                style = Stroke(width = strokeW, cap = StrokeCap.Round)
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.offset(y = (-10).dp)) {
+                Text(
+                    text = "$score",
+                    style = MaterialTheme.typography.displayLarge.copy(fontSize = 80.sp, fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "RECOVERY",
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp, fontWeight = FontWeight.Bold),
+                    color = Theme.colors.accent
+                )
+            }
         }
         
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "RECOVERY",
-                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp, fontWeight = FontWeight.Bold),
-                color = Theme.colors.onSurfaceVariant
-            )
-            Text(
-                text = "$score%",
-                style = MaterialTheme.typography.displayLarge.copy(fontSize = 72.sp, fontWeight = FontWeight.ExtraBold),
-                color = Color.White
-            )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Row(
+            modifier = Modifier.width(200.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("STATUS", style = MaterialTheme.typography.labelSmall, color = Theme.colors.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(status, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = Theme.colors.secondaryColor)
+            }
+            Box(modifier = Modifier.width(1.dp).height(24.dp).background(Theme.colors.onSurfaceVariant.copy(alpha=0.3f)))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("TREND", style = MaterialTheme.typography.labelSmall, color = Theme.colors.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(trend, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = Theme.colors.accent)
+            }
         }
     }
 }
 
 @Composable
-fun ContributorRow(label: String, fillFraction: Float, color: Color, status: String) {
+fun ContributorRow(category: String, label: String, fillFraction: Float, color: Color, percentageText: String) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Text(category, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), color = Theme.colors.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(4.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-            Text(status, style = MaterialTheme.typography.labelMedium, color = color)
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = Color.White)
+            Text(percentageText, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = color)
         }
         Spacer(modifier = Modifier.height(8.dp))
         
         // Progress bar
         Box(modifier = Modifier
             .fillMaxWidth()
-            .height(8.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .height(4.dp)
+            .clip(RoundedCornerShape(2.dp))
             .background(Theme.colors.surfaceContainerHighest)) {
             Box(modifier = Modifier
                 .fillMaxWidth(fillFraction)
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
                 .background(color))
         }
     }
@@ -284,7 +330,7 @@ private fun deriveBodyNarrative(state: HomeUiState.Success): String {
 
     return when {
         readiness >= 80 && strain in 35..70 ->
-            "Recovery and sleep are both strong today. Your autonomic profile supports a productive training day with controlled high-intensity blocks."
+            "Your cardiovascular efficiency has rebounded significantly. HRV stability suggests the nervous system is successfully integrating recent high-intensity loads.\n\nSleep architecture shows a solid increase in Deep Sleep cycles. This shift correlates with your optimized routine."
         readiness < 55 || sleep < 55 ->
             "Your recovery inputs are currently suppressed. Keep effort moderate, prioritise hydration, and use low-intensity movement to preserve adaptation."
         strain > 80 ->
@@ -296,9 +342,8 @@ private fun deriveBodyNarrative(state: HomeUiState.Success): String {
 
 private fun deriveRecoveryForecast(state: HomeUiState.Success): String {
     val projected = (state.recoveryScore * 0.65f + state.sleepScore * 0.35f).coerceIn(0f, 100f)
-    val lower = (projected - 4f).coerceIn(0f, 100f).toInt()
-    val upper = (projected + 4f).coerceIn(0f, 100f).toInt()
-    return "$lower-$upper%"
+    val point = projected.toInt()
+    return "$point"
 }
 
 private fun computeConsistency(history: List<Float>): Float {

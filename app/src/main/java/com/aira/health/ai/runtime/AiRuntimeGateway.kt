@@ -105,6 +105,8 @@ enum class RuntimeFailureReason {
     TIMEOUT,
     /** Caller cancelled the collecting coroutine before completion. */
     CANCELLED,
+    /** API rate limit exceeded (e.g. HTTP 429). */
+    RATE_LIMITED,
     /** Unexpected native or runtime error. Check logs for diagnostic reason code. */
     INTERNAL_ERROR,
 }

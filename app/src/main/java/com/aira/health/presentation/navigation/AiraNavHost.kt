@@ -12,15 +12,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.aira.health.presentation.assistant.AiraAssistantScreen
 import com.aira.health.presentation.dashboard.body.BodyScreen
 import com.aira.health.presentation.dashboard.coach.CoachScreen
 import com.aira.health.presentation.dashboard.details.MetricDetailRoute
+import com.aira.health.presentation.fueltrain.FuelTrainScreen
 import com.aira.health.presentation.dashboard.home.HomeDashboardScreen
 import com.aira.health.presentation.nutrition.NutritionEditScreen
-import com.aira.health.presentation.nutrition.NutritionScreen
 import com.aira.health.presentation.settings.SettingsScreen
 import com.aira.health.presentation.train.TrainEditScreen
-import com.aira.health.presentation.train.TrainScreen
 
 @Composable
 fun AiraNavHost(modifier: Modifier = Modifier) {
@@ -65,9 +65,12 @@ fun AiraNavHost(modifier: Modifier = Modifier) {
                 )
             }
 
-            composable(AiraRoutes.TRAIN) {
-                TrainScreen(
-                    onNavigateToEdit = { workoutId ->
+            composable(AiraRoutes.FUEL_TRAIN) {
+                FuelTrainScreen(
+                    onNavigateToNutritionEdit = { entryId ->
+                        navController.navigate(AiraRoutes.nutritionEditRoute(entryId))
+                    },
+                    onNavigateToTrainEdit = { workoutId ->
                         navController.navigate(AiraRoutes.trainEditRoute(workoutId))
                     }
                 )
@@ -84,12 +87,8 @@ fun AiraNavHost(modifier: Modifier = Modifier) {
                 )
             }
 
-            composable(AiraRoutes.NUTRITION) {
-                NutritionScreen(
-                    onNavigateToEdit = { entryId ->
-                        navController.navigate(AiraRoutes.nutritionEditRoute(entryId))
-                    }
-                )
+            composable(AiraRoutes.ASSISTANT) {
+                AiraAssistantScreen()
             }
 
             composable(
@@ -155,8 +154,8 @@ fun AiraNavHost(modifier: Modifier = Modifier) {
         val topLevelRoutes = listOf(
             AiraRoutes.HOME, 
             AiraRoutes.INSIGHTS,
-            AiraRoutes.TRAIN, 
-            AiraRoutes.NUTRITION,
+            AiraRoutes.FUEL_TRAIN, 
+            AiraRoutes.ASSISTANT,
             AiraRoutes.SETTINGS
         )
         

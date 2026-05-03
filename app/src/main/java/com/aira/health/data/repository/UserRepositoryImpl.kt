@@ -7,14 +7,17 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val firebaseDatabase: FirebaseDatabase
 ) : UserRepository {
 
     override fun observeAuthState(): Flow<AuthState> {
@@ -95,5 +98,20 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getCurrentSession(): UserSession? {
         val user = firebaseAuth.currentUser ?: return null
         return mapFirebaseUser(user)
+    }
+
+    override suspend fun saveLogoutSummary(summary: String): Result<Unit> = runCatching {
+        val uid = firebaseAuth.currentUser?.uid ?: throw IllegalStateException("No user logged in")
+        firebaseDatabase.getReference("users/$uid/logoutsummary")
+            .setValue(summary)
+            .await()
+    }
+
+    override suspend fun getLatestLogoutSummary(): String? {
+        val uid = firebaseAuth.currentUser?.uid ?: return null
+        val snapshot = firebaseDatabase.getReference("users/$uid/logoutsummary")
+            .get()
+            .await()
+        return snapshot.getValue(String::class.java)
     }
 }

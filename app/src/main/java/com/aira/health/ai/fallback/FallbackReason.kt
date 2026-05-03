@@ -24,6 +24,9 @@ enum class FallbackReason {
 
     /** Data is stale beyond the staleness window; fallback is safer than AI guess. */
     STALE_DATA,
+
+    /** AI service is rate-limited or quota exceeded (e.g. HTTP 429). */
+    API_THROTTLED,
 }
 
 /** Human-readable, wellness-safe display label for each reason (shown in UI). */
@@ -35,4 +38,5 @@ val FallbackReason.displayLabel: String
         FallbackReason.RUNTIME_ERROR    -> "Temporarily unavailable"
         FallbackReason.LOW_CONFIDENCE   -> "Insufficient data"
         FallbackReason.STALE_DATA       -> "Data may be outdated"
+        FallbackReason.API_THROTTLED    -> "AI service busy"
     }

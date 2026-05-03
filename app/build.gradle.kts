@@ -199,6 +199,17 @@ dependencies {
     implementation(libs.ktor.sse)
     implementation(libs.ktor.serialization.kotlinx.json)
 
+    // On-Device ML — TFLite metric models (Phase 12)
+    // Use the canonical rebranded LiteRT artifact (com.google.ai.edge.litert).
+    // Exclude old org.tensorflow transitive deps from support library to avoid
+    // duplicate class / duplicate .so conflicts with litert:1.0.1.
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support) {
+        exclude(group = "org.tensorflow", module = "tensorflow-lite")
+        exclude(group = "org.tensorflow", module = "tensorflow-lite-api")
+    }
+
+
     // Camera & Scanner (Phase 04 baseline)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)

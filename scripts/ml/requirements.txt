@@ -1,0 +1,16 @@
+# Core ML/Data science
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+
+# TensorFlow / TFLite
+tensorflow==2.17.0
+tensorflow-hub==0.16.1
+
+# Serialisation & utilities
+joblib==1.4.2
+tqdm==4.66.4
+
+# (Optional) Jupyter for exploration
+notebook==7.2.1
+matplotlib==3.9.0

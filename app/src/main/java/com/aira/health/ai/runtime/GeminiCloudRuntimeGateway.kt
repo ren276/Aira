@@ -91,7 +91,7 @@ class GeminiCloudRuntimeGateway @Inject constructor(
                     client.sse(
                         request = {
                             method = HttpMethod.Post
-                            url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent")
+                            url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent")
                             parameter("alt", "sse")
                             header("x-goog-api-key", apiKey)
                             contentType(ContentType.Application.Json)
@@ -121,22 +121,30 @@ class GeminiCloudRuntimeGateway @Inject constructor(
                 trySend(AiRuntimeResponse(text = "", isDone = true, latencyMs = latency))
 
             } catch (e: Exception) {
-                val reason = when (e) {
-                    is TimeoutCancellationException,
-                    is HttpRequestTimeoutException -> RuntimeFailureReason.TIMEOUT
-                    is CancellationException       -> RuntimeFailureReason.CANCELLED
-                    else                           -> RuntimeFailureReason.INTERNAL_ERROR
+                val reason = when {
+                    e is TimeoutCancellationException || e is HttpRequestTimeoutException -> 
+                        RuntimeFailureReason.TIMEOUT
+                    e is CancellationException -> 
+                        RuntimeFailureReason.CANCELLED
+                    e is ResponseException && e.response.status == HttpStatusCode.TooManyRequests -> 
+                        RuntimeFailureReason.RATE_LIMITED
+                    e.message?.contains("429") == true -> 
+                        RuntimeFailureReason.RATE_LIMITED
+                    else -> 
+                        RuntimeFailureReason.INTERNAL_ERROR
                 }
 
                 when (reason) {
                     RuntimeFailureReason.CANCELLED -> Log.i("GeminiGateway", "SSE stream cancelled by caller")
                     RuntimeFailureReason.TIMEOUT   -> Log.w("GeminiGateway", "SSE stream timed out")
+                    RuntimeFailureReason.RATE_LIMITED -> Log.w("GeminiGateway", "Gemini API rate limit reached (429)")
                     else                           -> Log.e("GeminiGateway", "SSE stream error: ${e.message}", e)
                 }
 
                 val message = when (reason) {
                     RuntimeFailureReason.CANCELLED -> "Generation cancelled"
                     RuntimeFailureReason.TIMEOUT   -> "Generation timed out"
+                    RuntimeFailureReason.RATE_LIMITED -> "Gemini is busy (rate limit reached). Please wait a moment."
                     RuntimeFailureReason.MODEL_UNAVAILABLE -> "Model unavailable"
                     RuntimeFailureReason.INTERNAL_ERROR -> "Gemini REST error: ${e.message}"
                 }

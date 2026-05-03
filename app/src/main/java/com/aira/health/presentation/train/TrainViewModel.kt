@@ -3,12 +3,14 @@ package com.aira.health.presentation.train
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aira.health.data.local.model.WorkoutSession
+import com.aira.health.domain.repository.HealthDataRepository
 import com.aira.health.domain.repository.WorkoutRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,10 +20,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TrainViewModel @Inject constructor(
-    private val repository: WorkoutRepository
+    private val repository: WorkoutRepository,
+    private val healthRepository: HealthDataRepository
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(TrainUiState())
+
+    // Observe VO2 Max (trailing 90 days for stability)
+    private val vo2MaxFlow = flow {
+        val start = Instant.now().minus(90, ChronoUnit.DAYS)
+        val end = Instant.now()
+        val records = runCatching { healthRepository.readVo2Max(start, end) }.getOrDefault(emptyList())
+        emit(records.maxByOrNull { it.first }?.second)
+    }
 
     // Observe trailing 30 days of workouts
     private val workoutsFlow = repository.observeWorkouts(
@@ -31,11 +42,13 @@ class TrainViewModel @Inject constructor(
 
     val uiState: StateFlow<TrainUiState> = combine(
         mutableState,
-        workoutsFlow
-    ) { state, workouts ->
+        workoutsFlow,
+        vo2MaxFlow
+    ) { state, workouts, vo2Max ->
         state.copy(
             history = workouts.sortedByDescending { it.startTime },
-            isHistoryLoading = false
+            isHistoryLoading = false,
+            vo2Max = vo2Max
         )
     }.stateIn(
         scope = viewModelScope,

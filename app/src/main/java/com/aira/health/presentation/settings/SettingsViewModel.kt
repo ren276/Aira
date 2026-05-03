@@ -12,6 +12,7 @@ import com.aira.health.domain.model.AuthState
 import com.aira.health.domain.repository.UserRepository
 import com.aira.health.util.permission.HealthConnectStatus
 import com.aira.health.util.permission.HealthPermissionManager
+import com.aira.health.ai.runtime.AiRuntimeGateway
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,8 @@ data class SettingsUiState(
     val cloudBackupEnabled: Boolean = false,
     val continuityResetPolicyLabel: String = "Local reset requires final continuity upload before wipe",
     val localModelStatus: String = "Local model status unavailable",
-    val confidencePercent: Int? = null
+    val confidencePercent: Int? = null,
+    val isSigningOut: Boolean = false
 )
 
 @HiltViewModel
@@ -39,7 +41,8 @@ class SettingsViewModel @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     private val dailyMetricsDao: DailyMetricsDao,
     private val userRepository: UserRepository,
-    private val healthPermissionManager: HealthPermissionManager
+    private val healthPermissionManager: HealthPermissionManager,
+    private val aiRuntimeGateway: AiRuntimeGateway
 ) : ViewModel() {
 
     private companion object {
@@ -54,6 +57,7 @@ class SettingsViewModel @Inject constructor(
     )
 
     private val permissionState = MutableStateFlow(PermissionState())
+    private val signActionState = MutableStateFlow(false)
 
     init {
         viewModelScope.launch {
@@ -68,8 +72,9 @@ class SettingsViewModel @Inject constructor(
             .catch { emit(emptyPreferences()) },
         dailyMetricsDao.observeRecent(7),
         permissionState,
-        userRepository.observeAuthState()
-    ) { prefs, recentMetrics, permissions, authState ->
+        userRepository.observeAuthState(),
+        signActionState
+    ) { prefs, recentMetrics, permissions, authState, isSigningOut ->
         val latest = recentMetrics.firstOrNull()
         val confidence = latest?.dataConfidence?.times(100f)?.toInt()?.coerceIn(0, 100)
         val profileName = when (authState) {
@@ -115,13 +120,53 @@ class SettingsViewModel @Inject constructor(
                 "Enable cloud backup to preserve continuity snapshots before local reset"
             },
             localModelStatus = localModelStatus,
-            confidencePercent = confidence
+            confidencePercent = confidence,
+            isSigningOut = isSigningOut
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = SettingsUiState()
     )
+
+    fun signOutWithContinuity() {
+        if (signActionState.value) return
+        signActionState.value = true
+
+        viewModelScope.launch {
+            try {
+                // 1. Generate continuity summary using Gemini
+                val recent = dailyMetricsDao.getLast14Days()
+                if (recent.isNotEmpty()) {
+                    val contextText = recent.joinToString("\n") { 
+                         "Date: ${it.date}, HRV: ${it.hrvMorning}, Sleep: ${it.sleepScore}, Stress: ${it.stressScore}"
+                    }
+                    
+                    val request = com.aira.health.ai.runtime.AiRuntimeRequest(
+                        promptChunks = listOf(
+                            "You are Aira Health Continuity Engine. Summarize the user's current physiological state for a session transition.",
+                            "Focus on recent scores and any notable trends or goals. Limit to 3 concise sentences. No PII.",
+                            "Context data:\n$contextText"
+                        )
+                    )
+
+                    var summary = ""
+                    aiRuntimeGateway.generate(request).collect { response ->
+                        summary += response.text
+                    }
+
+                    if (summary.isNotBlank()) {
+                        userRepository.saveLogoutSummary(summary)
+                    }
+                }
+            } catch (e: Exception) {
+                // Log and continue sign out anyway — don't block auth flow for summary failures
+            } finally {
+                userRepository.signOut()
+                signActionState.value = false
+            }
+        }
+    }
 
     fun setForceOledDarkTheme(enabled: Boolean) {
         viewModelScope.launch {

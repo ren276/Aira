@@ -316,16 +316,16 @@ private fun HomeSuccessContent(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                 )
 
-                Box(
+                com.aira.health.presentation.common.components.GlassContainer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(Theme.colors.surfaceContainerHighest)
-                        .border(1.dp, Theme.colors.surfaceContainer, RoundedCornerShape(24.dp))
-                        .padding(20.dp)
+                        .padding(horizontal = 16.dp),
+                    cornerRadius = 24.dp
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        modifier = Modifier.padding(20.dp)
+                    ) {
                         MovementTextRow(
                             label = "Steps",
                             value = state.totalSteps?.toString() ?: "No step data"

@@ -174,6 +174,7 @@ private fun RuntimeFailureReason.toFallbackReason(): FallbackReason = when (this
     RuntimeFailureReason.MODEL_UNAVAILABLE -> FallbackReason.MODEL_UNAVAILABLE
     RuntimeFailureReason.TIMEOUT          -> FallbackReason.TIMEOUT
     RuntimeFailureReason.CANCELLED        -> FallbackReason.CANCELLED
+    RuntimeFailureReason.RATE_LIMITED    -> FallbackReason.API_THROTTLED
     RuntimeFailureReason.INTERNAL_ERROR   -> FallbackReason.RUNTIME_ERROR
 }
 

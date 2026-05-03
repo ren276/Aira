@@ -35,4 +35,10 @@ interface UserRepository {
 
     /** Get the current session without observing */
     suspend fun getCurrentSession(): UserSession?
+
+    /** Save a continuity summary before logout */
+    suspend fun saveLogoutSummary(summary: String): Result<Unit>
+
+    /** Get the latest continuity summary */
+    suspend fun getLatestLogoutSummary(): String?
 }

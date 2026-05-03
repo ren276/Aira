@@ -27,6 +27,11 @@ import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 
+import com.aira.health.domain.repository.HealthDataRepository
+import com.aira.health.data.local.dao.WorkoutSessionDao
+import java.time.Instant
+import java.time.ZoneId
+
 /**
  * Home dashboard ViewModel.
  *
@@ -36,12 +41,15 @@ import javax.inject.Inject
  *  3. Refresh triggers [HealthSyncWorker.scheduleImmediate] — non-blocking, does not clear UI.
  *  4. When a sync causes a new emission from Room, [HomeDeltaAnimator] computes deltas.
  *  5. [isSyncing] tracks debounced refresh state (no spinner-first loading when cache exists).
+ *  6. Steps and active calories are fetched live dynamically without waiting for DailyMetrics calculation.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val dailyMetricsDao: DailyMetricsDao,
     private val userRepository: UserRepository,
+    private val healthDataRepository: HealthDataRepository,
+    private val workoutSessionDao: WorkoutSessionDao,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -95,9 +103,13 @@ class HomeViewModel @Inject constructor(
                 initialValue = AuthState.Loading
             )
 
+    private val _liveSteps = MutableStateFlow(0)
+    private val _liveCalories = MutableStateFlow(0)
+
     init {
         // Keep periodic sync registered on normal app startup (not only reboot).
         HealthSyncWorker.schedule(context)
+        fetchLiveTrackingData()
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
@@ -105,8 +117,18 @@ class HomeViewModel @Inject constructor(
         recentMetricsFlow,
         historyFlow,
         _isSyncing,
-        authStateFlow
-    ) { todayMetrics, recentMetrics, history, syncing, authState ->
+        authStateFlow,
+        _liveSteps,
+        _liveCalories
+    ) { arrayOfFlows ->
+        val todayMetrics = arrayOfFlows[0] as DailyMetrics?
+        val recentMetrics = arrayOfFlows[1] as DailyMetrics?
+        val history = arrayOfFlows[2] as List<DailyMetrics>
+        val syncing = arrayOfFlows[3] as Boolean
+        val authState = arrayOfFlows[4] as AuthState
+        val liveSteps = arrayOfFlows[5] as Int
+        val liveCalories = arrayOfFlows[6] as Int
+
         val hour = LocalTime.now().hour
         val greeting = when {
             hour < 12 -> "Morning"
@@ -197,8 +219,8 @@ class HomeViewModel @Inject constructor(
             greeting       = greeting,
             statusHeadline = statusHeadline,
             energyBankPct  = metrics.energyBankScore.coerceIn(0, 100),
-            totalSteps     = metrics.totalSteps,
-            activeCalories = metrics.activeCalories,
+            totalSteps     = liveSteps.takeIf { it > 0 } ?: metrics.totalSteps,
+            activeCalories = liveCalories.takeIf { it > 0 } ?: metrics.activeCalories,
             rhr            = metrics.rhrMorning?.toInt(),
             hrv            = metrics.hrvMorning?.toInt(),
             spo2           = metrics.spo2?.toInt(),
@@ -236,12 +258,36 @@ class HomeViewModel @Inject constructor(
     fun requestRefresh() {
         // Only flip syncing flag — do NOT clear existing UI data (D-08)
         _isSyncing.update { true }
+        fetchLiveTrackingData()
         HealthSyncWorker.scheduleImmediate(context)
         // Syncing flag is reset when Room emits a fresh row from the worker result
         // or cleared after a short delay as a safety net (T-04-05)
         viewModelScope.launch {
             delay(30_000) // 30 s safety net
             _isSyncing.update { false }
+        }
+    }
+
+    private fun fetchLiveTrackingData() {
+        viewModelScope.launch {
+            try {
+                if (healthDataRepository.isAvailable()) {
+                    val start = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
+                    val now = Instant.now()
+                    
+                    val hcSteps = healthDataRepository.readSteps(start, now).sumOf { it.second }.toInt()
+                    val hcCals = healthDataRepository.readActiveCalories(start, now).sumOf { it.second }.toInt()
+                    
+                    val workouts = workoutSessionDao.getRange(start.toEpochMilli(), now.toEpochMilli())
+                    val workoutSteps = workouts.sumOf { (it.steps ?: 0).toLong() }.toInt()
+                    val workoutCals = workouts.sumOf { (it.activeCalories ?: 0).toLong() }.toInt()
+                    
+                    _liveSteps.value = hcSteps + workoutSteps
+                    _liveCalories.value = hcCals + workoutCals
+                }
+            } catch (e: Exception) {
+                // Fail silently, dashboard logic will fallback to cached DailyMetrics data
+            }
         }
     }
 

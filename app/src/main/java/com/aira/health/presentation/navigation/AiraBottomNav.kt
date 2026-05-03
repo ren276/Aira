@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibilityNew
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Restaurant
@@ -57,28 +58,24 @@ fun AiraBottomNav(
     val tabs = listOf(
         BottomNavTab(AiraRoutes.HOME, "Home", Icons.Default.Home),
         BottomNavTab(AiraRoutes.INSIGHTS, "Insights", Icons.Default.AccessibilityNew),
-        BottomNavTab(AiraRoutes.TRAIN, "Train", Icons.Default.FitnessCenter),
-        BottomNavTab(AiraRoutes.NUTRITION, "Nutrition", Icons.Default.Restaurant),
+        BottomNavTab(AiraRoutes.FUEL_TRAIN, "Fuel & Train", Icons.Default.Restaurant),
+        BottomNavTab(AiraRoutes.ASSISTANT, "Assistant", Icons.Default.AutoAwesome),
         BottomNavTab(AiraRoutes.SETTINGS, "Settings", Icons.Default.Settings)
     )
 
-    // Glassmorphism effect background mimicking iOS frosted glass
-    Box(
+    // Glassmorphism effect background mimicking iOS frosted glass (Clinical Ghost)
+    com.aira.health.presentation.common.components.GlassContainer(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 24.dp)
             .fillMaxWidth()
-            .height(84.dp)
-            .clip(RoundedCornerShape(999.dp))
-            .background(Color(0xFF1F1F25).copy(alpha = 0.6f))
-            // Typically you'd add a blur modifier here if relying on Compose 1.4+, 
-            // but we'll stick to alpha and styling per design tokens
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
+            .height(84.dp),
+        cornerRadius = 999.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(),
+                .fillMaxHeight()
+                .padding(horizontal = 6.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

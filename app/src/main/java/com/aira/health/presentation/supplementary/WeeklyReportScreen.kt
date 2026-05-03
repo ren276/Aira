@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aira.health.presentation.common.components.GlassContainer
 import com.aira.health.presentation.theme.Theme
 
 @Composable
@@ -65,27 +66,24 @@ fun WeeklyReportScreen(
                 modifier = Modifier.padding(horizontal = 8.dp)
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Theme.colors.onSurface)
                 }
                 Text(
                     text = "Weekly Report",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = Theme.colors.onSurface
                 )
             }
         }
 
         item {
-            Box(
+            GlassContainer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Theme.colors.surfaceContainerLow)
-                    .border(0.5.dp, Color.White.copy(alpha=0.05f), RoundedCornerShape(24.dp))
-                    .padding(24.dp)
+                    .padding(horizontal = 16.dp),
+                cornerRadius = 24.dp
             ) {
-                Column {
+                Column(modifier = Modifier.padding(24.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.DateRange, contentDescription = null, tint = Theme.colors.accent)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -99,7 +97,7 @@ fun WeeklyReportScreen(
                     Text(
                         text = state.headline,
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Theme.colors.onSurface
                     )
                 }
             }
@@ -109,7 +107,7 @@ fun WeeklyReportScreen(
             Text(
                 text = "Key Trends",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White,
+                color = Theme.colors.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             
@@ -123,19 +121,16 @@ fun WeeklyReportScreen(
 
 @Composable
 private fun TrendCard(title: String, value: String, subtitle: String, color: Color) {
-    Box(
+    GlassContainer(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Theme.colors.surfaceContainer)
-            .border(0.5.dp, Color.White.copy(alpha=0.05f), RoundedCornerShape(16.dp))
-            .padding(16.dp)
+            .padding(horizontal = 16.dp),
+        cornerRadius = 16.dp
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text(title, style = MaterialTheme.typography.labelMedium, color = Theme.colors.onSurfaceVariant)
-                Text(value, style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold), color = Color.White)
+                Text(value, style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold), color = Theme.colors.onSurface)
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                     Icon(Icons.Default.TrendingUp, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))

@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aira.health.presentation.common.components.GlassContainer
 import com.aira.health.presentation.theme.Theme
 
 @Composable
@@ -65,27 +66,24 @@ fun WhatIfSimulatorScreen(
                 modifier = Modifier.padding(horizontal = 8.dp)
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Theme.colors.onSurface)
                 }
                 Text(
                     text = "What-If Simulator",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = Theme.colors.onSurface
                 )
             }
         }
 
         item {
-            Box(
+            GlassContainer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Theme.colors.surfaceContainerLow)
-                    .border(0.5.dp, Color.White.copy(alpha=0.05f), RoundedCornerShape(24.dp))
-                    .padding(24.dp)
+                    .padding(horizontal = 16.dp),
+                cornerRadius = 24.dp
             ) {
-                Column {
+                Column(modifier = Modifier.padding(24.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
@@ -100,7 +98,7 @@ fun WhatIfSimulatorScreen(
                         Text(
                             text = "Recovery Simulator",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            color = Theme.colors.onSurface
                         )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
@@ -179,6 +177,6 @@ private fun DividerBox() {
             .fillMaxWidth()
             .padding(vertical = 16.dp)
             .height(1.dp)
-            .background(Color.White.copy(alpha = 0.1f))
+            .background(Theme.colors.outlineVariant.copy(alpha = 0.2f))
     )
 }

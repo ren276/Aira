@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aira.health.BuildConfig
 import com.aira.health.R
+import com.aira.health.domain.model.AuthState
 import com.aira.health.presentation.onboarding.AuthOnboardingScreen
 import com.aira.health.presentation.onboarding.PermissionBatchScreen
 import com.aira.health.presentation.onboarding.StravaConnectScreen
@@ -36,14 +37,27 @@ internal enum class AppEntryDestination {
 }
 
 internal fun resolveAppEntryDestination(uiState: AppEntryUiState): AppEntryDestination {
-    return when {
-        uiState.loading -> AppEntryDestination.LOADING
-        uiState.stravaReconnectRequired -> AppEntryDestination.STRAVA_ONBOARDING
-        uiState.onboardingCompleted -> AppEntryDestination.MAIN_NAV
-        !uiState.authStepCompleted -> AppEntryDestination.AUTH_ONBOARDING
-        !uiState.stravaConnected -> AppEntryDestination.STRAVA_ONBOARDING
-        else -> AppEntryDestination.PERMISSION_ONBOARDING
+    // 1. Wait for auth state to be resolved
+    if (uiState.loading || uiState.authState == AuthState.Loading) {
+        return AppEntryDestination.LOADING
     }
+    // 2. Guard: no valid auth session → always go to onboarding (handles logout)
+    if (!uiState.authStepCompleted) {
+        return AppEntryDestination.AUTH_ONBOARDING
+    }
+    // 3. Strava reconnect required → show reconnect screen even for returning users
+    if (uiState.stravaReconnectRequired) {
+        return AppEntryDestination.STRAVA_ONBOARDING
+    }
+    // 4. Onboarding fully completed → go to main app
+    if (uiState.onboardingCompleted) {
+        return AppEntryDestination.MAIN_NAV
+    }
+    // 5. Still in onboarding flow
+    if (!uiState.stravaConnected) {
+        return AppEntryDestination.STRAVA_ONBOARDING
+    }
+    return AppEntryDestination.PERMISSION_ONBOARDING
 }
 
 @Composable

@@ -147,16 +147,17 @@ fun EnergyBatteryHero(percent: Int, modifier: Modifier = Modifier) {
 
 @Composable
 private fun EventRow(title: String, impact: String, time: String) {
-    Box(
+    com.aira.health.presentation.common.components.GlassContainer(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Theme.colors.surfaceContainerLow)
-            .border(0.5.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        cornerRadius = 12.dp
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column {
                 Text(title, style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 Text(time, style = MaterialTheme.typography.labelMedium, color = Theme.colors.onSurfaceVariant)

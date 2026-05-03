@@ -106,7 +106,10 @@ class AppEntryViewModel @Inject constructor(
             stravaErrorMessage = stravaAction.errorMessage,
             authInProgress = actionState.inProgress,
             authErrorMessage = actionState.errorMessage,
-            loading = false
+            // Only show spinner during cold-start (auth state truly unknown).
+            // After logout, authState becomes Unauthenticated — do NOT show spinner,
+            // route directly to AUTH_ONBOARDING. This fixes the infinite loading bug.
+            loading = currentAuthState == AuthState.Loading && !actionState.inProgress
         )
     }.stateIn(
         scope = viewModelScope,

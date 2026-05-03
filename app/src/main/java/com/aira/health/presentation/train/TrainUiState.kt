@@ -14,9 +14,10 @@ data class TrainUiState(
     // Validation
     val inputError: String? = null,
     
-    // History
+    // History and Biometrics
     val history: List<WorkoutSession> = emptyList(),
     val isHistoryLoading: Boolean = true,
+    val vo2Max: Double? = null,
     
     // Modals/Dialogs
     val showDeleteConfirmationForId: Long? = null

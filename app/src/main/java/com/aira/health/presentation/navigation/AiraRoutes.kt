@@ -6,6 +6,8 @@ object AiraRoutes {
     const val TRAIN = "train"
     const val NUTRITION = "nutrition"
     const val SETTINGS = "settings"
+    const val FUEL_TRAIN = "fuel_train"
+    const val ASSISTANT = "assistant"
 
     // Legacy aliases preserved for compatibility with older deep links.
     const val BODY = INSIGHTS

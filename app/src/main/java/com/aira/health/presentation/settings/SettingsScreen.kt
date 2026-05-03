@@ -23,10 +23,12 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -238,6 +240,49 @@ fun SettingsScreen(
                         title = "What-If Simulator",
                         subtitle = "Try scenario predictions",
                         onClick = onOpenWhatIfSimulator
+                    )
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+
+            item {
+                Text(
+                    text = "Account Actions",
+                    style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp, fontWeight = FontWeight.Bold),
+                    color = Theme.colors.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp, start = 8.dp)
+                )
+            }
+
+            item {
+                SettingsSection {
+                    SettingsActionRow(
+                        icon = Icons.Default.ExitToApp,
+                        iconColor = Theme.colors.destructive,
+                        title = "Log Out",
+                        subtitle = "Securely sign out and preserve session continuity",
+                        onClick = viewModel::signOutWithContinuity
+                    )
+                }
+            }
+        }
+
+        if (uiState.isSigningOut) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Theme.colors.accent)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Saving continuity snapshot...",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }

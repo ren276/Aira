@@ -98,6 +98,8 @@ class DeterministicSummaryService @Inject constructor() {
             "AI response timed out — this summary was generated from your most recent metrics."
         reason == FallbackReason.MODEL_UNAVAILABLE ->
             "AI features are initialising — this summary is based on your stored metrics."
+        reason == FallbackReason.API_THROTTLED ->
+            "AI service is busy — this summary was generated deterministically from your metrics."
         else ->
             "This is a data-based summary generated without AI assistance."
     }

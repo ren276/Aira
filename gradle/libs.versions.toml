@@ -14,7 +14,7 @@ health-connect = "1.1.0"
 play-services-fitness = "21.1.0"
 play-services-auth = "21.2.0"
 # generativeai removed due to Ktor 2 clash
-tensorflow-lite = "2.17.0"
+litert = "1.0.1"
 tensorflow-lite-support = "0.4.4"
 revenuecat = "7.10.1"
 firebase-bom = "33.6.0"
@@ -79,7 +79,7 @@ play-services-auth = { group = "com.google.android.gms", name = "play-services-a
 
 # Media & AI
 # generativeai removed
-tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflow-lite" }
+tensorflow-lite = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflow-lite-support" }
 
 # Security & Encryption

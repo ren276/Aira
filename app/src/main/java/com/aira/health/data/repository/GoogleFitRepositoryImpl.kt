@@ -153,4 +153,9 @@ class GoogleFitRepositoryImpl @Inject constructor(
             }
         }.getOrElse { emptyList() }
     }
+
+    override suspend fun readVo2Max(start: Instant, end: Instant): List<Pair<Long, Double>> {
+        // Google Fit does not expose VO2 Max in standard types — return empty list
+        return emptyList()
+    }
 }

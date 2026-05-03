@@ -30,6 +30,9 @@ interface HealthDataRepository {
     /** Read steps within the given time range. */
     suspend fun readSteps(start: Instant, end: Instant): List<Pair<Long, Long>>
 
+    /** Read VO2 Max readings within the given time range. Returns list of (timestamp, ml/kg/min). */
+    suspend fun readVo2Max(start: Instant, end: Instant): List<Pair<Long, Double>>
+
     /** Check whether the underlying data source is available on this device. */
     suspend fun isAvailable(): Boolean
 }

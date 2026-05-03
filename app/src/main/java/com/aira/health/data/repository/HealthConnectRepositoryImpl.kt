@@ -7,7 +7,8 @@ import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import com.aira.health.data.local.model.HrSample
@@ -153,7 +154,7 @@ class HealthConnectRepositoryImpl @Inject constructor(
     override suspend fun readActiveCalories(start: Instant, end: Instant): List<Pair<Long, Double>> {
         val response = healthConnectClient.readRecords(
             ReadRecordsRequest(
-                recordType = TotalCaloriesBurnedRecord::class,
+                recordType = ActiveCaloriesBurnedRecord::class,
                 timeRangeFilter = TimeRangeFilter.between(start, end)
             )
         )
@@ -177,6 +178,18 @@ class HealthConnectRepositoryImpl @Inject constructor(
         }
         return response.records.map { record ->
             Pair(record.startTime.toEpochMilli(), record.count)
+        }
+    }
+
+    override suspend fun readVo2Max(start: Instant, end: Instant): List<Pair<Long, Double>> {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(
+                recordType = Vo2MaxRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(start, end)
+            )
+        )
+        return response.records.map { record ->
+            Pair(record.time.toEpochMilli(), record.vo2MillilitersPerMinuteKilogram)
         }
     }
 
@@ -292,7 +305,7 @@ class HealthConnectRepositoryImpl @Inject constructor(
     private fun buildActiveCaloriesPayload(
         start: Instant,
         end: Instant,
-        records: List<TotalCaloriesBurnedRecord>
+        records: List<ActiveCaloriesBurnedRecord>
     ): JSONObject {
         val packages = records.map { it.metadata.dataOrigin.packageName }.distinct()
         return basePayload("active_calories", start, end).apply {

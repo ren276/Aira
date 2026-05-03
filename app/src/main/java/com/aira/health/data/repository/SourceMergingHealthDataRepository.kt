@@ -66,6 +66,12 @@ class SourceMergingHealthDataRepository @Inject constructor(
         return mergeAndLog("steps", healthConnect, googleFit) { it.first }
     }
 
+    override suspend fun readVo2Max(start: Instant, end: Instant): List<Pair<Long, Double>> {
+        val healthConnect = runCatching { healthConnectRepository.readVo2Max(start, end) }.getOrDefault(emptyList())
+        val googleFit = runCatching { googleFitRepository.readVo2Max(start, end) }.getOrDefault(emptyList())
+        return mergeAndLog("vo2_max", healthConnect, googleFit) { it.first }
+    }
+
     private fun <T, K : Comparable<K>> mergeAndLog(
         query: String,
         healthConnect: List<T>,
