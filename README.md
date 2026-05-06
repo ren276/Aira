@@ -2,7 +2,7 @@
 
 <div align="center">
   <p><strong>A privacy-first, on-device health intelligence OS for Android.</strong></p>
-  <img src="designs/banner.png" alt="Aira Banner" width="800" />
+  
 </div>
 
 <p align="center">
@@ -27,10 +27,10 @@ It is designed to be Android-first, built natively with **Jetpack Compose**, int
 ## Screenshots
 
 <p align="center">
-  <img src="designs/screenshot_1.png" width="200" alt="Dashboard Screenshot" />
-  <img src="designs/screenshot_2.png" width="200" alt="Trends Screenshot" />
-  <img src="designs/screenshot_3.png" width="200" alt="Insights Screenshot" />
-  <img src="designs/screenshot_4.png" width="200" alt="Settings Screenshot" />
+  <img src="designs/home_dashboard_oled/screen.png" width="200" alt="Dashboard Screenshot" />
+  <img src="designs/recovery_intelligence/screen.png" width="200" alt="Recovery Intelligence Screenshot" />
+  <img src="designs/nutrition_oled/screen.png" width="200" alt="Nutrition and Fuel Screenshot" />
+  <img src="designs/train_fitness/screen.png" width="200" alt="Fitness Training Screenshot" />
 </p>
 
 ## Features

@@ -451,7 +451,7 @@ class StravaRepositoryImpl @Inject constructor(
 
     private fun hasRequiredScopes(scope: String): Boolean {
         val granted = scope
-            .split(',')
+            .split(',', ' ')
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .toSet()
